@@ -1,0 +1,11 @@
+/target
+Cargo.lock
+.evm-cli
+.env
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
