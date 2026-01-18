@@ -15,8 +15,10 @@ pub fn is_cancelled(err: &anyhow::Error) -> bool {
 fn check_cancelled<T>(result: Result<T, inquire::InquireError>) -> Result<T> {
     match result {
         Ok(v) => Ok(v),
-        Err(inquire::InquireError::OperationCanceled) => Err(Cancelled.into()),
-        Err(inquire::InquireError::OperationInterrupted) => Err(Cancelled.into()),
+        Err(
+            inquire::InquireError::OperationCanceled
+            | inquire::InquireError::OperationInterrupted,
+        ) => Err(Cancelled.into()),
         Err(e) => Err(e.into()),
     }
 }

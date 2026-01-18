@@ -65,11 +65,7 @@ impl<T: Clone> FilterUI<T> {
             .iter()
             .enumerate()
             .filter(|(_, (item, _))| {
-                if query.is_empty() {
-                    true
-                } else {
-                    item.label.to_lowercase().contains(&query)
-                }
+                query.is_empty() || item.label.to_lowercase().contains(&query)
             })
             .map(|(i, (item, data))| (i, item, data))
             .collect()

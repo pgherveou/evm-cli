@@ -53,10 +53,7 @@ async fn main() -> Result<()> {
 
     // Get balance
     let balance = provider::get_balance(&provider, signer_address).await?;
-    println!(
-        "Balance: {} ETH",
-        format_ether(balance)
-    );
+    println!("Balance: {} ETH", format_ether(balance));
     println!();
 
     // Create app with the already-loaded store
@@ -64,33 +61,29 @@ async fn main() -> Result<()> {
     app.initialize().await?;
 
     // Handle initial contract loading from args or last saved state
-    let contract_path = args.contract
-        .or_else(|| app.store.get_last_contract());
+    let contract_path = args.contract.or_else(|| app.store.get_last_contract());
 
-    if let Some(path) = contract_path {
-        if path.exists() {
-            println!("Loading {}...", path.display());
-            match solc::compile_solidity_with_bytecode(&path, args.bytecode.as_deref()) {
-                Ok(contracts) => {
-                    if let Ok(contract) = solc::select_contract(contracts) {
-                        println!("Loaded contract: {}", contract.name);
-                        app.set_contract(contract, path.clone());
+    if let Some(path) = contract_path.filter(|p| p.exists()) {
+        println!("Loading {}...", path.display());
+        match solc::compile_solidity_with_bytecode(&path, args.bytecode.as_deref())
+            .and_then(solc::select_contract)
+        {
+            Ok(contract) => {
+                println!("Loaded contract: {}", contract.name);
+                app.set_contract(contract, path.clone());
 
-                        // Handle address from args or last saved
-                        let address = args.address
-                            .as_ref()
-                            .and_then(|s| s.parse().ok())
-                            .or_else(|| app.store.get_last_address());
+                // Handle address from args or last saved
+                let address = args
+                    .address
+                    .as_ref()
+                    .and_then(|s| s.parse().ok())
+                    .or_else(|| app.store.get_last_address());
 
-                        if let Some(addr) = address {
-                            app.set_address(addr);
-                        }
-                    }
-                }
-                Err(e) => {
-                    println!("Failed to load contract: {}", e);
+                if let Some(addr) = address {
+                    app.set_address(addr);
                 }
             }
+            Err(e) => println!("Failed to load contract: {}", e),
         }
     }
 
@@ -101,19 +94,20 @@ async fn main() -> Result<()> {
 }
 
 fn format_ether(wei: alloy::primitives::U256) -> String {
-    // Simple conversion: divide by 10^18
+    const DECIMALS: usize = 18;
+    const DISPLAY_DECIMALS: usize = 6;
+
     let wei_str = wei.to_string();
     let len = wei_str.len();
 
-    if len <= 18 {
-        let padding = "0".repeat(18 - len);
-        let padded = format!("{}{}", padding, wei_str);
-        let (int_part, frac_part) = ("0", padded.as_str());
-        format!("{}.{}", int_part, &frac_part[..6])
+    let (int_part, frac_part) = if len <= DECIMALS {
+        let padded = format!("{:0>width$}", wei_str, width = DECIMALS);
+        ("0".to_string(), padded)
     } else {
-        let split_point = len - 18;
-        let int_part = &wei_str[..split_point];
-        let frac_part = &wei_str[split_point..];
-        format!("{}.{}", int_part, &frac_part[..6.min(frac_part.len())])
-    }
+        let split = len - DECIMALS;
+        (wei_str[..split].to_string(), wei_str[split..].to_string())
+    };
+
+    let frac_display = &frac_part[..DISPLAY_DECIMALS.min(frac_part.len())];
+    format!("{}.{}", int_part, frac_display)
 }

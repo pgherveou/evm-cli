@@ -249,15 +249,14 @@ impl<P: Provider + Clone> App<P> {
         println!("\nDeploying {}...", contract.name);
 
         // Get constructor arguments if any
-        let args = if let Some(ctor) = &contract.abi.constructor {
-            if !ctor.inputs.is_empty() {
-                prompts::prompt_for_params(&ctor.inputs)?
-            } else {
-                vec![]
-            }
-        } else {
-            vec![]
-        };
+        let args = contract
+            .abi
+            .constructor
+            .as_ref()
+            .filter(|ctor| !ctor.inputs.is_empty())
+            .map(|ctor| prompts::prompt_for_params(&ctor.inputs))
+            .transpose()?
+            .unwrap_or_default();
 
         // Encode constructor call
         let mut deploy_data = contract.bytecode.clone();
@@ -319,10 +318,10 @@ impl<P: Provider + Clone> App<P> {
         println!("\nCalling {}...", func.name);
 
         // Get function arguments
-        let args = if !func.inputs.is_empty() {
-            prompts::prompt_for_params(&func.inputs)?
-        } else {
+        let args = if func.inputs.is_empty() {
             vec![]
+        } else {
+            prompts::prompt_for_params(&func.inputs)?
         };
 
         // Encode function call
@@ -346,22 +345,21 @@ impl<P: Provider + Clone> App<P> {
                 .await
                 .context("Call failed")?;
 
-            // Decode result
+            // Decode and display result
             let decoded = func
                 .abi_decode_output(&result)
                 .context("Failed to decode return value")?;
 
-            if decoded.is_empty() {
-                ui::print_result("Result", "(no return value)");
-            } else if decoded.len() == 1 {
-                ui::print_result("Result", &prompts::format_return_value(&decoded[0]));
-            } else {
-                let formatted: Vec<_> = decoded
-                    .iter()
-                    .map(prompts::format_return_value)
-                    .collect();
-                ui::print_result("Result", &format!("({})", formatted.join(", ")));
-            }
+            let result_str = match decoded.as_slice() {
+                [] => "(no return value)".to_string(),
+                [single] => prompts::format_return_value(single),
+                multiple => {
+                    let formatted: Vec<_> =
+                        multiple.iter().map(prompts::format_return_value).collect();
+                    format!("({})", formatted.join(", "))
+                }
+            };
+            ui::print_result("Result", &result_str);
         } else {
             // State-changing transaction
             let tx = TransactionRequest::default()

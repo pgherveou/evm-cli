@@ -2,7 +2,7 @@ use alloy::network::EthereumWallet;
 use alloy::primitives::{Address, U256};
 use alloy::providers::{Provider, ProviderBuilder};
 use alloy::signers::local::PrivateKeySigner;
-use anyhow::{bail, Context, Result};
+use anyhow::{Context, Result};
 use std::env;
 
 use crate::store::Config;
@@ -40,14 +40,11 @@ pub async fn create_provider(
         .connect_http(url);
 
     // Test connection
-    match provider.get_chain_id().await {
-        Ok(chain_id) => {
-            log::info!("Connected to chain ID: {}", chain_id);
-        }
-        Err(e) => {
-            bail!("Failed to connect to RPC endpoint: {}", e);
-        }
-    }
+    let chain_id = provider
+        .get_chain_id()
+        .await
+        .context("Failed to connect to RPC endpoint")?;
+    log::info!("Connected to chain ID: {}", chain_id);
 
     Ok((provider, signer))
 }

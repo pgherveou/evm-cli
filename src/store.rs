@@ -80,10 +80,7 @@ impl DeploymentStore {
     }
 
     pub fn all_contracts(&self) -> Vec<PathBuf> {
-        self.deployments
-            .keys()
-            .map(|k| PathBuf::from(k))
-            .collect()
+        self.deployments.keys().map(PathBuf::from).collect()
     }
 
     fn store_path() -> PathBuf {

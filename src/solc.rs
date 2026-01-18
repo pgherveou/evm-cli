@@ -88,12 +88,7 @@ pub fn compile_solidity_with_bytecode(
     if !errors.is_empty() {
         let messages: Vec<_> = errors
             .iter()
-            .map(|e| {
-                e.formatted_message
-                    .as_ref()
-                    .unwrap_or(&e.message)
-                    .as_str()
-            })
+            .map(|e| e.formatted_message.as_deref().unwrap_or(&e.message))
             .collect();
         bail!("Solidity compilation errors:\n{}", messages.join("\n"));
     }
@@ -112,13 +107,13 @@ pub fn compile_solidity_with_bytecode(
             .with_context(|| format!("Failed to parse ABI for {}", contract_name))?;
 
         // Use external bytecode if provided, otherwise use solc output
-        let bytecode = if let Some(ref bc) = external_bytecode {
-            bc.clone()
-        } else {
-            hex::decode(&contract.bin).with_context(|| {
-                format!("Failed to decode bytecode for {}", contract_name)
-            })?
-        };
+        let bytecode = external_bytecode.clone().map_or_else(
+            || {
+                hex::decode(&contract.bin)
+                    .with_context(|| format!("Failed to decode bytecode for {}", contract_name))
+            },
+            Ok,
+        )?;
 
         contracts.push(CompiledContract {
             name: contract_name,

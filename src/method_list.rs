@@ -70,8 +70,8 @@ pub fn list_methods(abi: &JsonAbi, include_constructor: bool) -> Vec<MethodDispl
 
         let tag = match func.state_mutability {
             StateMutability::View | StateMutability::Pure => "view",
-            StateMutability::Payable => "payable",
             StateMutability::NonPayable => "send",
+            StateMutability::Payable => "payable",
         };
 
         methods.push(MethodDisplay {
