@@ -1,8 +1,8 @@
 mod app;
+mod compile;
 mod method_list;
 mod prompts;
 mod provider;
-mod solc;
 mod store;
 mod tui;
 

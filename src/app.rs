@@ -9,8 +9,8 @@ use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::Frame;
 use std::path::PathBuf;
 
+use crate::compile::{BytecodeTarget, CompiledContract};
 use crate::prompts;
-use crate::solc::CompiledContract;
 use crate::store::DeploymentStore;
 use crate::tui::layout::AppLayout;
 use crate::tui::state::{
@@ -230,8 +230,10 @@ impl<P: Provider + Clone> App<P> {
                 params,
                 fields,
                 current,
+                bytecode_target,
             } => {
-                let popup = ParameterPopup::new(method_name, params, fields, *current);
+                let popup = ParameterPopup::new(method_name, params, fields, *current)
+                    .bytecode_target(*bytecode_target);
                 frame.render_widget(popup, frame.area());
             }
             PopupState::FilePicker { path, error } => {
@@ -579,10 +581,11 @@ impl<P: Provider + Clone> App<P> {
     async fn handle_parameter_popup_key(&mut self, key: KeyEvent) -> Result<()> {
         // Handle Enter separately to avoid borrow checker issues
         if key.code == KeyCode::Enter {
-            if let PopupState::ParameterPopup { params, fields, .. } = &self.state.popup {
+            if let PopupState::ParameterPopup { params, fields, bytecode_target, .. } = &self.state.popup {
                 // Clone data we need for parsing
                 let params_clone = params.clone();
                 let fields_clone = fields.clone();
+                let target = *bytecode_target;
 
                 let values = self.try_parse_params(&params_clone, &fields_clone);
                 match values {
@@ -594,10 +597,11 @@ impl<P: Provider + Clone> App<P> {
 
                         match action {
                             PendingAction::Deploy => {
-                                self.do_deploy(args).await?;
+                                // target is Some for deploy operations
+                                self.do_deploy(args, target.unwrap_or_default()).await;
                             }
                             PendingAction::CallMethod(func, addr) => {
-                                self.do_call_function(&func, addr, args).await?;
+                                self.do_call_function(&func, addr, args).await;
                             }
                             PendingAction::None => {}
                         }
@@ -613,6 +617,14 @@ impl<P: Provider + Clone> App<P> {
                         }
                     }
                 }
+            }
+            return Ok(());
+        }
+
+        // Handle left/right arrows for target switching
+        if matches!(key.code, KeyCode::Left | KeyCode::Right) {
+            if let PopupState::ParameterPopup { bytecode_target: Some(target), .. } = &mut self.state.popup {
+                *target = target.toggle();
             }
             return Ok(());
         }
@@ -771,7 +783,7 @@ impl<P: Provider + Clone> App<P> {
                 }
             }
             TreeNode::Constructor => {
-                self.start_deploy().await?;
+                self.start_deploy().await;
             }
             TreeNode::LoadExistingInstance => {
                 self.state.popup = PopupState::AddressInput {
@@ -795,7 +807,7 @@ impl<P: Provider + Clone> App<P> {
                 ..
             } => {
                 self.set_address(instance_address);
-                self.start_call_function(function).await?;
+                self.start_call_function(function).await;
             }
         }
         Ok(())
@@ -827,16 +839,23 @@ impl<P: Provider + Clone> App<P> {
     async fn load_contract_from_path(&mut self, path: PathBuf) -> Result<()> {
         self.state.output.push_info(format!("Loading {}...", path.display()));
 
-        match crate::solc::compile_solidity(&path) {
+        match crate::compile::load_contract_abi(&path) {
             Ok(contracts) => {
                 if contracts.len() == 1 {
-                    let contract = contracts.into_iter().next().unwrap();
+                    let (name, abi) = contracts.into_iter().next().unwrap();
+                    // Create a contract with just ABI (bytecode will be compiled on demand)
+                    let contract = CompiledContract {
+                        name,
+                        abi,
+                        bytecode: Vec::new(), // Will be filled during deploy
+                        target: BytecodeTarget::Evm,
+                    };
                     self.set_contract(contract, path);
                 } else {
                     // Multiple contracts - show selector
-                    let names: Vec<String> = contracts.iter().map(|c| c.name.clone()).collect();
-                    // Store contracts temporarily
-                    self.store_compiled_contracts(contracts);
+                    let names: Vec<String> = contracts.into_iter().map(|(name, _)| name).collect();
+                    // Store path for later selection
+                    self.contract_path = Some(path);
                     self.state.popup = PopupState::ContractSelector {
                         contracts: names,
                         selected: 0,
@@ -844,67 +863,69 @@ impl<P: Provider + Clone> App<P> {
                 }
             }
             Err(e) => {
-                self.state.output.push_error(format!("Failed to compile: {}", e));
+                self.state.output.push_error(format!("Failed to load contract: {}", e));
             }
         }
         Ok(())
     }
 
-    // Temporary storage for compiled contracts during selection
-    fn store_compiled_contracts(&mut self, _contracts: Vec<CompiledContract>) {
-        // Note: In a real implementation, we'd store these somewhere
-        // For now, we just recompile when selected
-    }
-
     fn select_compiled_contract(&mut self, name: &str) -> Result<()> {
-        // Recompile to get the contract (simplified approach)
+        // Load just the ABI for the selected contract
         if let Some(path) = self.contract_path.clone() {
-            let contracts = crate::solc::compile_solidity(&path)?;
-            if let Some(contract) = contracts.into_iter().find(|c| c.name == name) {
+            let contracts = crate::compile::load_contract_abi(&path)?;
+            if let Some((_, abi)) = contracts.into_iter().find(|(n, _)| n == name) {
+                let contract = CompiledContract {
+                    name: name.to_string(),
+                    abi,
+                    bytecode: Vec::new(), // Will be filled during deploy
+                    target: BytecodeTarget::Evm,
+                };
                 self.set_contract(contract, path);
             }
         }
         Ok(())
     }
 
-    async fn start_deploy(&mut self) -> Result<()> {
-        let contract = self
-            .contract
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("No contract loaded"))?;
-
-        self.state.output.push_normal(format!("\nDeploying {}...", contract.name));
-
-        // Check if constructor has parameters
-        if let Some(ctor) = &contract.abi.constructor {
-            if !ctor.inputs.is_empty() {
-                // Show parameter popup
-                let fields: Vec<FieldState> = ctor
-                    .inputs
-                    .iter()
-                    .map(|_| FieldState::default())
-                    .collect();
-
-                self.pending_action = PendingAction::Deploy;
-                self.state.popup = PopupState::ParameterPopup {
-                    method_name: "constructor".to_string(),
-                    params: ctor.inputs.clone(),
-                    fields,
-                    current: 0,
-                };
-                return Ok(());
+    async fn start_deploy(&mut self) {
+        let contract = match self.contract.as_ref() {
+            Some(c) => c,
+            None => {
+                self.state.output.push_error("No contract loaded");
+                return;
             }
-        }
+        };
 
-        // No parameters - deploy directly
-        self.do_deploy(vec![]).await?;
-        Ok(())
+        self.state.output.push_normal(format!("\nPreparing to deploy {}...", contract.name));
+
+        // Get constructor parameters (empty vec if no constructor)
+        let params = contract
+            .abi
+            .constructor
+            .as_ref()
+            .map(|ctor| ctor.inputs.clone())
+            .unwrap_or_default();
+
+        let fields: Vec<FieldState> = params.iter().map(|_| FieldState::default()).collect();
+
+        // Always show popup with target selector for deploy operations
+        self.pending_action = PendingAction::Deploy;
+        self.state.popup = PopupState::ParameterPopup {
+            method_name: "constructor".to_string(),
+            params,
+            fields,
+            current: 0,
+            bytecode_target: Some(BytecodeTarget::Evm), // Default to EVM
+        };
     }
 
-    async fn start_call_function(&mut self, func: Function) -> Result<()> {
-        let address = self.address.ok_or_else(|| {
-            anyhow::anyhow!("No contract address set")
-        })?;
+    async fn start_call_function(&mut self, func: Function) {
+        let address = match self.address {
+            Some(a) => a,
+            None => {
+                self.state.output.push_error("No contract address set");
+                return;
+            }
+        };
 
         self.state.output.push_normal(format!("\nCalling {}...", func.name));
 
@@ -921,13 +942,13 @@ impl<P: Provider + Clone> App<P> {
                 params: func.inputs.clone(),
                 fields,
                 current: 0,
+                bytecode_target: None, // No target selector for calls
             };
-            return Ok(());
+            return;
         }
 
         // No parameters - call directly
-        self.do_call_function(&func, address, vec![]).await?;
-        Ok(())
+        self.do_call_function(&func, address, vec![]).await;
     }
 
     fn try_parse_params(
@@ -953,13 +974,40 @@ impl<P: Provider + Clone> App<P> {
         }
     }
 
-    async fn do_deploy(&mut self, args: Vec<DynSolValue>) -> Result<()> {
-        let contract = self
-            .contract
-            .as_ref()
-            .ok_or_else(|| anyhow::anyhow!("No contract loaded"))?;
+    async fn do_deploy(&mut self, args: Vec<DynSolValue>, target: BytecodeTarget) {
+        let contract = match self.contract.as_ref() {
+            Some(c) => c,
+            None => {
+                self.state.output.push_error("No contract loaded");
+                return;
+            }
+        };
 
-        let mut deploy_data = contract.bytecode.clone();
+        let contract_name = contract.name.clone();
+        let contract_path = match self.contract_path.clone() {
+            Some(p) => p,
+            None => {
+                self.state.output.push_error("No contract path set");
+                return;
+            }
+        };
+
+        // Compile on demand for the selected target
+        self.state.output.push_info(format!("Compiling {} for {}...", contract_name, target));
+
+        let compiled = match crate::compile::compile_contract(&contract_path, &contract_name, target) {
+            Ok(c) => c,
+            Err(e) => {
+                self.state.output.push_error(format!("Compilation failed: {}", e));
+                self.state.output.push_separator();
+                self.state.output.scroll_to_bottom();
+                return;
+            }
+        };
+
+        self.state.output.push_success(format!("Compilation successful ({})", target));
+
+        let mut deploy_data = compiled.bytecode.clone();
 
         if !args.is_empty() {
             let encoded = DynSolValue::Tuple(args).abi_encode_params();
@@ -970,38 +1018,51 @@ impl<P: Provider + Clone> App<P> {
 
         self.state.output.push("Sending deployment transaction...", OutputStyle::Waiting);
 
-        let pending = self
-            .provider
-            .send_transaction(tx)
-            .await
-            .context("Failed to send deployment transaction")?;
+        let pending = match self.provider.send_transaction(tx).await {
+            Ok(p) => p,
+            Err(e) => {
+                self.state.output.push_error(format!("Transaction failed: {}", e));
+                self.state.output.push_separator();
+                self.state.output.scroll_to_bottom();
+                return;
+            }
+        };
 
         let tx_hash = *pending.tx_hash();
         self.state.output.push_success(format!("Transaction: {:?}", tx_hash));
         self.state.output.push("Waiting for confirmation...", OutputStyle::Waiting);
 
-        let receipt = pending
-            .get_receipt()
-            .await
-            .context("Failed to get transaction receipt")?;
+        let receipt = match pending.get_receipt().await {
+            Ok(r) => r,
+            Err(e) => {
+                self.state.output.push_error(format!("Failed to get receipt: {}", e));
+                self.state.output.push_separator();
+                self.state.output.scroll_to_bottom();
+                return;
+            }
+        };
 
-        let address = receipt
-            .contract_address
-            .ok_or_else(|| anyhow::anyhow!("No contract address in receipt"))?;
+        let address = match receipt.contract_address {
+            Some(a) => a,
+            None => {
+                self.state.output.push_error("No contract address in receipt");
+                self.state.output.push_separator();
+                self.state.output.scroll_to_bottom();
+                return;
+            }
+        };
 
         self.state.output.push_success(format!("Deployed at: {:?}", address));
 
         self.set_address(address);
 
-        if let Some(path) = &self.contract_path {
-            self.store.add_deployment(path, address);
-            self.store.save()?;
+        self.store.add_deployment(&contract_path, address);
+        if let Err(e) = self.store.save() {
+            self.state.output.push_error(format!("Failed to save deployment: {}", e));
         }
 
         self.state.output.push_separator();
         self.state.output.scroll_to_bottom();
-
-        Ok(())
     }
 
     async fn do_call_function(
@@ -1009,10 +1070,16 @@ impl<P: Provider + Clone> App<P> {
         func: &Function,
         address: Address,
         args: Vec<DynSolValue>,
-    ) -> Result<()> {
-        let calldata = func
-            .abi_encode_input(&args)
-            .context("Failed to encode function call")?;
+    ) {
+        let calldata = match func.abi_encode_input(&args) {
+            Ok(data) => data,
+            Err(e) => {
+                self.state.output.push_error(format!("Failed to encode function call: {}", e));
+                self.state.output.push_separator();
+                self.state.output.scroll_to_bottom();
+                return;
+            }
+        };
 
         let is_view = matches!(
             func.state_mutability,
@@ -1024,11 +1091,25 @@ impl<P: Provider + Clone> App<P> {
                 .to(address)
                 .input(calldata.into());
 
-            let result = self.provider.call(tx).await.context("Call failed")?;
+            let result = match self.provider.call(tx).await {
+                Ok(r) => r,
+                Err(e) => {
+                    self.state.output.push_error(format!("Call failed: {}", e));
+                    self.state.output.push_separator();
+                    self.state.output.scroll_to_bottom();
+                    return;
+                }
+            };
 
-            let decoded = func
-                .abi_decode_output(&result)
-                .context("Failed to decode return value")?;
+            let decoded = match func.abi_decode_output(&result) {
+                Ok(d) => d,
+                Err(e) => {
+                    self.state.output.push_error(format!("Failed to decode return value: {}", e));
+                    self.state.output.push_separator();
+                    self.state.output.scroll_to_bottom();
+                    return;
+                }
+            };
 
             let result_str = match decoded.as_slice() {
                 [] => "(no return value)".to_string(),
@@ -1048,11 +1129,15 @@ impl<P: Provider + Clone> App<P> {
 
             self.state.output.push("Sending transaction...", OutputStyle::Waiting);
 
-            let pending = self
-                .provider
-                .send_transaction(tx)
-                .await
-                .context("Failed to send transaction")?;
+            let pending = match self.provider.send_transaction(tx).await {
+                Ok(p) => p,
+                Err(e) => {
+                    self.state.output.push_error(format!("Transaction failed: {}", e));
+                    self.state.output.push_separator();
+                    self.state.output.scroll_to_bottom();
+                    return;
+                }
+            };
 
             let tx_hash = *pending.tx_hash();
             self.state.output.push_success(format!("Transaction: {:?}", tx_hash));
@@ -1062,10 +1147,15 @@ impl<P: Provider + Clone> App<P> {
 
             self.state.output.push("Waiting for confirmation...", OutputStyle::Waiting);
 
-            let receipt = pending
-                .get_receipt()
-                .await
-                .context("Failed to get transaction receipt")?;
+            let receipt = match pending.get_receipt().await {
+                Ok(r) => r,
+                Err(e) => {
+                    self.state.output.push_error(format!("Failed to get receipt: {}", e));
+                    self.state.output.push_separator();
+                    self.state.output.scroll_to_bottom();
+                    return;
+                }
+            };
 
             if receipt.status() {
                 self.state.output.push_success("Status: Success");
@@ -1078,8 +1168,6 @@ impl<P: Provider + Clone> App<P> {
 
         self.state.output.push_separator();
         self.state.output.scroll_to_bottom();
-
-        Ok(())
     }
 }
 

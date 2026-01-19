@@ -1,3 +1,4 @@
+use crate::compile::BytecodeTarget;
 use crate::tui::layout::centered_popup;
 use crate::tui::state::FieldState;
 use crate::tui::widgets::InputField;
@@ -5,7 +6,7 @@ use alloy::json_abi::Param;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
-    style::{Color, Style},
+    style::{Color, Modifier, Style},
     text::{Line, Span},
     widgets::{Block, Borders, Clear, Widget},
 };
@@ -15,6 +16,7 @@ pub struct ParameterPopup<'a> {
     params: &'a [Param],
     fields: &'a [FieldState],
     current: usize,
+    bytecode_target: Option<BytecodeTarget>,
 }
 
 impl<'a> ParameterPopup<'a> {
@@ -29,14 +31,22 @@ impl<'a> ParameterPopup<'a> {
             params,
             fields,
             current,
+            bytecode_target: None,
         }
+    }
+
+    pub fn bytecode_target(mut self, target: Option<BytecodeTarget>) -> Self {
+        self.bytecode_target = target;
+        self
     }
 }
 
 impl Widget for ParameterPopup<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
         // Calculate popup height based on number of fields (2 lines per field + header + footer)
-        let height_percent = ((self.fields.len() * 3 + 6) as u16 * 100 / area.height).min(80);
+        // Add extra space if bytecode target selector is shown
+        let extra_height = if self.bytecode_target.is_some() { 2 } else { 0 };
+        let height_percent = ((self.fields.len() * 3 + 6 + extra_height) as u16 * 100 / area.height).min(80);
         let popup_area = centered_popup(area, 70, height_percent.max(30));
 
         // Clear the popup area
@@ -51,8 +61,34 @@ impl Widget for ParameterPopup<'_> {
         let inner = block.inner(popup_area);
         block.render(popup_area, buf);
 
-        // Render each field (with top padding)
         let mut y = inner.y + 1;
+
+        // Render bytecode target selector if this is a deploy operation
+        if let Some(target) = self.bytecode_target {
+            let hint_style = Style::default().fg(Color::DarkGray);
+            let selected_style = Style::default()
+                .fg(Color::Black)
+                .bg(Color::Cyan)
+                .add_modifier(Modifier::BOLD);
+            let unselected_style = Style::default().fg(Color::DarkGray);
+
+            let (evm_style, pvm_style) = match target {
+                BytecodeTarget::Evm => (selected_style, unselected_style),
+                BytecodeTarget::Pvm => (unselected_style, selected_style),
+            };
+
+            let target_line = Line::from(vec![
+                Span::styled("Target: ", hint_style),
+                Span::styled(" EVM ", evm_style),
+                Span::styled(" ", Style::default()),
+                Span::styled(" PVM ", pvm_style),
+                Span::styled("  (←/→ to switch)", hint_style),
+            ]);
+            buf.set_line(inner.x + 1, y, &target_line, inner.width.saturating_sub(2));
+            y += 2;
+        }
+
+        // Render each field
         for (i, (param, field)) in self.params.iter().zip(self.fields.iter()).enumerate() {
             if y >= inner.y + inner.height.saturating_sub(2) {
                 break;
@@ -82,7 +118,7 @@ impl Widget for ParameterPopup<'_> {
         // Render footer with hints
         let footer_y = inner.y + inner.height.saturating_sub(1);
         let hint_style = Style::default().fg(Color::DarkGray);
-        let footer = Line::from(vec![
+        let mut footer_spans = vec![
             Span::styled("Tab", Style::default().fg(Color::Yellow)),
             Span::styled(": next  ", hint_style),
             Span::styled("Shift+Tab", Style::default().fg(Color::Yellow)),
@@ -91,7 +127,15 @@ impl Widget for ParameterPopup<'_> {
             Span::styled(": submit  ", hint_style),
             Span::styled("Esc", Style::default().fg(Color::Yellow)),
             Span::styled(": cancel", hint_style),
-        ]);
+        ];
+
+        if self.bytecode_target.is_some() {
+            footer_spans.insert(0, Span::styled("  ", hint_style));
+            footer_spans.insert(0, Span::styled(": target", hint_style));
+            footer_spans.insert(0, Span::styled("←/→", Style::default().fg(Color::Yellow)));
+        }
+
+        let footer = Line::from(footer_spans);
         buf.set_line(inner.x + 1, footer_y, &footer, inner.width.saturating_sub(2));
     }
 }

@@ -1,5 +1,5 @@
 use crate::method_list::{self, MethodSelection};
-use crate::solc::CompiledContract;
+use crate::compile::CompiledContract;
 use crate::store::DeploymentStore;
 use crate::tui::state::SidebarState;
 use alloy::json_abi::Function;

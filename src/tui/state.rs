@@ -1,3 +1,4 @@
+use crate::compile::BytecodeTarget;
 use alloy::json_abi::Param;
 use alloy::primitives::Address;
 use std::path::PathBuf;
@@ -27,6 +28,8 @@ pub enum PopupState {
         params: Vec<Param>,
         fields: Vec<FieldState>,
         current: usize,
+        /// Some for deploy operations (to select EVM/PVM), None for calls
+        bytecode_target: Option<BytecodeTarget>,
     },
     ContractSelector {
         contracts: Vec<String>,
