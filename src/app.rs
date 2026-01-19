@@ -1,4 +1,4 @@
-use alloy::dyn_abi::{DynSolType, DynSolValue, FunctionExt, JsonAbiExt};
+use alloy::dyn_abi::{DynSolType, DynSolValue, EventExt, FunctionExt, JsonAbiExt};
 use alloy::json_abi::{Function, JsonAbi};
 use alloy::network::TransactionBuilder;
 use alloy::primitives::Address;
@@ -83,8 +83,31 @@ impl<P: Provider + Clone> App<P> {
 
     pub fn set_contract(&mut self, contract: CompiledContract, path: PathBuf) {
         self.contract = Some(contract);
-        self.contract_path = Some(path);
+        self.contract_path = Some(path.clone());
         self.address = None;
+
+        // Expand the contract
+        self.state.sidebar.expanded_contracts.insert(path.clone());
+
+        // Select the contract in the sidebar
+        self.select_contract_in_sidebar(&path);
+    }
+
+    /// Find and select a contract by path in the sidebar
+    fn select_contract_in_sidebar(&mut self, path: &PathBuf) {
+        let nodes = self.build_tree_nodes();
+        for (i, node) in nodes.iter().enumerate() {
+            if let TreeNode::Contract { path: node_path, .. } = node {
+                if node_path == path {
+                    self.state.sidebar.selected = i;
+                    // Adjust scroll if needed
+                    if self.state.sidebar.selected < self.state.sidebar.scroll_offset {
+                        self.state.sidebar.scroll_offset = self.state.sidebar.selected;
+                    }
+                    break;
+                }
+            }
+        }
     }
 
     pub fn set_address(&mut self, address: Address) {
@@ -581,8 +604,10 @@ impl<P: Provider + Clone> App<P> {
                             // Load and expand this contract
                             if self.contract_path.as_ref() != Some(path) {
                                 self.load_contract_from_path(path.clone()).await?;
+                            } else {
+                                // Already loaded, just expand
+                                self.state.sidebar.expanded_contracts.insert(path.clone());
                             }
-                            self.state.sidebar.expanded_contracts.insert(path.clone());
                         }
                         TreeNode::DeployedInstance { address, .. } => {
                             self.state.sidebar.expanded_instances.insert(*address);
@@ -981,9 +1006,8 @@ impl<P: Provider + Clone> App<P> {
                         self.state.sidebar.expanded_contracts.insert(path);
                     }
                 } else {
-                    // Load a different contract and auto-expand it
-                    self.load_contract_from_path(path.clone()).await?;
-                    self.state.sidebar.expanded_contracts.insert(path);
+                    // Load a different contract (will auto-expand and select)
+                    self.load_contract_from_path(path).await?;
                 }
             }
             TreeNode::Constructor { contract_name, contract_path, abi } => {
@@ -1309,7 +1333,7 @@ impl<P: Provider + Clone> App<P> {
             };
 
             let call_str = prompts::format_method_call(&func.name, &func.inputs, &args);
-            self.state.output.push(call_str, OutputStyle::Highlight);
+            self.state.output.push(format!("{} @ {:?}", call_str, address), OutputStyle::Highlight);
             self.state.output.push_success(format!("Result: {}", result_str));
         } else {
             let tx = TransactionRequest::default()
@@ -1335,7 +1359,7 @@ impl<P: Provider + Clone> App<P> {
             self.state.output.push_success(format!("Transaction: {:?}", tx_hash));
 
             let call_str = prompts::format_method_call(&func.name, &func.inputs, &args);
-            self.state.output.push(call_str, OutputStyle::Highlight);
+            self.state.output.push(format!("{} @ {:?}", call_str, address), OutputStyle::Highlight);
 
             self.state.output.push("Waiting for confirmation...", OutputStyle::Waiting);
 
@@ -1356,10 +1380,84 @@ impl<P: Provider + Clone> App<P> {
             }
 
             self.state.output.push_info(format!("Gas used: {}", receipt.gas_used));
+
+            // Display logs if any
+            let logs = receipt.inner.logs();
+            if !logs.is_empty() {
+                self.state.output.push_info(format!("Logs ({})", logs.len()));
+                for (i, log) in logs.iter().enumerate() {
+                    self.display_log(i, log);
+                }
+            }
         }
 
         self.state.output.push_separator();
         self.state.output.scroll_to_bottom();
+    }
+
+    /// Display a log entry, attempting to decode it with known ABIs
+    fn display_log(&mut self, index: usize, log: &alloy::rpc::types::Log) {
+        let log_address = log.address();
+
+        // Try to find an ABI for this address
+        let abi = self.find_abi_for_address(log_address);
+
+        // Try to decode the log if we have topics and an ABI
+        if let (Some(abi), Some(first_topic)) = (abi, log.topics().first()) {
+            // Find matching event in ABI
+            if let Some(event) = abi.events().find(|e| e.selector() == *first_topic) {
+                // Convert Log to LogData
+                let log_data = alloy::primitives::LogData::new_unchecked(
+                    log.topics().to_vec(),
+                    log.data().data.clone().into(),
+                );
+
+                // Try to decode the log
+                match event.decode_log(&log_data) {
+                    Ok(decoded) => {
+                        // Successfully decoded
+                        self.state.output.push_info(format!("  [{}] {} @ {:?}", index, event.name, log_address));
+
+                        // Display decoded parameters
+                        for (param, value) in event.inputs.iter().zip(decoded.indexed.iter().chain(decoded.body.iter())) {
+                            let value_str = prompts::format_return_value(value);
+                            self.state.output.push_info(format!("      {}: {}", param.name, value_str));
+                        }
+                        return;
+                    }
+                    Err(_) => {
+                        // Decoding failed, fall through to raw display
+                    }
+                }
+            }
+        }
+
+        // Fall back to raw display
+        self.state.output.push_info(format!("  [{}] Address: {:?}", index, log_address));
+        if !log.topics().is_empty() {
+            self.state.output.push_info(format!("      Topics: {}",
+                log.topics().iter()
+                    .map(|t| format!("{:?}", t))
+                    .collect::<Vec<_>>()
+                    .join(", ")));
+        }
+        if !log.data().data.is_empty() {
+            self.state.output.push_info(format!("      Data: 0x{}", hex::encode(&log.data().data)));
+        }
+    }
+
+    /// Try to find an ABI for a given address by checking known deployments
+    fn find_abi_for_address(&self, address: Address) -> Option<Arc<JsonAbi>> {
+        // Check all contracts in the store
+        for contract_path in self.store.all_contracts() {
+            let deployments = self.store.get_deployments(&contract_path);
+            if deployments.contains(&address) {
+                // This contract has this address
+                let (_, abi) = self.get_contract_name_and_abi(&contract_path);
+                return Some(abi);
+            }
+        }
+        None
     }
 }
 
