@@ -7,26 +7,12 @@ pub enum Focus {
     Sidebar,
     Output,
     CommandPalette,
-    ParameterPopup,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct FieldState {
-    pub name: String,
-    pub type_str: String,
     pub value: String,
     pub error: Option<String>,
-}
-
-impl FieldState {
-    pub fn new(name: String, type_str: String) -> Self {
-        Self {
-            name,
-            type_str,
-            value: String::new(),
-            error: None,
-        }
-    }
 }
 
 #[derive(Debug, Clone)]
@@ -54,20 +40,16 @@ pub enum PopupState {
         address: String,
         error: Option<String>,
     },
-    Confirmation {
-        message: String,
-        confirmed: bool,
-    },
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ConnectionStatus {
     Connected,
     Disconnected,
-    Error,
 }
 
 #[derive(Debug, Clone)]
+#[derive(Default)]
 pub struct SidebarState {
     pub selected: usize,
     pub scroll_offset: usize,
@@ -75,16 +57,6 @@ pub struct SidebarState {
     pub expanded_instances: std::collections::HashSet<Address>,
 }
 
-impl Default for SidebarState {
-    fn default() -> Self {
-        Self {
-            selected: 0,
-            scroll_offset: 0,
-            expanded_contracts: std::collections::HashSet::new(),
-            expanded_instances: std::collections::HashSet::new(),
-        }
-    }
-}
 
 #[derive(Debug, Clone)]
 pub struct OutputLine {
@@ -104,19 +76,12 @@ pub enum OutputStyle {
 }
 
 #[derive(Debug, Clone)]
+#[derive(Default)]
 pub struct OutputState {
     pub lines: Vec<OutputLine>,
     pub scroll_offset: usize,
 }
 
-impl Default for OutputState {
-    fn default() -> Self {
-        Self {
-            lines: Vec::new(),
-            scroll_offset: 0,
-        }
-    }
-}
 
 impl OutputState {
     pub fn push(&mut self, text: impl Into<String>, style: OutputStyle) {

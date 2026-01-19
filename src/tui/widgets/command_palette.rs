@@ -53,11 +53,6 @@ impl<'a> CommandPalette<'a> {
         }
     }
 
-    pub fn with_commands(mut self, commands: Vec<Command>) -> Self {
-        self.commands = commands;
-        self
-    }
-
     pub fn filtered_commands(&self) -> Vec<(usize, &Command)> {
         let query_lower = self.query.to_lowercase();
         self.commands

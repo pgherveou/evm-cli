@@ -23,7 +23,6 @@ impl Widget for StatusBarWidget<'_> {
         let (conn_symbol, conn_style) = match self.state.connection {
             ConnectionStatus::Connected => ("●", Style::default().fg(Color::Green)),
             ConnectionStatus::Disconnected => ("○", Style::default().fg(Color::DarkGray)),
-            ConnectionStatus::Error => ("●", Style::default().fg(Color::Red)),
         };
 
         let mut spans = vec![Span::styled(format!("{} ", conn_symbol), conn_style)];

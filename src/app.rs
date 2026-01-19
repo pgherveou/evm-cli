@@ -149,11 +149,9 @@ impl<P: Provider + Clone> App<P> {
                             && col < output_area.x + output_area.width
                             && row >= output_area.y
                             && row < output_area.y + output_area.height
-                        {
-                            if self.state.output.scroll_offset > 0 {
+                            && self.state.output.scroll_offset > 0 {
                                 self.state.output.scroll_offset -= 1;
                             }
-                        }
                     }
                     InputEvent::ScrollDown(col, row) => {
                         // Check if scroll is within output area
@@ -244,9 +242,6 @@ impl<P: Provider + Clone> App<P> {
             }
             PopupState::ContractSelector { contracts, selected } => {
                 self.render_contract_selector(frame, contracts, *selected);
-            }
-            PopupState::Confirmation { message, .. } => {
-                self.render_confirmation(frame, message);
             }
         }
     }
@@ -351,26 +346,6 @@ impl<P: Provider + Clone> App<P> {
         }
     }
 
-    fn render_confirmation(&self, frame: &mut Frame, message: &str) {
-        use crate::tui::layout::centered_popup;
-        use ratatui::widgets::{Block, Borders, Clear, Paragraph};
-        use ratatui::style::{Color, Style};
-
-        let popup_area = centered_popup(frame.area(), 50, 20);
-        frame.render_widget(Clear, popup_area);
-
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Yellow))
-            .title(" Confirm ");
-        let inner = block.inner(popup_area);
-        frame.render_widget(block, popup_area);
-
-        let text = format!("{}\n\n[Y] Yes  [N] No", message);
-        let paragraph = Paragraph::new(text);
-        frame.render_widget(paragraph, inner);
-    }
-
     async fn handle_key(&mut self, key: KeyEvent) -> Result<()> {
         // Global shortcuts
         if key.modifiers.contains(KeyModifiers::CONTROL) {
@@ -399,7 +374,6 @@ impl<P: Provider + Clone> App<P> {
             PopupState::FilePicker { .. } => self.handle_file_picker_key(key).await?,
             PopupState::AddressInput { .. } => self.handle_address_input_key(key).await?,
             PopupState::ContractSelector { .. } => self.handle_contract_selector_key(key).await?,
-            PopupState::Confirmation { .. } => self.handle_confirmation_key(key).await?,
         }
 
         Ok(())
@@ -773,24 +747,6 @@ impl<P: Provider + Clone> App<P> {
         Ok(())
     }
 
-    async fn handle_confirmation_key(&mut self, key: KeyEvent) -> Result<()> {
-        if let PopupState::Confirmation { confirmed, .. } = &mut self.state.popup {
-            match key.code {
-                KeyCode::Esc | KeyCode::Char('n') | KeyCode::Char('N') => {
-                    self.state.popup = PopupState::None;
-                    self.state.focus = Focus::Sidebar;
-                }
-                KeyCode::Char('y') | KeyCode::Char('Y') | KeyCode::Enter => {
-                    *confirmed = true;
-                    self.state.popup = PopupState::None;
-                    self.state.focus = Focus::Sidebar;
-                }
-                _ => {}
-            }
-        }
-        Ok(())
-    }
-
     async fn execute_tree_node(&mut self, node: TreeNode) -> Result<()> {
         match node {
             TreeNode::NewContract => {
@@ -814,10 +770,10 @@ impl<P: Provider + Clone> App<P> {
                     self.load_contract_from_path(path).await?;
                 }
             }
-            TreeNode::Constructor { .. } => {
+            TreeNode::Constructor => {
                 self.start_deploy().await?;
             }
-            TreeNode::LoadExistingInstance { .. } => {
+            TreeNode::LoadExistingInstance => {
                 self.state.popup = PopupState::AddressInput {
                     address: String::new(),
                     error: None,
@@ -926,16 +882,7 @@ impl<P: Provider + Clone> App<P> {
                 let fields: Vec<FieldState> = ctor
                     .inputs
                     .iter()
-                    .map(|p| {
-                        FieldState::new(
-                            if p.name.is_empty() {
-                                p.ty.to_string()
-                            } else {
-                                p.name.clone()
-                            },
-                            p.ty.to_string(),
-                        )
-                    })
+                    .map(|_| FieldState::default())
                     .collect();
 
                 self.pending_action = PendingAction::Deploy;
@@ -965,16 +912,7 @@ impl<P: Provider + Clone> App<P> {
             let fields: Vec<FieldState> = func
                 .inputs
                 .iter()
-                .map(|p| {
-                    FieldState::new(
-                        if p.name.is_empty() {
-                            p.ty.to_string()
-                        } else {
-                            p.name.clone()
-                        },
-                        p.ty.to_string(),
-                    )
-                })
+                .map(|_| FieldState::default())
                 .collect();
 
             self.pending_action = PendingAction::CallMethod(func.clone(), address);

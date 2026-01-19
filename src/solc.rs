@@ -34,16 +34,8 @@ struct SolcError {
     formatted_message: Option<String>,
 }
 
-/// Compile Solidity file, optionally using pre-compiled bytecode
+/// Compile Solidity file and extract ABI and bytecode
 pub fn compile_solidity(sol_path: &Path) -> Result<Vec<CompiledContract>> {
-    compile_solidity_with_bytecode(sol_path, None)
-}
-
-/// Compile Solidity file with optional pre-compiled bytecode override
-pub fn compile_solidity_with_bytecode(
-    sol_path: &Path,
-    bytecode_path: Option<&Path>,
-) -> Result<Vec<CompiledContract>> {
     let sol_path = sol_path
         .canonicalize()
         .with_context(|| format!("Failed to resolve path: {}", sol_path.display()))?;
@@ -51,16 +43,6 @@ pub fn compile_solidity_with_bytecode(
     if !sol_path.exists() {
         bail!("Solidity file not found: {}", sol_path.display());
     }
-
-    // Load external bytecode if provided
-    let external_bytecode = if let Some(bc_path) = bytecode_path {
-        let bytecode = std::fs::read(bc_path)
-            .with_context(|| format!("Failed to read bytecode from {}", bc_path.display()))?;
-        log::info!("Using pre-compiled bytecode from {}", bc_path.display());
-        Some(bytecode)
-    } else {
-        None
-    };
 
     let output = Command::new("solc")
         .arg("--combined-json")
@@ -106,14 +88,8 @@ pub fn compile_solidity_with_bytecode(
         let abi: JsonAbi = serde_json::from_value(contract.abi.clone())
             .with_context(|| format!("Failed to parse ABI for {}", contract_name))?;
 
-        // Use external bytecode if provided, otherwise use solc output
-        let bytecode = external_bytecode.clone().map_or_else(
-            || {
-                hex::decode(&contract.bin)
-                    .with_context(|| format!("Failed to decode bytecode for {}", contract_name))
-            },
-            Ok,
-        )?;
+        let bytecode = hex::decode(&contract.bin)
+            .with_context(|| format!("Failed to decode bytecode for {}", contract_name))?;
 
         contracts.push(CompiledContract {
             name: contract_name,

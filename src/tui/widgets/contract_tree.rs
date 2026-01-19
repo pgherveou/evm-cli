@@ -21,12 +21,8 @@ pub enum TreeNode {
         name: String,
         path: PathBuf,
     },
-    Constructor {
-        contract_path: PathBuf,
-    },
-    LoadExistingInstance {
-        contract_path: PathBuf,
-    },
+    Constructor,
+    LoadExistingInstance,
     DeployedInstance {
         address: Address,
         contract_path: PathBuf,
@@ -43,8 +39,8 @@ impl TreeNode {
         match self {
             TreeNode::NewContract => "Load new contract...".to_string(),
             TreeNode::Contract { name, .. } => name.clone(),
-            TreeNode::Constructor { .. } => "Deploy new instance".to_string(),
-            TreeNode::LoadExistingInstance { .. } => "Load existing instance...".to_string(),
+            TreeNode::Constructor => "Deploy new instance".to_string(),
+            TreeNode::LoadExistingInstance => "Load existing instance...".to_string(),
             TreeNode::DeployedInstance { address, .. } => {
                 format!("{:?}", address)
             }
@@ -69,8 +65,8 @@ impl TreeNode {
         match self {
             TreeNode::NewContract => 0,
             TreeNode::Contract { .. } => 0,
-            TreeNode::Constructor { .. } => 1,
-            TreeNode::LoadExistingInstance { .. } => 1,
+            TreeNode::Constructor => 1,
+            TreeNode::LoadExistingInstance => 1,
             TreeNode::DeployedInstance { .. } => 1,
             TreeNode::Method { .. } => 2,
         }
@@ -131,14 +127,10 @@ fn build_tree(
         // Check if this contract is expanded
         if state.expanded_contracts.contains(path) {
             // Add constructor option
-            nodes.push(TreeNode::Constructor {
-                contract_path: path.clone(),
-            });
+            nodes.push(TreeNode::Constructor);
 
             // Add load existing instance option
-            nodes.push(TreeNode::LoadExistingInstance {
-                contract_path: path.clone(),
-            });
+            nodes.push(TreeNode::LoadExistingInstance);
 
             // Add deployed instances
             let deployments = store.get_deployments(path);
@@ -240,8 +232,8 @@ impl Widget for ContractTree<'_> {
                     }
                 }
                 TreeNode::NewContract => "+ ",
-                TreeNode::Constructor { .. } => "◇ ",
-                TreeNode::LoadExistingInstance { .. } => "◇ ",
+                TreeNode::Constructor => "◇ ",
+                TreeNode::LoadExistingInstance => "◇ ",
                 TreeNode::Method { .. } => "├ ",
             };
 
@@ -259,8 +251,8 @@ impl Widget for ContractTree<'_> {
                     TreeNode::Contract { .. } => Style::default()
                         .fg(Color::Cyan)
                         .add_modifier(Modifier::BOLD),
-                    TreeNode::Constructor { .. } => Style::default().fg(Color::Green),
-                    TreeNode::LoadExistingInstance { .. } => Style::default().fg(Color::Yellow),
+                    TreeNode::Constructor => Style::default().fg(Color::Green),
+                    TreeNode::LoadExistingInstance => Style::default().fg(Color::Yellow),
                     TreeNode::DeployedInstance { .. } => Style::default().fg(Color::Green),
                     TreeNode::Method { tag, .. } => {
                         if *tag == "view" {
