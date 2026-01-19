@@ -36,12 +36,20 @@ impl Widget for StatusBarWidget<'_> {
         }
 
         // Right-aligned hints (styled like popup footers)
-        let hint_spans = vec![
+        let mut hint_spans = vec![];
+
+        // Show Del hint when sidebar is focused
+        if matches!(self.state.focus, crate::tui::state::Focus::Sidebar) {
+            hint_spans.push(Span::styled("Del", Style::default().fg(Color::Yellow)));
+            hint_spans.push(Span::styled(": remove  ", Style::default().fg(Color::DarkGray)));
+        }
+
+        hint_spans.extend(vec![
             Span::styled("Ctrl+P", Style::default().fg(Color::Yellow)),
             Span::styled(": commands  ", Style::default().fg(Color::DarkGray)),
             Span::styled("Ctrl+C", Style::default().fg(Color::Yellow)),
             Span::styled(": quit", Style::default().fg(Color::DarkGray)),
-        ];
+        ]);
         let hints_len: u16 = hint_spans.iter().map(|s| s.content.len() as u16).sum();
         let left_content: String = spans.iter().map(|s| s.content.as_ref()).collect();
         let left_len = left_content.len() as u16;

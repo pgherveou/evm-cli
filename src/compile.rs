@@ -44,7 +44,6 @@ pub struct CompiledContract {
     pub name: String,
     pub abi: JsonAbi,
     pub bytecode: Vec<u8>,
-    pub target: BytecodeTarget,
 }
 
 /// Forge artifact JSON structure
@@ -77,7 +76,7 @@ pub fn load_contract_abi(sol_path: &Path) -> Result<Vec<(String, JsonAbi)>> {
     let parent_dir = sol_path.parent().unwrap_or(Path::new("."));
     let output_dir = parent_dir.join(BytecodeTarget::Evm.output_dir());
 
-    run_forge_build(&sol_path, BytecodeTarget::Evm)?;
+    let build_cmd = run_forge_build(&sol_path, BytecodeTarget::Evm)?;
 
     // Find and parse artifacts
     let filename = sol_path
@@ -88,10 +87,15 @@ pub fn load_contract_abi(sol_path: &Path) -> Result<Vec<(String, JsonAbi)>> {
     let artifact_dir = output_dir.join(format!("{}.sol", filename));
 
     if !artifact_dir.exists() {
-        bail!(
-            "No artifacts found at {}. Compilation may have failed.",
-            artifact_dir.display()
+        let detailed_error = format!(
+            "No artifacts found at {}.\n\nCommand executed:\n  {}\n\nThe build may have succeeded but produced no artifacts. Check if the contract is valid.",
+            artifact_dir.display(),
+            build_cmd
         );
+        log::error!("{}", detailed_error);
+
+        // Simplified error for UI
+        bail!("No artifacts found. The build may have succeeded but produced no artifacts. Check ~/.evm-cli/output.log for details.");
     }
 
     let mut contracts = Vec::new();
@@ -140,16 +144,22 @@ pub fn compile_contract(
         .with_context(|| format!("Failed to resolve path: {}", sol_path.display()))?;
 
     // Run forge build
-    run_forge_build(&sol_path, target)?;
+    let build_cmd = run_forge_build(&sol_path, target)?;
 
     // Find artifact
     let artifact_path = get_artifact_path(&sol_path, contract_name, target);
 
     if !artifact_path.exists() {
-        bail!(
-            "Contract artifact not found: {}. Contract name may not match.",
-            artifact_path.display()
+        let detailed_error = format!(
+            "Contract artifact not found: {}.\n\nCommand executed:\n  {}\n\nThe contract name '{}' may not match any contract in the file.",
+            artifact_path.display(),
+            build_cmd,
+            contract_name
         );
+        log::error!("{}", detailed_error);
+
+        // Simplified error for UI
+        bail!("Contract '{}' not found in artifacts. The name may not match. Check ~/.evm-cli/output.log for details.", contract_name);
     }
 
     let content = std::fs::read_to_string(&artifact_path)
@@ -174,24 +184,21 @@ pub fn compile_contract(
     }
 
     // Validate PVM magic if targeting PVM
-    if target == BytecodeTarget::Pvm {
-        if bytecode.len() < 4 || bytecode[..4] != PVM_MAGIC {
-            bail!(
-                "Invalid PVM bytecode: missing magic bytes. Ensure resolc is installed and working."
-            );
-        }
+    if target == BytecodeTarget::Pvm && (bytecode.len() < 4 || bytecode[..4] != PVM_MAGIC) {
+        bail!(
+            "Invalid PVM bytecode: missing magic bytes. Ensure resolc is installed and working."
+        );
     }
 
     Ok(CompiledContract {
         name: contract_name.to_string(),
         abi,
         bytecode,
-        target,
     })
 }
 
 /// Run forge build for a specific target
-fn run_forge_build(sol_path: &Path, target: BytecodeTarget) -> Result<()> {
+fn run_forge_build(sol_path: &Path, target: BytecodeTarget) -> Result<String> {
     let parent_dir = sol_path.parent().unwrap_or(Path::new("."));
     let output_dir = parent_dir.join(target.output_dir());
 
@@ -206,6 +213,15 @@ fn run_forge_build(sol_path: &Path, target: BytecodeTarget) -> Result<()> {
         cmd.arg("--resolc-compile");
     }
 
+    // Format command for display
+    let cmd_display = format!(
+        "cd {} && forge build -o {} {}{}",
+        parent_dir.display(),
+        output_dir.display(),
+        sol_path.display(),
+        if target == BytecodeTarget::Pvm { " --resolc-compile" } else { "" }
+    );
+
     let output = cmd
         .output()
         .context("Failed to execute forge. Is it installed?")?;
@@ -214,10 +230,24 @@ fn run_forge_build(sol_path: &Path, target: BytecodeTarget) -> Result<()> {
         let stderr = String::from_utf8_lossy(&output.stderr);
         let stdout = String::from_utf8_lossy(&output.stdout);
         let combined = if stderr.is_empty() { stdout } else { stderr };
-        bail!("forge build failed:\n{}", combined);
+
+        // Log detailed error
+        let detailed_error = format!(
+            "forge build failed.\n\nCommand:\n  {}\n\nOutput:\n{}",
+            cmd_display, combined
+        );
+        log::error!("{}", detailed_error);
+        log::info!("Command: {}", cmd_display);
+
+        // Simplified error for UI - show first line of error
+        let first_error_line = combined.lines().find(|line| !line.trim().is_empty()).unwrap_or("Unknown error");
+        bail!("forge build failed: {}\n\nCheck ~/.evm-cli/output.log for full details.", first_error_line);
     }
 
-    Ok(())
+    // Log successful builds too
+    log::info!("Command: {}", cmd_display);
+
+    Ok(cmd_display)
 }
 
 /// Get the artifact path for a compiled contract

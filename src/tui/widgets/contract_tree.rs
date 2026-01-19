@@ -1,9 +1,7 @@
-use crate::method_list::{self, MethodSelection};
-use crate::compile::CompiledContract;
-use crate::store::DeploymentStore;
 use crate::tui::state::SidebarState;
-use alloy::json_abi::Function;
+use alloy::json_abi::{Function, JsonAbi};
 use alloy::primitives::Address;
+use std::sync::Arc;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -14,6 +12,7 @@ use ratatui::{
 use std::path::PathBuf;
 
 /// Tree node types for the sidebar
+/// Each node is self-contained with all the data it needs to execute
 #[derive(Debug, Clone)]
 pub enum TreeNode {
     NewContract,
@@ -21,8 +20,16 @@ pub enum TreeNode {
         name: String,
         path: PathBuf,
     },
-    Constructor,
-    LoadExistingInstance,
+    Constructor {
+        contract_name: String,
+        contract_path: PathBuf,
+        abi: Arc<JsonAbi>,
+    },
+    LoadExistingInstance {
+        contract_name: String,
+        contract_path: PathBuf,
+        abi: Arc<JsonAbi>,
+    },
     DeployedInstance {
         address: Address,
         contract_path: PathBuf,
@@ -39,8 +46,8 @@ impl TreeNode {
         match self {
             TreeNode::NewContract => "Load new contract...".to_string(),
             TreeNode::Contract { name, .. } => name.clone(),
-            TreeNode::Constructor => "Deploy new instance".to_string(),
-            TreeNode::LoadExistingInstance => "Load existing instance...".to_string(),
+            TreeNode::Constructor { .. } => "Deploy new instance".to_string(),
+            TreeNode::LoadExistingInstance { .. } => "Load existing instance...".to_string(),
             TreeNode::DeployedInstance { address, .. } => {
                 format!("{:?}", address)
             }
@@ -65,8 +72,8 @@ impl TreeNode {
         match self {
             TreeNode::NewContract => 0,
             TreeNode::Contract { .. } => 0,
-            TreeNode::Constructor => 1,
-            TreeNode::LoadExistingInstance => 1,
+            TreeNode::Constructor { .. } => 1,
+            TreeNode::LoadExistingInstance { .. } => 1,
             TreeNode::DeployedInstance { .. } => 1,
             TreeNode::Method { .. } => 2,
         }
@@ -93,92 +100,10 @@ impl<'a> ContractTree<'a> {
         self
     }
 
-    pub fn with_data(
-        mut self,
-        store: &DeploymentStore,
-        current_contract: Option<(&CompiledContract, &PathBuf)>,
-    ) -> Self {
-        self.nodes = build_tree(store, current_contract, self.state);
+    pub fn with_nodes(mut self, nodes: Vec<TreeNode>) -> Self {
+        self.nodes = nodes;
         self
     }
-
-    pub fn nodes(&self) -> &[TreeNode] {
-        &self.nodes
-    }
-}
-
-fn build_tree(
-    store: &DeploymentStore,
-    current_contract: Option<(&CompiledContract, &PathBuf)>,
-    state: &SidebarState,
-) -> Vec<TreeNode> {
-    let mut nodes = Vec::new();
-
-    // Always show "New contract" at top
-    nodes.push(TreeNode::NewContract);
-
-    // Add current contract if loaded
-    if let Some((contract, path)) = current_contract {
-        nodes.push(TreeNode::Contract {
-            name: contract.name.clone(),
-            path: path.clone(),
-        });
-
-        // Check if this contract is expanded
-        if state.expanded_contracts.contains(path) {
-            // Add constructor option
-            nodes.push(TreeNode::Constructor);
-
-            // Add load existing instance option
-            nodes.push(TreeNode::LoadExistingInstance);
-
-            // Add deployed instances
-            let deployments = store.get_deployments(path);
-            for address in deployments {
-                nodes.push(TreeNode::DeployedInstance {
-                    address,
-                    contract_path: path.clone(),
-                });
-
-                // If instance is expanded, show methods
-                if state.expanded_instances.contains(&address) {
-                    let methods = method_list::list_methods(&contract.abi, false);
-                    for method in methods {
-                        if let MethodSelection::Function(f) = method.selection {
-                            nodes.push(TreeNode::Method {
-                                function: f,
-                                tag: method.tag,
-                                instance_address: address,
-                            });
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    // Add other known contracts (collapsed)
-    for contract_path in store.all_contracts() {
-        // Skip current contract
-        if current_contract
-            .map(|(_, p)| p == &contract_path)
-            .unwrap_or(false)
-        {
-            continue;
-        }
-
-        let name = contract_path
-            .file_stem()
-            .map(|s| s.to_string_lossy().to_string())
-            .unwrap_or_else(|| contract_path.to_string_lossy().to_string());
-
-        nodes.push(TreeNode::Contract {
-            name,
-            path: contract_path,
-        });
-    }
-
-    nodes
 }
 
 impl Widget for ContractTree<'_> {
@@ -232,8 +157,8 @@ impl Widget for ContractTree<'_> {
                     }
                 }
                 TreeNode::NewContract => "+ ",
-                TreeNode::Constructor => "◇ ",
-                TreeNode::LoadExistingInstance => "◇ ",
+                TreeNode::Constructor { .. } => "◇ ",
+                TreeNode::LoadExistingInstance { .. } => "◇ ",
                 TreeNode::Method { .. } => "├ ",
             };
 
@@ -251,8 +176,8 @@ impl Widget for ContractTree<'_> {
                     TreeNode::Contract { .. } => Style::default()
                         .fg(Color::Cyan)
                         .add_modifier(Modifier::BOLD),
-                    TreeNode::Constructor => Style::default().fg(Color::Green),
-                    TreeNode::LoadExistingInstance => Style::default().fg(Color::Yellow),
+                    TreeNode::Constructor { .. } => Style::default().fg(Color::Green),
+                    TreeNode::LoadExistingInstance { .. } => Style::default().fg(Color::Yellow),
                     TreeNode::DeployedInstance { .. } => Style::default().fg(Color::Green),
                     TreeNode::Method { tag, .. } => {
                         if *tag == "view" {

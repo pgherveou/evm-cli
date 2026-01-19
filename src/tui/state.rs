@@ -1,4 +1,5 @@
 use crate::compile::BytecodeTarget;
+use crate::tui::widgets::PathSuggestion;
 use alloy::json_abi::Param;
 use alloy::primitives::Address;
 use std::path::PathBuf;
@@ -135,6 +136,8 @@ pub struct AppState {
     pub chain_id: Option<u64>,
     pub account: Option<Address>,
     pub balance: Option<String>,
+    pub file_picker_suggestions: Vec<PathSuggestion>,
+    pub file_picker_selected_idx: usize,
 }
 
 impl Default for AppState {
@@ -148,6 +151,8 @@ impl Default for AppState {
             chain_id: None,
             account: None,
             balance: None,
+            file_picker_suggestions: Vec::new(),
+            file_picker_selected_idx: 0,
         }
     }
 }

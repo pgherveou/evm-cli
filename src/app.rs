@@ -1,5 +1,5 @@
 use alloy::dyn_abi::{DynSolType, DynSolValue, FunctionExt, JsonAbiExt};
-use alloy::json_abi::Function;
+use alloy::json_abi::{Function, JsonAbi};
 use alloy::network::TransactionBuilder;
 use alloy::primitives::Address;
 use alloy::providers::Provider;
@@ -7,9 +7,15 @@ use alloy::rpc::types::TransactionRequest;
 use anyhow::{Context, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::Frame;
+use std::cell::RefCell;
+use std::collections::HashMap;
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use crate::compile::{BytecodeTarget, CompiledContract};
+
+type AbiCache = RefCell<HashMap<PathBuf, Vec<(String, Arc<JsonAbi>)>>>;
+
 use crate::prompts;
 use crate::store::DeploymentStore;
 use crate::tui::layout::AppLayout;
@@ -17,7 +23,8 @@ use crate::tui::state::{
     AppState, ConnectionStatus, FieldState, Focus, OutputStyle, PopupState,
 };
 use crate::tui::widgets::{
-    CommandPalette, ContractTree, OutputArea, ParameterPopup, StatusBarWidget,
+    AutocompleteInput, CommandPalette, ContractTree, OutputArea, ParameterPopup, StatusBarWidget,
+    parse_path_for_autocomplete, scan_path_suggestions,
 };
 use crate::tui::widgets::command_palette::default_commands;
 use crate::tui::widgets::contract_tree::TreeNode;
@@ -26,8 +33,15 @@ use crate::tui::InputEvent;
 #[derive(Clone)]
 enum PendingAction {
     None,
-    Deploy,
-    CallMethod(Function, Address),
+    Deploy {
+        contract_name: String,
+        contract_path: PathBuf,
+        abi: Arc<JsonAbi>,
+    },
+    CallMethod {
+        function: Function,
+        address: Address,
+    },
 }
 
 pub struct App<P> {
@@ -40,6 +54,8 @@ pub struct App<P> {
     running: bool,
     pending_action: PendingAction,
     edit_config_requested: bool,
+    /// Cache of loaded ABIs to avoid re-parsing files on every render
+    abi_cache: AbiCache,
 }
 
 impl<P: Provider + Clone> App<P> {
@@ -54,6 +70,7 @@ impl<P: Provider + Clone> App<P> {
             running: true,
             pending_action: PendingAction::None,
             edit_config_requested: false,
+            abi_cache: RefCell::new(HashMap::new()),
         }
     }
 
@@ -65,26 +82,13 @@ impl<P: Provider + Clone> App<P> {
     }
 
     pub fn set_contract(&mut self, contract: CompiledContract, path: PathBuf) {
-        // Expand this contract in the sidebar
-        self.state.sidebar.expanded_contracts.insert(path.clone());
-
         self.contract = Some(contract);
         self.contract_path = Some(path);
         self.address = None;
-
-        self.state.output.push_success(format!(
-            "Loaded contract: {}",
-            self.contract.as_ref().unwrap().name
-        ));
     }
 
     pub fn set_address(&mut self, address: Address) {
         self.address = Some(address);
-
-        // Expand this instance in sidebar
-        self.state.sidebar.expanded_instances.insert(address);
-
-        self.state.output.push_info(format!("Selected address: {:?}", address));
     }
 
     pub fn set_account_info(&mut self, address: Address, balance: String) {
@@ -98,6 +102,130 @@ impl<P: Provider + Clone> App<P> {
         self.address = None;
         self.state.sidebar = Default::default();
         self.state.output.push_info("State cleared");
+        self.abi_cache.borrow_mut().clear();
+    }
+
+    /// Load contract ABIs with caching
+    fn load_contract_abi_cached(&self, path: &PathBuf) -> Option<Vec<(String, Arc<JsonAbi>)>> {
+        // Check cache first
+        if let Some(cached) = self.abi_cache.borrow().get(path) {
+            return Some(cached.clone());
+        }
+
+        // Load from disk and cache
+        match crate::compile::load_contract_abi(path) {
+            Ok(contracts) => {
+                let abi_list: Vec<(String, Arc<JsonAbi>)> = contracts
+                    .into_iter()
+                    .map(|(name, abi)| (name, Arc::new(abi)))
+                    .collect();
+
+                self.abi_cache.borrow_mut().insert(path.clone(), abi_list.clone());
+                Some(abi_list)
+            }
+            Err(_) => None,
+        }
+    }
+
+    /// Get name and ABI for a contract path, using current contract or cache
+    fn get_contract_name_and_abi(&self, contract_path: &PathBuf) -> (String, Arc<JsonAbi>) {
+        // Use current contract if this is the active one
+        let is_current = self.contract_path.as_ref() == Some(contract_path);
+        if is_current {
+            if let Some(contract) = &self.contract {
+                return (contract.name.clone(), Arc::new(contract.abi.clone()));
+            }
+        }
+
+        // Fall back to cached ABI loading
+        if let Some(contracts) = self.load_contract_abi_cached(contract_path) {
+            if let Some((name, abi)) = contracts.into_iter().next() {
+                return (name, abi);
+            }
+        }
+
+        // Last resort: use filename as name with empty ABI
+        let name = contract_path
+            .file_stem()
+            .map(|s| s.to_string_lossy().to_string())
+            .unwrap_or_else(|| contract_path.to_string_lossy().to_string());
+        (name, Arc::new(JsonAbi::new()))
+    }
+
+    /// Build tree nodes with ABI caching for performance
+    fn build_tree_nodes(&self) -> Vec<TreeNode> {
+        use crate::method_list::{self, MethodSelection};
+
+        let mut nodes = Vec::new();
+
+        // Always show "New contract" at top
+        nodes.push(TreeNode::NewContract);
+
+        // Get all contracts and sort them for stable ordering
+        let mut all_contracts: Vec<PathBuf> = self.store.all_contracts().into_iter().collect();
+
+        // Add current contract if it's not already in the store
+        if let Some(current_path) = &self.contract_path {
+            if !all_contracts.contains(current_path) {
+                all_contracts.push(current_path.clone());
+            }
+        }
+
+        // Sort for stable ordering
+        all_contracts.sort();
+
+        // Add each contract in sorted order
+        for contract_path in all_contracts {
+            let (name, abi) = self.get_contract_name_and_abi(&contract_path);
+
+            nodes.push(TreeNode::Contract {
+                name: name.clone(),
+                path: contract_path.clone(),
+            });
+
+            // Check if this contract is expanded
+            if self.state.sidebar.expanded_contracts.contains(&contract_path) {
+                // Add constructor and load options for all expanded contracts
+                let abi_clone = Arc::clone(&abi);
+                nodes.push(TreeNode::Constructor {
+                    contract_name: name.clone(),
+                    contract_path: contract_path.clone(),
+                    abi: abi_clone,
+                });
+
+                let abi_clone = Arc::clone(&abi);
+                nodes.push(TreeNode::LoadExistingInstance {
+                    contract_name: name.clone(),
+                    contract_path: contract_path.clone(),
+                    abi: abi_clone,
+                });
+
+                // Show deployed instances for all expanded contracts
+                let deployments = self.store.get_deployments(&contract_path);
+                for address in &deployments {
+                    nodes.push(TreeNode::DeployedInstance {
+                        address: *address,
+                        contract_path: contract_path.clone(),
+                    });
+
+                    // Show methods if instance is expanded
+                    if self.state.sidebar.expanded_instances.contains(address) {
+                        let methods = method_list::list_methods(&abi, false);
+                        for method in methods {
+                            if let MethodSelection::Function(f) = method.selection {
+                                nodes.push(TreeNode::Method {
+                                    function: f,
+                                    tag: method.tag,
+                                    instance_address: *address,
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        nodes
     }
 
     pub async fn run_interactive(&mut self) -> Result<()> {
@@ -200,13 +328,11 @@ impl<P: Provider + Clone> App<P> {
     fn render(&self, frame: &mut Frame) {
         let layout = AppLayout::new(frame.area());
 
-        // Render sidebar
+        // Render sidebar with cached tree building
+        let nodes = self.build_tree_nodes();
         let tree = ContractTree::new(&self.state.sidebar)
             .focused(matches!(self.state.focus, Focus::Sidebar))
-            .with_data(
-                &self.store,
-                self.contract.as_ref().zip(self.contract_path.as_ref()),
-            );
+            .with_nodes(nodes);
         frame.render_widget(tree, layout.sidebar);
 
         // Render output area
@@ -250,11 +376,11 @@ impl<P: Provider + Clone> App<P> {
 
     fn render_file_picker(&self, frame: &mut Frame, path: &str, error: Option<&str>) {
         use crate::tui::layout::centered_popup;
-        use crate::tui::widgets::InputField;
         use ratatui::widgets::{Block, Borders, Clear};
-        use ratatui::style::{Color, Style};
+        use ratatui::style::{Color, Style, Modifier};
+        use ratatui::text::{Line, Span};
 
-        let popup_area = centered_popup(frame.area(), 60, 20);
+        let popup_area = centered_popup(frame.area(), 60, 40);
         frame.render_widget(Clear, popup_area);
 
         let block = Block::default()
@@ -264,18 +390,35 @@ impl<P: Provider + Clone> App<P> {
         let inner = block.inner(popup_area);
         frame.render_widget(block, popup_area);
 
-        let input = InputField::new("Path to .sol file", path)
+        let input = AutocompleteInput::new("Path to .sol file", path)
             .placeholder("./contracts/MyContract.sol")
             .error(error)
-            .focused(true);
+            .focused(true)
+            .suggestions(&self.state.file_picker_suggestions)
+            .selected_suggestion(self.state.file_picker_selected_idx);
 
         let field_area = ratatui::layout::Rect::new(
             inner.x + 1,
             inner.y + 2,
             inner.width.saturating_sub(2),
-            if error.is_some() { 2 } else { 1 }
+            inner.height.saturating_sub(4)
         );
         frame.render_widget(input, field_area);
+
+        // Render keyboard hints at bottom
+        let hints = Line::from(vec![
+            Span::styled("↑/↓", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+            Span::raw(": navigate | "),
+            Span::styled("Tab", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+            Span::raw(": complete | "),
+            Span::styled("Enter", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+            Span::raw(": accept | "),
+            Span::styled("Esc", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
+            Span::raw(": cancel"),
+        ]);
+
+        let hints_y = inner.y + inner.height - 1;
+        frame.buffer_mut().set_line(inner.x + 1, hints_y, &hints, inner.width.saturating_sub(2));
     }
 
     fn render_address_input(&self, frame: &mut Frame, address: &str, error: Option<&str>) {
@@ -348,6 +491,12 @@ impl<P: Provider + Clone> App<P> {
         }
     }
 
+    fn update_file_picker_suggestions(&mut self, input: &str) {
+        let (dir, prefix) = parse_path_for_autocomplete(input);
+        self.state.file_picker_suggestions = scan_path_suggestions(&dir, &prefix);
+        self.state.file_picker_selected_idx = 0;
+    }
+
     async fn handle_key(&mut self, key: KeyEvent) -> Result<()> {
         // Global shortcuts
         if key.modifiers.contains(KeyModifiers::CONTROL) {
@@ -391,15 +540,8 @@ impl<P: Provider + Clone> App<P> {
     }
 
     async fn handle_sidebar_key(&mut self, key: KeyEvent) -> Result<()> {
-        // Build tree to get current nodes
-        let nodes: Vec<TreeNode> = {
-            let tree = ContractTree::new(&self.state.sidebar).with_data(
-                &self.store,
-                self.contract.as_ref().zip(self.contract_path.as_ref()),
-            );
-            tree.nodes().to_vec()
-        };
-
+        // Build tree to get current nodes (with caching)
+        let nodes = self.build_tree_nodes();
         let node_count = nodes.len();
 
         match key.code {
@@ -457,34 +599,38 @@ impl<P: Provider + Clone> App<P> {
             }
             KeyCode::Delete | KeyCode::Backspace => {
                 if let Some(node) = nodes.get(self.state.sidebar.selected) {
-                    match node {
-                        TreeNode::DeployedInstance { address, contract_path } => {
-                            // Remove this specific deployment
+                    let removed = match node {
+                        TreeNode::DeployedInstance { address, contract_path, .. } => {
                             if self.store.remove_deployment(contract_path, *address) {
-                                self.store.save()?;
                                 self.state.output.push_info(format!("Removed deployment: {:?}", address));
-                                // Clear current address if it was the one removed
                                 if self.address == Some(*address) {
                                     self.address = None;
                                 }
-                                // Adjust selection if needed
-                                if self.state.sidebar.selected >= node_count.saturating_sub(1) {
-                                    self.state.sidebar.selected = self.state.sidebar.selected.saturating_sub(1);
-                                }
+                                true
+                            } else {
+                                false
                             }
                         }
-                        TreeNode::Contract { path, name } => {
-                            // Remove all deployments for this contract (but keep it loadable)
+                        TreeNode::Contract { path, name, .. } => {
                             if self.store.remove_contract(path) {
-                                self.store.save()?;
                                 self.state.output.push_info(format!("Removed all deployments for: {}", name));
-                                // Clear current address if it was from this contract
                                 if self.contract_path.as_ref() == Some(path) {
                                     self.address = None;
                                 }
+                                true
+                            } else {
+                                false
                             }
                         }
-                        _ => {}
+                        _ => false,
+                    };
+
+                    if removed {
+                        self.store.save()?;
+                        let new_count = self.build_tree_nodes().len();
+                        if new_count > 0 && self.state.sidebar.selected >= new_count {
+                            self.state.sidebar.selected = new_count - 1;
+                        }
                     }
                 }
             }
@@ -596,12 +742,12 @@ impl<P: Provider + Clone> App<P> {
                         self.pending_action = PendingAction::None;
 
                         match action {
-                            PendingAction::Deploy => {
+                            PendingAction::Deploy { contract_name, contract_path, abi } => {
                                 // target is Some for deploy operations
-                                self.do_deploy(args, target.unwrap_or_default()).await;
+                                self.do_deploy(contract_name, contract_path, abi, args, target.unwrap_or_default()).await;
                             }
-                            PendingAction::CallMethod(func, addr) => {
-                                self.do_call_function(&func, addr, args).await;
+                            PendingAction::CallMethod { function, address } => {
+                                self.do_call_function(&function, address, args).await;
                             }
                             PendingAction::None => {}
                         }
@@ -670,25 +816,80 @@ impl<P: Provider + Clone> App<P> {
                 KeyCode::Esc => {
                     self.state.popup = PopupState::None;
                     self.state.focus = Focus::Sidebar;
+                    self.state.file_picker_suggestions.clear();
+                    self.state.file_picker_selected_idx = 0;
+                }
+                KeyCode::Up => {
+                    if !self.state.file_picker_suggestions.is_empty() {
+                        if self.state.file_picker_selected_idx == 0 {
+                            self.state.file_picker_selected_idx = self.state.file_picker_suggestions.len() - 1;
+                        } else {
+                            self.state.file_picker_selected_idx -= 1;
+                        }
+                    }
+                }
+                KeyCode::Down => {
+                    if !self.state.file_picker_suggestions.is_empty() {
+                        self.state.file_picker_selected_idx =
+                            (self.state.file_picker_selected_idx + 1) % self.state.file_picker_suggestions.len();
+                    }
+                }
+                KeyCode::Tab => {
+                    if let Some(suggestion) = self.state.file_picker_suggestions.get(self.state.file_picker_selected_idx) {
+                        let new_path = suggestion.full_path.to_string_lossy().to_string();
+                        *path = if suggestion.is_directory {
+                            format!("{}/", new_path)
+                        } else {
+                            new_path
+                        };
+                        *error = None;
+
+                        // Update suggestions based on new path
+                        let path_clone = path.clone();
+                        self.update_file_picker_suggestions(&path_clone);
+                    }
                 }
                 KeyCode::Enter => {
-                    let file_path = PathBuf::from(path.as_str());
-                    if file_path.exists() {
-                        let path_clone = file_path.clone();
-                        self.state.popup = PopupState::None;
-                        self.state.focus = Focus::Sidebar;
-                        self.load_contract_from_path(path_clone).await?;
-                    } else {
-                        *error = Some("File does not exist".to_string());
+                    let suggestion = self.state.file_picker_suggestions.get(self.state.file_picker_selected_idx);
+
+                    // If selected suggestion is a directory, navigate into it
+                    if let Some(s) = suggestion.filter(|s| s.is_directory) {
+                        let new_path = s.full_path.to_string_lossy().to_string();
+                        *path = format!("{}/", new_path);
+                        *error = None;
+                        let path_clone = path.clone();
+                        self.update_file_picker_suggestions(&path_clone);
+                        return Ok(());
                     }
+
+                    // Determine file path: from suggestion or raw input
+                    let file_path = suggestion
+                        .map(|s| s.full_path.clone())
+                        .unwrap_or_else(|| PathBuf::from(path.as_str()));
+
+                    if !file_path.exists() {
+                        *error = Some("File does not exist".to_string());
+                        return Ok(());
+                    }
+
+                    // Load the file
+                    self.state.popup = PopupState::None;
+                    self.state.focus = Focus::Sidebar;
+                    self.state.file_picker_suggestions.clear();
+                    self.state.file_picker_selected_idx = 0;
+                    self.load_contract_from_path(file_path).await?;
                 }
                 KeyCode::Char(c) => {
                     path.push(c);
                     *error = None;
+                    let path_clone = path.clone();
+                    self.update_file_picker_suggestions(&path_clone);
                 }
                 KeyCode::Backspace => {
                     path.pop();
                     *error = None;
+                    let path_clone = path.clone();
+                    self.update_file_picker_suggestions(&path_clone);
                 }
                 _ => {}
             }
@@ -767,25 +968,35 @@ impl<P: Provider + Clone> App<P> {
                     error: None,
                 };
                 self.state.focus = Focus::CommandPalette;
+                self.update_file_picker_suggestions("");
             }
             TreeNode::Contract { path, .. } => {
-                // Toggle expand or load
+                // If this is not the current contract, load it
+                // If it is the current contract, toggle expansion
                 if self.contract_path.as_ref() == Some(&path) {
-                    // Toggle expansion
+                    // Toggle expansion for current contract
                     if self.state.sidebar.expanded_contracts.contains(&path) {
                         self.state.sidebar.expanded_contracts.remove(&path);
                     } else {
                         self.state.sidebar.expanded_contracts.insert(path);
                     }
                 } else {
-                    // Load this contract
+                    // Load a different contract (don't auto-expand)
                     self.load_contract_from_path(path).await?;
                 }
             }
-            TreeNode::Constructor => {
-                self.start_deploy().await;
+            TreeNode::Constructor { contract_name, contract_path, abi } => {
+                // Deploy directly using node data - no need to set app state
+                self.start_deploy(contract_name, contract_path, abi).await;
             }
-            TreeNode::LoadExistingInstance => {
+            TreeNode::LoadExistingInstance { contract_name, contract_path, abi } => {
+                // Set this as current contract for loading instance
+                let compiled = CompiledContract {
+                    name: contract_name,
+                    abi: (*abi).clone(),
+                    bytecode: Vec::new(),
+                };
+                self.set_contract(compiled, contract_path);
                 self.state.popup = PopupState::AddressInput {
                     address: String::new(),
                     error: None,
@@ -793,12 +1004,11 @@ impl<P: Provider + Clone> App<P> {
                 self.state.focus = Focus::CommandPalette;
             }
             TreeNode::DeployedInstance { address, .. } => {
-                // Toggle expand and select
+                // Toggle expand only
                 if self.state.sidebar.expanded_instances.contains(&address) {
                     self.state.sidebar.expanded_instances.remove(&address);
                 } else {
                     self.state.sidebar.expanded_instances.insert(address);
-                    self.set_address(address);
                 }
             }
             TreeNode::Method {
@@ -806,8 +1016,8 @@ impl<P: Provider + Clone> App<P> {
                 instance_address,
                 ..
             } => {
-                self.set_address(instance_address);
-                self.start_call_function(function).await;
+                // Call directly using node data - no need to set app state
+                self.start_call_function(function, instance_address).await;
             }
         }
         Ok(())
@@ -837,8 +1047,6 @@ impl<P: Provider + Clone> App<P> {
     }
 
     async fn load_contract_from_path(&mut self, path: PathBuf) -> Result<()> {
-        self.state.output.push_info(format!("Loading {}...", path.display()));
-
         match crate::compile::load_contract_abi(&path) {
             Ok(contracts) => {
                 if contracts.len() == 1 {
@@ -848,7 +1056,6 @@ impl<P: Provider + Clone> App<P> {
                         name,
                         abi,
                         bytecode: Vec::new(), // Will be filled during deploy
-                        target: BytecodeTarget::Evm,
                     };
                     self.set_contract(contract, path);
                 } else {
@@ -863,7 +1070,9 @@ impl<P: Provider + Clone> App<P> {
                 }
             }
             Err(e) => {
-                self.state.output.push_error(format!("Failed to load contract: {}", e));
+                let error_msg = format!("Failed to load contract: {}", e);
+                log::error!("{}", error_msg);
+                self.state.output.push_error(error_msg);
             }
         }
         Ok(())
@@ -878,7 +1087,6 @@ impl<P: Provider + Clone> App<P> {
                     name: name.to_string(),
                     abi,
                     bytecode: Vec::new(), // Will be filled during deploy
-                    target: BytecodeTarget::Evm,
                 };
                 self.set_contract(contract, path);
             }
@@ -886,20 +1094,11 @@ impl<P: Provider + Clone> App<P> {
         Ok(())
     }
 
-    async fn start_deploy(&mut self) {
-        let contract = match self.contract.as_ref() {
-            Some(c) => c,
-            None => {
-                self.state.output.push_error("No contract loaded");
-                return;
-            }
-        };
-
-        self.state.output.push_normal(format!("\nPreparing to deploy {}...", contract.name));
+    async fn start_deploy(&mut self, contract_name: String, contract_path: PathBuf, abi: Arc<JsonAbi>) {
+        self.state.output.push_normal(format!("\nPreparing to deploy {}...", contract_name));
 
         // Get constructor parameters (empty vec if no constructor)
-        let params = contract
-            .abi
+        let params = abi
             .constructor
             .as_ref()
             .map(|ctor| ctor.inputs.clone())
@@ -908,7 +1107,11 @@ impl<P: Provider + Clone> App<P> {
         let fields: Vec<FieldState> = params.iter().map(|_| FieldState::default()).collect();
 
         // Always show popup with target selector for deploy operations
-        self.pending_action = PendingAction::Deploy;
+        self.pending_action = PendingAction::Deploy {
+            contract_name,
+            contract_path,
+            abi,
+        };
         self.state.popup = PopupState::ParameterPopup {
             method_name: "constructor".to_string(),
             params,
@@ -918,15 +1121,7 @@ impl<P: Provider + Clone> App<P> {
         };
     }
 
-    async fn start_call_function(&mut self, func: Function) {
-        let address = match self.address {
-            Some(a) => a,
-            None => {
-                self.state.output.push_error("No contract address set");
-                return;
-            }
-        };
-
+    async fn start_call_function(&mut self, func: Function, address: Address) {
         self.state.output.push_normal(format!("\nCalling {}...", func.name));
 
         if !func.inputs.is_empty() {
@@ -936,7 +1131,10 @@ impl<P: Provider + Clone> App<P> {
                 .map(|_| FieldState::default())
                 .collect();
 
-            self.pending_action = PendingAction::CallMethod(func.clone(), address);
+            self.pending_action = PendingAction::CallMethod {
+                function: func.clone(),
+                address,
+            };
             self.state.popup = PopupState::ParameterPopup {
                 method_name: func.name.clone(),
                 params: func.inputs.clone(),
@@ -974,31 +1172,16 @@ impl<P: Provider + Clone> App<P> {
         }
     }
 
-    async fn do_deploy(&mut self, args: Vec<DynSolValue>, target: BytecodeTarget) {
-        let contract = match self.contract.as_ref() {
-            Some(c) => c,
-            None => {
-                self.state.output.push_error("No contract loaded");
-                return;
-            }
-        };
-
-        let contract_name = contract.name.clone();
-        let contract_path = match self.contract_path.clone() {
-            Some(p) => p,
-            None => {
-                self.state.output.push_error("No contract path set");
-                return;
-            }
-        };
-
+    async fn do_deploy(&mut self, contract_name: String, contract_path: PathBuf, _abi: Arc<JsonAbi>, args: Vec<DynSolValue>, target: BytecodeTarget) {
         // Compile on demand for the selected target
         self.state.output.push_info(format!("Compiling {} for {}...", contract_name, target));
 
         let compiled = match crate::compile::compile_contract(&contract_path, &contract_name, target) {
             Ok(c) => c,
             Err(e) => {
-                self.state.output.push_error(format!("Compilation failed: {}", e));
+                let error_msg = format!("Compilation failed: {}", e);
+                log::error!("{}", error_msg);
+                self.state.output.push_error(error_msg);
                 self.state.output.push_separator();
                 self.state.output.scroll_to_bottom();
                 return;
@@ -1016,7 +1199,10 @@ impl<P: Provider + Clone> App<P> {
 
         let tx = TransactionRequest::default().with_deploy_code(deploy_data);
 
-        self.state.output.push("Sending deployment transaction...", OutputStyle::Waiting);
+        self.state.output.push(
+            format!("Deploying {} contract...", contract_name),
+            OutputStyle::Waiting
+        );
 
         let pending = match self.provider.send_transaction(tx).await {
             Ok(p) => p,
@@ -1071,6 +1257,8 @@ impl<P: Provider + Clone> App<P> {
         address: Address,
         args: Vec<DynSolValue>,
     ) {
+        let contract_name = self.contract.as_ref().map(|c| c.name.as_str()).unwrap_or("Unknown");
+
         let calldata = match func.abi_encode_input(&args) {
             Ok(data) => data,
             Err(e) => {
@@ -1094,7 +1282,7 @@ impl<P: Provider + Clone> App<P> {
             let result = match self.provider.call(tx).await {
                 Ok(r) => r,
                 Err(e) => {
-                    self.state.output.push_error(format!("Call failed: {}", e));
+                    self.state.output.push_error(format!("Call to {} {:?} failed: {}", contract_name, address, e));
                     self.state.output.push_separator();
                     self.state.output.scroll_to_bottom();
                     return;
@@ -1121,13 +1309,18 @@ impl<P: Provider + Clone> App<P> {
                 }
             };
 
+            let call_str = prompts::format_method_call(&func.name, &func.inputs, &args);
+            self.state.output.push(format!(">>> {} <<<", call_str), OutputStyle::Highlight);
             self.state.output.push_success(format!("Result: {}", result_str));
         } else {
             let tx = TransactionRequest::default()
                 .to(address)
                 .input(calldata.into());
 
-            self.state.output.push("Sending transaction...", OutputStyle::Waiting);
+            self.state.output.push(
+                format!("Sending transaction to {} {:?}...", contract_name, address),
+                OutputStyle::Waiting
+            );
 
             let pending = match self.provider.send_transaction(tx).await {
                 Ok(p) => p,

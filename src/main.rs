@@ -1,5 +1,6 @@
 mod app;
 mod compile;
+mod logger;
 mod method_list;
 mod prompts;
 mod provider;
@@ -13,10 +14,8 @@ async fn main() -> Result<()> {
     // Load .env file if present (ignore if missing)
     let _ = dotenvy::dotenv();
 
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn"))
-        .format_timestamp(None)
-        .format_target(false)
-        .init();
+    // Initialize logger to write to ~/.evm-cli/output.log
+    logger::init()?;
 
     // Load store first (for config)
     let store = store::DeploymentStore::load()?;
@@ -37,6 +36,10 @@ async fn main() -> Result<()> {
     // Push initial info to output
     app.state.output.push_success(format!("Connected with account: {:?}", signer_address));
     app.state.output.push_info(format!("Balance: {} ETH", format_ether(balance)));
+    if let Some(home) = std::env::var_os("HOME") {
+        let log_path = std::path::PathBuf::from(home).join(".evm-cli/output.log");
+        app.state.output.push_info(format!("Logs: {}", log_path.display()));
+    }
     app.state.output.push_separator();
 
     app.run_interactive().await?;
