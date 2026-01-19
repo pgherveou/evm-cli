@@ -122,8 +122,16 @@ impl Widget for ContractTree<'_> {
         let inner_area = block.inner(area);
         block.render(area, buf);
 
+        // Add 1px left and top padding
+        let padded_area = Rect {
+            x: inner_area.x + 1,
+            y: inner_area.y + 1,
+            width: inner_area.width.saturating_sub(1),
+            height: inner_area.height.saturating_sub(1),
+        };
+
         // Render tree nodes
-        let visible_height = inner_area.height as usize;
+        let visible_height = padded_area.height as usize;
         let total_nodes = self.nodes.len();
 
         // Calculate visible range
@@ -131,8 +139,8 @@ impl Widget for ContractTree<'_> {
         let end = (scroll + visible_height).min(total_nodes);
 
         for (i, node) in self.nodes.iter().enumerate().skip(scroll).take(end - scroll) {
-            let y = inner_area.y + (i - scroll) as u16;
-            if y >= inner_area.y + inner_area.height {
+            let y = padded_area.y + (i - scroll) as u16;
+            if y >= padded_area.y + padded_area.height {
                 break;
             }
 
@@ -194,22 +202,22 @@ impl Widget for ContractTree<'_> {
                 style,
             )]);
 
-            buf.set_line(inner_area.x, y, &line, inner_area.width);
+            buf.set_line(padded_area.x, y, &line, padded_area.width);
         }
 
         // Show scroll indicators if needed
         if scroll > 0 {
             buf.set_string(
-                inner_area.x + inner_area.width.saturating_sub(3),
-                inner_area.y,
+                padded_area.x + padded_area.width.saturating_sub(3),
+                padded_area.y,
                 "↑",
                 Style::default().fg(Color::DarkGray),
             );
         }
         if end < total_nodes {
             buf.set_string(
-                inner_area.x + inner_area.width.saturating_sub(3),
-                inner_area.y + inner_area.height.saturating_sub(1),
+                padded_area.x + padded_area.width.saturating_sub(3),
+                padded_area.y + padded_area.height.saturating_sub(1),
                 "↓",
                 Style::default().fg(Color::DarkGray),
             );

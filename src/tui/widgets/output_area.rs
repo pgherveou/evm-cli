@@ -42,6 +42,14 @@ impl Widget for OutputArea<'_> {
         let inner_area = block.inner(area);
         block.render(area, buf);
 
+        // Add padding to inner area
+        let padded_area = Rect {
+            x: inner_area.x + 1,
+            y: inner_area.y + 1,
+            width: inner_area.width.saturating_sub(2),
+            height: inner_area.height.saturating_sub(1),
+        };
+
         // Convert output lines to ratatui Lines
         let lines: Vec<Line> = self
             .state
@@ -70,6 +78,6 @@ impl Widget for OutputArea<'_> {
 
         let paragraph = Paragraph::new(lines).wrap(Wrap { trim: false });
 
-        paragraph.render(inner_area, buf);
+        paragraph.render(padded_area, buf);
     }
 }

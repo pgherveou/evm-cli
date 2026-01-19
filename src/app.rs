@@ -981,8 +981,9 @@ impl<P: Provider + Clone> App<P> {
                         self.state.sidebar.expanded_contracts.insert(path);
                     }
                 } else {
-                    // Load a different contract (don't auto-expand)
-                    self.load_contract_from_path(path).await?;
+                    // Load a different contract and auto-expand it
+                    self.load_contract_from_path(path.clone()).await?;
+                    self.state.sidebar.expanded_contracts.insert(path);
                 }
             }
             TreeNode::Constructor { contract_name, contract_path, abi } => {
@@ -1122,8 +1123,6 @@ impl<P: Provider + Clone> App<P> {
     }
 
     async fn start_call_function(&mut self, func: Function, address: Address) {
-        self.state.output.push_normal(format!("\nCalling {}...", func.name));
-
         if !func.inputs.is_empty() {
             let fields: Vec<FieldState> = func
                 .inputs
@@ -1310,7 +1309,7 @@ impl<P: Provider + Clone> App<P> {
             };
 
             let call_str = prompts::format_method_call(&func.name, &func.inputs, &args);
-            self.state.output.push(format!(">>> {} <<<", call_str), OutputStyle::Highlight);
+            self.state.output.push(call_str, OutputStyle::Highlight);
             self.state.output.push_success(format!("Result: {}", result_str));
         } else {
             let tx = TransactionRequest::default()
@@ -1336,7 +1335,7 @@ impl<P: Provider + Clone> App<P> {
             self.state.output.push_success(format!("Transaction: {:?}", tx_hash));
 
             let call_str = prompts::format_method_call(&func.name, &func.inputs, &args);
-            self.state.output.push(format!(">>> {} <<<", call_str), OutputStyle::Highlight);
+            self.state.output.push(call_str, OutputStyle::Highlight);
 
             self.state.output.push("Waiting for confirmation...", OutputStyle::Waiting);
 
