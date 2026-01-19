@@ -142,6 +142,11 @@ impl DeploymentStore {
         self.deployments.keys().map(PathBuf::from).collect()
     }
 
+    /// Clear all deployments
+    pub fn clear(&mut self) {
+        self.deployments.clear();
+    }
+
     fn store_dir() -> PathBuf {
         PathBuf::from(STORE_DIR)
     }

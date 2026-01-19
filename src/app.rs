@@ -110,6 +110,23 @@ impl<P: Provider + Clone> App<P> {
         }
     }
 
+    /// Find and select a deployed instance by address in the sidebar
+    fn select_instance_in_sidebar(&mut self, address: Address) {
+        let nodes = self.build_tree_nodes();
+        for (i, node) in nodes.iter().enumerate() {
+            if let TreeNode::DeployedInstance { address: node_address, .. } = node {
+                if *node_address == address {
+                    self.state.sidebar.selected = i;
+                    // Adjust scroll if needed
+                    if self.state.sidebar.selected < self.state.sidebar.scroll_offset {
+                        self.state.sidebar.scroll_offset = self.state.sidebar.selected;
+                    }
+                    break;
+                }
+            }
+        }
+    }
+
     pub fn set_address(&mut self, address: Address) {
         self.address = Some(address);
     }
@@ -124,6 +141,10 @@ impl<P: Provider + Clone> App<P> {
         self.contract_path = None;
         self.address = None;
         self.state.sidebar = Default::default();
+        self.store.clear();
+        if let Err(e) = self.store.save() {
+            self.state.output.push_error(format!("Failed to save after clearing: {}", e));
+        }
         self.state.output.push_info("State cleared");
         self.abi_cache.borrow_mut().clear();
     }
@@ -1269,6 +1290,10 @@ impl<P: Provider + Clone> App<P> {
         if let Err(e) = self.store.save() {
             self.state.output.push_error(format!("Failed to save deployment: {}", e));
         }
+
+        // Expand and select the newly deployed instance in the sidebar
+        self.state.sidebar.expanded_instances.insert(address);
+        self.select_instance_in_sidebar(address);
 
         self.state.output.push_separator();
         self.state.output.scroll_to_bottom();
