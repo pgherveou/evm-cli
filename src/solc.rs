@@ -128,20 +128,3 @@ pub fn compile_solidity_with_bytecode(
 
     Ok(contracts)
 }
-
-pub fn select_contract(contracts: Vec<CompiledContract>) -> Result<CompiledContract> {
-    if contracts.len() == 1 {
-        return Ok(contracts.into_iter().next().unwrap());
-    }
-
-    let options: Vec<String> = contracts.iter().map(|c| c.name.clone()).collect();
-
-    let selection = inquire::Select::new("Select contract to interact with:", options)
-        .prompt()
-        .context("Failed to select contract")?;
-
-    contracts
-        .into_iter()
-        .find(|c| c.name == selection)
-        .ok_or_else(|| anyhow::anyhow!("Contract not found"))
-}

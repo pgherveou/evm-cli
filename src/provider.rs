@@ -7,23 +7,18 @@ use std::env;
 
 use crate::store::Config;
 
-const DEFAULT_RPC_URL: &str = "http://localhost:8545";
-
 pub async fn create_provider(
     config: &Config,
 ) -> Result<(impl Provider + Clone + 'static, PrivateKeySigner)> {
-    // Priority: 1. Environment variable, 2. Config file, 3. Default
+    // Priority: 1. Environment variable, 2. Config file (which has defaults)
     let rpc_url = env::var("ETH_RPC_URL")
-        .ok()
-        .or_else(|| config.rpc_url.clone())
-        .unwrap_or_else(|| DEFAULT_RPC_URL.to_string());
+        .unwrap_or_else(|_| config.rpc_url.clone());
 
     log::info!("Using RPC URL: {}", rpc_url);
 
-    let private_key = env::var("PRIVATE_KEY").context(
-        "PRIVATE_KEY environment variable not set. \
-         Please set it to your private key (with or without 0x prefix).",
-    )?;
+    // Priority: 1. Environment variable, 2. Config file (which has defaults)
+    let private_key = env::var("PRIVATE_KEY")
+        .unwrap_or_else(|_| config.private_key.clone());
 
     let private_key = private_key.strip_prefix("0x").unwrap_or(&private_key);
 

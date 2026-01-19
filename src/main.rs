@@ -1,12 +1,10 @@
 mod app;
-mod context_menu;
-mod filter_ui;
 mod method_list;
 mod prompts;
 mod provider;
 mod solc;
 mod store;
-mod ui;
+mod tui;
 
 use anyhow::Result;
 use clap::Parser;
@@ -35,7 +33,7 @@ async fn main() -> Result<()> {
     // Load .env file if present (ignore if missing)
     let _ = dotenvy::dotenv();
 
-    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("info"))
+    env_logger::Builder::from_env(env_logger::Env::default().default_filter_or("warn"))
         .format_timestamp(None)
         .format_target(false)
         .init();
@@ -49,41 +47,37 @@ async fn main() -> Result<()> {
     let (provider, signer) = provider::create_provider(&store.config).await?;
 
     let signer_address = signer.address();
-    println!("Connected with account: {:?}", signer_address);
 
     // Get balance
     let balance = provider::get_balance(&provider, signer_address).await?;
-    println!("Balance: {} ETH", format_ether(balance));
-    println!();
 
     // Create app with the already-loaded store
     let mut app = app::App::new(provider, store);
     app.initialize().await?;
+    app.set_account_info(signer_address, format_ether(balance));
 
-    // Handle initial contract loading from args or last saved state
-    let contract_path = args.contract.or_else(|| app.store.get_last_contract());
+    // Push initial info to output
+    app.state.output.push_success(format!("Connected with account: {:?}", signer_address));
+    app.state.output.push_info(format!("Balance: {} ETH", format_ether(balance)));
+    app.state.output.push_separator();
 
-    if let Some(path) = contract_path.filter(|p| p.exists()) {
-        println!("Loading {}...", path.display());
-        match solc::compile_solidity_with_bytecode(&path, args.bytecode.as_deref())
-            .and_then(solc::select_contract)
-        {
-            Ok(contract) => {
-                println!("Loaded contract: {}", contract.name);
-                app.set_contract(contract, path.clone());
+    // Handle initial contract loading from args
+    if let Some(path) = args.contract.filter(|p| p.exists()) {
+        app.state.output.push_info(format!("Loading {}...", path.display()));
+        match solc::compile_solidity_with_bytecode(&path, args.bytecode.as_deref()) {
+            Ok(contracts) => {
+                // Select first contract if multiple, or the only one
+                if let Some(contract) = contracts.into_iter().next() {
+                    app.state.output.push_success(format!("Loaded contract: {}", contract.name));
+                    app.set_contract(contract, path.clone());
 
-                // Handle address from args or last saved
-                let address = args
-                    .address
-                    .as_ref()
-                    .and_then(|s| s.parse().ok())
-                    .or_else(|| app.store.get_last_address());
-
-                if let Some(addr) = address {
-                    app.set_address(addr);
+                    // Handle address from args
+                    if let Some(addr) = args.address.as_ref().and_then(|s| s.parse().ok()) {
+                        app.set_address(addr);
+                    }
                 }
             }
-            Err(e) => println!("Failed to load contract: {}", e),
+            Err(e) => app.state.output.push_error(format!("Failed to load contract: {}", e)),
         }
     }
 

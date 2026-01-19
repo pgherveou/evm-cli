@@ -5,14 +5,48 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
-const STORE_FILE: &str = ".evm-cli";
+const STORE_DIR: &str = ".evm-cli";
+const STORE_FILE: &str = "config.json";
 
-/// Configuration settings stored in the .evm-cli file
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+// Default values per PRD
+pub const DEFAULT_RPC_URL: &str = "http://localhost:8545";
+pub const DEFAULT_ADDRESS: &str = "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac";
+pub const DEFAULT_PRIVATE_KEY: &str = "5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133";
+
+/// Configuration settings stored in the .evm-cli/config.json file
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Config {
     /// RPC URL for the Ethereum node
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub rpc_url: Option<String>,
+    #[serde(default = "default_rpc_url")]
+    pub rpc_url: String,
+    /// Account address
+    #[serde(default = "default_address")]
+    pub address: String,
+    /// Private key for signing transactions
+    #[serde(default = "default_private_key")]
+    pub private_key: String,
+}
+
+fn default_rpc_url() -> String {
+    DEFAULT_RPC_URL.to_string()
+}
+
+fn default_address() -> String {
+    DEFAULT_ADDRESS.to_string()
+}
+
+fn default_private_key() -> String {
+    DEFAULT_PRIVATE_KEY.to_string()
+}
+
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            rpc_url: default_rpc_url(),
+            address: default_address(),
+            private_key: default_private_key(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, Serialize, Deserialize)]
@@ -23,18 +57,13 @@ pub struct DeploymentStore {
     /// Deployments: map of sol file path -> list of deployed addresses
     #[serde(default)]
     deployments: HashMap<String, Vec<String>>,
-    /// Last used contract path
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub last_contract: Option<String>,
-    /// Last used address
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub last_address: Option<String>,
 }
 
 impl DeploymentStore {
     pub fn load() -> Result<Self> {
         let path = Self::store_path();
         if !path.exists() {
+            // Return default with default config
             return Ok(Self::default());
         }
 
@@ -46,6 +75,12 @@ impl DeploymentStore {
     }
 
     pub fn save(&self) -> Result<()> {
+        let dir = Self::store_dir();
+        if !dir.exists() {
+            fs::create_dir_all(&dir)
+                .with_context(|| format!("Failed to create directory {}", dir.display()))?;
+        }
+
         let path = Self::store_path();
         let content = serde_json::to_string_pretty(self)
             .context("Failed to serialize deployment store")?;
@@ -79,12 +114,45 @@ impl DeploymentStore {
         }
     }
 
+    /// Remove a specific deployment address from a contract
+    pub fn remove_deployment(&mut self, sol_path: &Path, address: Address) -> bool {
+        let key = Self::path_key(sol_path);
+        let addr_str = format!("{:?}", address);
+
+        if let Some(addrs) = self.deployments.get_mut(&key) {
+            if let Some(pos) = addrs.iter().position(|a| a == &addr_str) {
+                addrs.remove(pos);
+                // Remove the contract entry if no deployments left
+                if addrs.is_empty() {
+                    self.deployments.remove(&key);
+                }
+                return true;
+            }
+        }
+        false
+    }
+
+    /// Remove all deployments for a contract
+    pub fn remove_contract(&mut self, sol_path: &Path) -> bool {
+        let key = Self::path_key(sol_path);
+        self.deployments.remove(&key).is_some()
+    }
+
     pub fn all_contracts(&self) -> Vec<PathBuf> {
         self.deployments.keys().map(PathBuf::from).collect()
     }
 
+    fn store_dir() -> PathBuf {
+        PathBuf::from(STORE_DIR)
+    }
+
+    /// Get the path to the config file
+    pub fn config_path() -> PathBuf {
+        PathBuf::from(STORE_DIR).join(STORE_FILE)
+    }
+
     fn store_path() -> PathBuf {
-        PathBuf::from(STORE_FILE)
+        Self::config_path()
     }
 
     fn path_key(sol_path: &Path) -> String {
@@ -93,69 +161,4 @@ impl DeploymentStore {
             .map(|p| p.to_string_lossy().to_string())
             .unwrap_or_else(|_| sol_path.to_string_lossy().to_string())
     }
-
-    pub fn set_last_contract(&mut self, path: &Path) {
-        self.last_contract = Some(Self::path_key(path));
-    }
-
-    pub fn set_last_address(&mut self, address: Address) {
-        self.last_address = Some(format!("{:?}", address));
-    }
-
-    pub fn get_last_contract(&self) -> Option<PathBuf> {
-        self.last_contract.as_ref().map(PathBuf::from)
-    }
-
-    pub fn get_last_address(&self) -> Option<Address> {
-        self.last_address.as_ref().and_then(|s| s.parse().ok())
-    }
-
-    pub fn clear_last(&mut self) {
-        self.last_contract = None;
-        self.last_address = None;
-    }
-}
-
-pub fn select_address(addresses: &[Address], allow_new: bool) -> Result<Option<Address>> {
-    if addresses.is_empty() && !allow_new {
-        anyhow::bail!("No deployed addresses available");
-    }
-
-    let mut options: Vec<String> = addresses
-        .iter()
-        .map(|a| format!("{:?}", a))
-        .collect();
-
-    if allow_new {
-        options.insert(0, "Deploy new contract".to_string());
-    }
-    options.push("Enter address manually".to_string());
-
-    let selection = inquire::Select::new("Select contract address:", options.clone())
-        .prompt()
-        .context("Failed to select address")?;
-
-    if selection == "Deploy new contract" {
-        return Ok(None);
-    }
-
-    if selection == "Enter address manually" {
-        let addr_str = inquire::Text::new("Enter contract address:")
-            .with_placeholder("0x...")
-            .prompt()
-            .context("Failed to get address")?;
-
-        let address: Address = addr_str
-            .parse()
-            .context("Invalid address format")?;
-
-        return Ok(Some(address));
-    }
-
-    // Parse selected address
-    let address: Address = selection
-        .parse()
-        .context("Failed to parse selected address")?;
-
-    Ok(Some(address))
 }
