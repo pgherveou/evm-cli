@@ -2,10 +2,7 @@
 
 An interactive terminal UI for deploying and interacting with Solidity smart contracts on EVM-compatible blockchains.
 
-[![asciicast](https://asciinema.org/a/tbS6u4RAYBPmO0sY.svg)](https://asciinema.org/a/tbS6u4RAYBPmO0sY)
-
-![evm-cli recording](docs/recording.gif)
-
+[![asciicast](https://asciinema.org/a/uL5P6PpMVWVdGLKF.svg)](https://asciinema.org/a/uL5P6PpMVWVdGLKF)
 
 ## Installation
 
@@ -46,4 +43,3 @@ evm-cli
 ```bash
 cargo build --release
 ```
-
