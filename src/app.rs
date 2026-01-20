@@ -86,8 +86,9 @@ impl<P: Provider + Clone> App<P> {
         self.contract_path = Some(path.clone());
         self.address = None;
 
-        // Expand the contract
-        self.state.sidebar.expanded_contracts.insert(path.clone());
+        // Expand the contract (use canonicalized path for consistency with store)
+        let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
+        self.state.sidebar.expanded_contracts.insert(canonical_path);
 
         // Select the contract in the sidebar
         self.select_contract_in_sidebar(&path);
@@ -215,8 +216,15 @@ impl<P: Provider + Clone> App<P> {
         let mut all_contracts: Vec<PathBuf> = self.store.all_contracts().into_iter().collect();
 
         // Add current contract if it's not already in the store
+        // We need to canonicalize for comparison since the store uses canonicalized paths
         if let Some(current_path) = &self.contract_path {
-            if !all_contracts.contains(current_path) {
+            let current_canonical = current_path.canonicalize().unwrap_or_else(|_| current_path.clone());
+            let is_in_store = all_contracts.iter().any(|p| {
+                let p_canonical = p.canonicalize().unwrap_or_else(|_| p.clone());
+                p_canonical == current_canonical
+            });
+
+            if !is_in_store {
                 all_contracts.push(current_path.clone());
             }
         }
@@ -614,7 +622,9 @@ impl<P: Provider + Clone> App<P> {
                 if let Some(node) = nodes.get(self.state.sidebar.selected) {
                     match node {
                         TreeNode::Contract { path, .. } => {
-                            self.state.sidebar.expanded_contracts.remove(path);
+                            // Use canonicalized path for consistency
+                            let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
+                            self.state.sidebar.expanded_contracts.remove(&canonical_path);
                         }
                         TreeNode::DeployedInstance { address, .. } => {
                             self.state.sidebar.expanded_instances.remove(address);
@@ -632,8 +642,9 @@ impl<P: Provider + Clone> App<P> {
                             if self.contract_path.as_ref() != Some(path) {
                                 self.load_contract_from_path(path.clone()).await?;
                             } else {
-                                // Already loaded, just expand
-                                self.state.sidebar.expanded_contracts.insert(path.clone());
+                                // Already loaded, just expand (use canonicalized path)
+                                let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
+                                self.state.sidebar.expanded_contracts.insert(canonical_path);
                             }
                         }
                         TreeNode::DeployedInstance { address, .. } => {
@@ -1026,11 +1037,12 @@ impl<P: Provider + Clone> App<P> {
                 // If this is not the current contract, load it
                 // If it is the current contract, toggle expansion
                 if self.contract_path.as_ref() == Some(&path) {
-                    // Toggle expansion for current contract
-                    if self.state.sidebar.expanded_contracts.contains(&path) {
-                        self.state.sidebar.expanded_contracts.remove(&path);
+                    // Toggle expansion for current contract (use canonicalized path)
+                    let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
+                    if self.state.sidebar.expanded_contracts.contains(&canonical_path) {
+                        self.state.sidebar.expanded_contracts.remove(&canonical_path);
                     } else {
-                        self.state.sidebar.expanded_contracts.insert(path);
+                        self.state.sidebar.expanded_contracts.insert(canonical_path);
                     }
                 } else {
                     // Load a different contract (will auto-expand and select)
