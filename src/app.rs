@@ -1744,6 +1744,7 @@ impl<P: Provider + Clone> App<P> {
 
     async fn execute_view_receipt(&mut self, tx_hash: alloy::primitives::TxHash) -> Result<()> {
         self.state.output.push("Fetching transaction receipt...", OutputStyle::Waiting);
+        self.state.output.scroll_to_bottom();
 
         match self.provider.get_transaction_receipt(tx_hash).await? {
             Some(receipt) => {
