@@ -1,3 +1,5 @@
+cache
+examples/out-evm
 /target
 Cargo.lock
 .evm-cli

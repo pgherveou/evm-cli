@@ -1,16 +1,20 @@
 # evm-cli
 
-An interactive command-line tool for deploying and interacting with Solidity smart contracts on EVM-compatible blockchains.
+An interactive terminal UI for deploying and interacting with Solidity smart contracts on EVM-compatible blockchains.
+
+[![asciicast](https://asciinema.org/a/tbS6u4RAYBPmO0sY.svg)](https://asciinema.org/a/tbS6u4RAYBPmO0sY)
+
+![evm-cli recording](docs/recording.gif)
 
 ## Features
 
-- **Interactive Fuzzy Filter UI** - Real-time method filtering with `/` command (inspired by fzf)
-- **Context Menu** - Quick access to contract management with `@` command
-- **Session Persistence** - Automatically saves and reloads last used contract and address
-- **Automatic Compilation** - Built-in Solidity compiler integration (requires `solc`)
-- **Full Type Support** - Handle addresses, arrays, tuples, and all Solidity types
-- **Transaction Management** - View calls, state-changing transactions, and payable methods
-- **.env Support** - Secure credential management via environment variables
+- **Interactive Sidebar UI** - Browse contracts, deployments, and methods in a tree view
+- **Smart Contract Compilation** - Built-in Solidity compiler integration
+- **Multi-Target Support** - Deploy to EVM or PolkaVM
+- **Event Log Decoding** - Automatically decode contract events using ABI
+- **Session Persistence** - Save deployment history and contract state
+- **Auto-complete** - File path suggestions for contract loading
+- **Real-time Updates** - See transaction status and decoded results instantly
 
 ## Installation
 
@@ -43,11 +47,49 @@ ETH_RPC_URL=http://localhost:8545
 evm-cli
 ```
 
-3. **Load a contract** by pressing `@` and selecting "Load new contract"
+3. **Load a contract**:
+   - Press Enter on "Load new contract..."
+   - Type or autocomplete the path to your `.sol` file
+   - Press Enter
 
-4. **Deploy or interact** by pressing `/` to browse available methods
+4. **Deploy or interact**:
+   - Navigate with arrow keys or `j/k`
+   - Press Enter to select actions
+   - View methods by expanding deployed instances
 
 ## Usage
+
+### Keyboard Controls
+
+| Key | Action |
+|-----|--------|
+| `↑/↓` or `j/k` | Navigate up/down |
+| `←/→` or `h/l` | Collapse/expand nodes |
+| `Enter` | Execute selected item |
+| `Tab` | Switch focus between panels |
+| `Ctrl+P` | Open command palette |
+| `Delete/Backspace` | Remove selected deployment or contract |
+| `Ctrl+C` | Exit application |
+
+### Interface Layout
+
+```
+┌─ Contracts ────────────┬─ Output ─────────────────┐
+│ + Load new contract    │ balanceOf(...) @ 0x1234  │
+│ ▾ MyToken.sol          │ Result: 1000             │
+│   ◇ Deploy             │                          │
+│   ◇ Load existing...   │ ─────────────────────    │
+│   ▾ 0x5678...          │ increment() @ 0x1234     │
+│     ├ transfer() [pay] │ Transaction: 0xabcd...   │
+│     ├ balanceOf() [v]  │ Status: Success          │
+│     ├ approve() [pay]  │ Logs (1)                 │
+│                        │   [0] Transfer @ 0x1234  │
+│                        │       from: 0xaaaa...    │
+│                        │       to: 0xbbbb...      │
+│                        │       value: 100         │
+└────────────────────────┴──────────────────────────┘
+ Connected | Chain: 1 | Account: 0xabc... | Balance: 10 ETH
+```
 
 ### Command Line Options
 
@@ -56,93 +98,78 @@ evm-cli [OPTIONS]
 
 Options:
   -c, --contract <CONTRACT>  Path to a .sol file to load on startup
-  -b, --bytecode <BYTECODE>  Path to pre-compiled bytecode file
   -a, --address <ADDRESS>    Contract address to interact with
   -h, --help                 Print help
   -V, --version              Print version
 ```
-
-### Interactive Commands
-
-| Key | Action |
-|-----|--------|
-| `/` | Open method filter |
-| `@` | Open context menu |
-| `↑/↓` | Navigate list |
-| `Enter` | Confirm selection |
-| `Escape` | Cancel |
-| `Ctrl+C` | Exit application |
 
 ### Environment Variables
 
 - `PRIVATE_KEY` (required) - Private key for signing transactions
 - `ETH_RPC_URL` (optional) - RPC endpoint (defaults to http://localhost:8545)
 
-### Session Persistence
-
-evm-cli automatically saves your session state to `.evm-cli` (JSON format):
-- Last used contract path
-- Last used contract address
-- Deployment history per contract
-
-Use `@` → "Reset (clear saved state)" to clear saved data.
-
 ## Examples
 
-### Deploy a new contract
+### Deploy a Contract
 
-```bash
-# Start with a specific contract
-evm-cli --contract MyToken.sol
+1. Start evm-cli
+2. Select "Load new contract..."
+3. Enter path: `examples/Demo.sol`
+4. Select "Deploy new instance"
+5. Enter constructor parameters
+6. Select target (EVM/PVM)
+7. Wait for deployment confirmation
 
-# Press / to see methods
-# Select the constructor (shown as [deploy])
-# Enter constructor arguments
-# Contract deploys automatically
+### Call View Functions
+
+1. Navigate to a deployed instance
+2. Press Right arrow to expand methods
+3. Select a method marked `[view]`
+4. Press Enter
+5. See results instantly in Output panel
+
+### Execute Transactions
+
+1. Navigate to a payable method
+2. Press Enter
+3. Enter parameters if required
+4. Wait for transaction confirmation
+5. View decoded event logs automatically
+
+## Features in Detail
+
+### Event Log Decoding
+
+When contracts emit events, evm-cli automatically:
+- Matches event signatures with the ABI
+- Decodes indexed and non-indexed parameters
+- Displays human-readable parameter names and values
+
+Example output:
+```
+Logs (1)
+  [0] Transfer @ 0x1234...
+      from: 0xaaaa...
+      to: 0xbbbb...
+      value: 100
 ```
 
-### Interact with existing contract
+### Session Persistence
 
-```bash
-# Start with contract and address
-evm-cli --contract MyToken.sol --address 0x123...
+evm-cli saves state to `~/.evm-cli.json`:
+- Contract paths and ABIs
+- Deployment addresses per contract
+- Last selected contract and instance
 
-# Press / and type "balance" to filter
-# Select balanceOf method
-# Enter address parameter
-# View result immediately
-```
+Use Ctrl+P → "Reset" to clear saved state.
 
-### Custom bytecode (e.g., PolkaVM)
+### Multi-Target Compilation
 
-```bash
-# Use pre-compiled bytecode with Solidity ABI
-evm-cli --contract MyContract.sol --bytecode contract.polkavm
-```
+Deploy the same Solidity contract to:
+- **EVM** - Standard Ethereum Virtual Machine
+- **PVM** - PolkaVM (requires polkavm-enabled solc)
 
-## Architecture
-
-For detailed product requirements and architecture, see [PRD.md](PRD.md).
-
-### File Structure
-
-```
-evm-cli/
-├── src/
-│   ├── main.rs          # Entry point, CLI args, startup
-│   ├── app.rs           # Main application loop
-│   ├── filter_ui.rs     # Fuzzy filter UI component
-│   ├── method_list.rs   # ABI method parsing
-│   ├── context_menu.rs  # Context menu handlers
-│   ├── prompts.rs       # Parameter input prompts
-│   ├── provider.rs      # Ethereum provider/signer
-│   ├── solc.rs          # Solidity compilation
-│   ├── store.rs         # Session persistence
-│   └── ui.rs            # Terminal UI helpers
-├── Cargo.toml
-├── PRD.md               # Product requirements
-└── README.md
-```
+Select target during deployment.
 
 ## Development
 
@@ -155,7 +182,7 @@ cargo build --release
 ### Run locally
 
 ```bash
-cargo run -- --contract examples/MyToken.sol
+cargo run -- --contract examples/Demo.sol
 ```
 
 ### Run tests
@@ -164,15 +191,54 @@ cargo run -- --contract examples/MyToken.sol
 cargo test
 ```
 
+## Creating a Demo
+
+See [DEMO.md](DEMO.md) for instructions on creating terminal casts and screenshots.
+
+## Architecture
+
+Built with:
+- [alloy](https://github.com/alloy-rs/alloy) - Ethereum library for Rust
+- [ratatui](https://github.com/ratatui-org/ratatui) - Terminal UI framework
+- [crossterm](https://github.com/crossterm-rs/crossterm) - Terminal manipulation
+
+### File Structure
+
+```
+evm-cli/
+├── src/
+│   ├── main.rs              # Entry point
+│   ├── app.rs               # Main application logic
+│   ├── compile.rs           # Solidity compilation
+│   ├── store.rs             # Session persistence
+│   ├── provider.rs          # Ethereum provider
+│   ├── tui/                 # Terminal UI components
+│   │   ├── widgets/         # UI widgets
+│   │   │   ├── contract_tree.rs
+│   │   │   ├── output_area.rs
+│   │   │   ├── command_palette.rs
+│   │   │   └── ...
+│   │   ├── state.rs         # UI state
+│   │   ├── event.rs         # Event handling
+│   │   └── layout.rs        # Layout management
+│   └── ...
+├── examples/
+│   └── Demo.sol             # Demo contract
+├── Cargo.toml
+├── DEMO.md                  # Demo recording guide
+└── README.md
+```
+
 ## Security Considerations
 
 - **Never commit `.env` files** - They contain private keys
 - **Use dedicated test accounts** - Don't use mainnet keys for development
-- **Verify transaction details** - Review all parameters before confirming transactions
+- **Verify transaction details** - Review all parameters before confirming
+- **Local testing** - Use local blockchains (Anvil, Hardhat) for development
 
 ## License
 
-MIT License - see workspace for details.
+MIT License - see LICENSE for details.
 
 ## Contributing
 
@@ -181,8 +247,3 @@ Contributions welcome! Please open an issue or PR.
 ## Credits
 
 Originally developed as part of [cargo-pvm-contract](https://github.com/paritytech/cargo-pvm-contract).
-
-Built with:
-- [alloy](https://github.com/alloy-rs/alloy) - Ethereum library
-- [crossterm](https://github.com/crossterm-rs/crossterm) - Terminal manipulation
-- [inquire](https://github.com/mikaelmello/inquire) - Interactive prompts
