@@ -55,6 +55,7 @@ pub struct DeploymentStore {
     #[serde(default)]
     pub config: Config,
     /// Deployments: map of sol file path -> list of deployed addresses
+    /// Empty array means contract is saved but not yet deployed
     #[serde(default)]
     deployments: HashMap<String, Vec<String>>,
 }
@@ -140,6 +141,12 @@ impl DeploymentStore {
 
     pub fn all_contracts(&self) -> Vec<PathBuf> {
         self.deployments.keys().map(PathBuf::from).collect()
+    }
+
+    /// Ensure a contract exists in the store (with empty deployments if not yet deployed)
+    pub fn ensure_contract(&mut self, sol_path: &Path) {
+        let key = Self::path_key(sol_path);
+        self.deployments.entry(key).or_insert_with(Vec::new);
     }
 
     /// Clear all deployments

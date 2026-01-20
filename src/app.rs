@@ -91,6 +91,12 @@ impl<P: Provider + Clone> App<P> {
 
         // Select the contract in the sidebar
         self.select_contract_in_sidebar(&path);
+
+        // Ensure the contract is in the store (with empty deployments if not yet deployed)
+        self.store.ensure_contract(&path);
+        if let Err(e) = self.store.save() {
+            self.state.output.push_error(format!("Failed to save contract: {}", e));
+        }
     }
 
     /// Find and select a contract by path in the sidebar
