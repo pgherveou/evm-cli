@@ -78,7 +78,7 @@ impl Widget for ParameterPopup<'_> {
             };
 
             let target_line = Line::from(vec![
-                Span::styled("Target: ", hint_style),
+                Span::styled("Target: ", Style::default().fg(Color::Cyan)),
                 Span::styled(" EVM ", evm_style),
                 Span::styled(" ", Style::default()),
                 Span::styled(" PVM ", pvm_style),
