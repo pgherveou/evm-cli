@@ -773,6 +773,8 @@ impl<P: Provider + Clone> App<P> {
                 // Toggle card view
                 if !self.state.cards.cards.is_empty() {
                     self.state.focus = Focus::CardView;
+                } else {
+                    self.state.output.push_info("No cards available yet. Execute transactions or calls first.");
                 }
             }
             KeyCode::Up | KeyCode::Char('k') => {
