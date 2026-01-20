@@ -1608,6 +1608,7 @@ impl<P: Provider + Clone> App<P> {
         match key.code {
             KeyCode::Esc => {
                 self.state.popup = PopupState::None;
+                self.state.focus = Focus::CardView;
             }
             KeyCode::Up | KeyCode::Char('k') => {
                 if let PopupState::CardMenu { selected, actions, .. } = &mut self.state.popup {
@@ -1639,6 +1640,7 @@ impl<P: Provider + Clone> App<P> {
         match key.code {
             KeyCode::Esc => {
                 self.state.popup = PopupState::None;
+                self.state.focus = Focus::CardView;
             }
             KeyCode::Up | KeyCode::Char('k') => {
                 if let PopupState::TracerMenu { selected, tracers, .. } = &mut self.state.popup {
@@ -1675,6 +1677,7 @@ impl<P: Provider + Clone> App<P> {
         match key.code {
             KeyCode::Esc => {
                 self.state.popup = PopupState::None;
+                self.state.focus = Focus::CardView;
             }
             KeyCode::Char('t') => {
                 // Toggle onlyTopCall for Call tracer
@@ -1714,6 +1717,8 @@ impl<P: Provider + Clone> App<P> {
             crate::cards::CardAction::ViewReceipt => {
                 if let crate::cards::Card::Transaction { hash, .. } = card {
                     self.execute_view_receipt(*hash).await?;
+                    // Return to card view with selection preserved
+                    self.state.focus = Focus::CardView;
                 }
             }
             crate::cards::CardAction::DebugTrace => {
@@ -1729,6 +1734,8 @@ impl<P: Provider + Clone> App<P> {
             crate::cards::CardAction::DebugCall => {
                 if let crate::cards::Card::Call { .. } = card {
                     self.execute_debug_call(card_index).await?;
+                    // Return to card view with selection preserved
+                    self.state.focus = Focus::CardView;
                 }
             }
         }
@@ -1783,6 +1790,9 @@ impl<P: Provider + Clone> App<P> {
             let json = serde_json::to_string_pretty(&trace_json)?;
             self.display_in_editor(&json)?;
             self.state.output.push_success("Debug trace result displayed in editor");
+
+            // Return to card view with selection preserved
+            self.state.focus = Focus::CardView;
         }
 
         self.state.output.push_separator();
