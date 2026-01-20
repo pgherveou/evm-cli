@@ -1,4 +1,5 @@
 mod app;
+mod cards;
 mod compile;
 mod logger;
 mod method_list;

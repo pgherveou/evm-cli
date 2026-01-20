@@ -1,4 +1,5 @@
 pub mod autocomplete_input;
+pub mod cards_display;
 pub mod command_palette;
 pub mod contract_tree;
 pub mod input_field;
@@ -7,6 +8,7 @@ pub mod parameter_popup;
 pub mod status_bar;
 
 pub use autocomplete_input::{AutocompleteInput, PathSuggestion, parse_path_for_autocomplete, scan_path_suggestions};
+pub use cards_display::CardsDisplay;
 pub use command_palette::CommandPalette;
 pub use contract_tree::ContractTree;
 pub use input_field::InputField;

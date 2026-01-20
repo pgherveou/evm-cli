@@ -7,6 +7,7 @@ use alloy::rpc::types::TransactionRequest;
 use anyhow::{Context, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::Frame;
+use ratatui::widgets::Widget;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -393,10 +394,19 @@ impl<P: Provider + Clone> App<P> {
             .with_nodes(nodes);
         frame.render_widget(tree, layout.sidebar);
 
-        // Render output area
-        let output = OutputArea::new(&self.state.output)
-            .focused(matches!(self.state.focus, Focus::Output));
-        frame.render_widget(output, layout.output);
+        // Render output or cards based on focus
+        match self.state.focus {
+            Focus::CardView => {
+                let cards = crate::tui::widgets::CardsDisplay::new(&self.state.cards)
+                    .focused(true);
+                frame.render_widget(cards, layout.cards);
+            }
+            _ => {
+                let output = OutputArea::new(&self.state.output)
+                    .focused(matches!(self.state.focus, Focus::Output));
+                frame.render_widget(output, layout.output);
+            }
+        }
 
         // Render status bar
         let status = StatusBarWidget::new(&self.state);
@@ -428,6 +438,15 @@ impl<P: Provider + Clone> App<P> {
             }
             PopupState::ContractSelector { contracts, selected } => {
                 self.render_contract_selector(frame, contracts, *selected);
+            }
+            PopupState::CardMenu { card_index: _, actions, selected } => {
+                self.render_card_menu(frame, actions, *selected);
+            }
+            PopupState::TracerMenu { card_index: _, tracers, selected } => {
+                self.render_tracer_menu(frame, tracers, *selected);
+            }
+            PopupState::TracerConfig { card_index: _, config } => {
+                self.render_tracer_config(frame, config);
             }
         }
     }
@@ -583,6 +602,9 @@ impl<P: Provider + Clone> App<P> {
             PopupState::FilePicker { .. } => self.handle_file_picker_key(key).await?,
             PopupState::AddressInput { .. } => self.handle_address_input_key(key).await?,
             PopupState::ContractSelector { .. } => self.handle_contract_selector_key(key).await?,
+            PopupState::CardMenu { .. } => self.handle_card_menu_key(key).await?,
+            PopupState::TracerMenu { .. } => self.handle_tracer_menu_key(key).await?,
+            PopupState::TracerConfig { .. } => self.handle_tracer_config_key(key).await?,
         }
 
         Ok(())
@@ -592,6 +614,46 @@ impl<P: Provider + Clone> App<P> {
         match self.state.focus {
             Focus::Sidebar => self.handle_sidebar_key(key).await?,
             Focus::Output => self.handle_output_key(key),
+            Focus::CardView => self.handle_card_view_key(key).await?,
+            _ => {}
+        }
+        Ok(())
+    }
+
+    async fn handle_card_view_key(&mut self, key: KeyEvent) -> Result<()> {
+        match key.code {
+            KeyCode::Esc | KeyCode::Char('c') => {
+                self.state.focus = Focus::Output;
+            }
+            KeyCode::Up | KeyCode::Char('k') => {
+                if self.state.cards.selected_index > 0 {
+                    self.state.cards.selected_index -= 1;
+                } else if !self.state.cards.cards.is_empty() {
+                    self.state.cards.selected_index = self.state.cards.cards.len() - 1;
+                }
+            }
+            KeyCode::Down | KeyCode::Char('j') => {
+                if !self.state.cards.cards.is_empty() {
+                    self.state.cards.selected_index = (self.state.cards.selected_index + 1) % self.state.cards.cards.len();
+                }
+            }
+            KeyCode::Enter | KeyCode::Char(' ') => {
+                let card_index = self.state.cards.selected_index;
+                if card_index < self.state.cards.cards.len() {
+                    let card = &self.state.cards.cards[card_index];
+                    if card.is_interactive() {
+                        let actions = crate::cards::get_card_actions(card);
+                        self.state.popup = PopupState::CardMenu {
+                            card_index,
+                            actions,
+                            selected: 0,
+                        };
+                    }
+                }
+            }
+            KeyCode::Tab => {
+                self.state.focus = Focus::Output;
+            }
             _ => {}
         }
         Ok(())
@@ -707,6 +769,12 @@ impl<P: Provider + Clone> App<P> {
 
     fn handle_output_key(&mut self, key: KeyEvent) {
         match key.code {
+            KeyCode::Char('c') => {
+                // Toggle card view
+                if !self.state.cards.cards.is_empty() {
+                    self.state.focus = Focus::CardView;
+                }
+            }
             KeyCode::Up | KeyCode::Char('k') => {
                 if self.state.output.scroll_offset > 0 {
                     self.state.output.scroll_offset -= 1;
@@ -1290,6 +1358,20 @@ impl<P: Provider + Clone> App<P> {
             }
         };
 
+        // Create a transaction card with actual status and gas from receipt
+        let status = if receipt.status() {
+            crate::cards::TransactionStatus::Success
+        } else {
+            crate::cards::TransactionStatus::Failed
+        };
+        let gas_used = format!("{}", receipt.gas_used);
+        self.add_transaction_card(
+            tx_hash,
+            status,
+            contract_name.to_string(),
+            Some(gas_used),
+        );
+
         let address = match receipt.contract_address {
             Some(a) => a,
             None => {
@@ -1378,6 +1460,9 @@ impl<P: Provider + Clone> App<P> {
             let call_str = prompts::format_method_call(&func.name, &func.inputs, &args);
             self.state.output.push(format!("{} @ {:?}", call_str, address), OutputStyle::Highlight);
             self.state.output.push_success(format!("Result: {}", result_str));
+
+            // Add a log card for view/pure calls
+            self.add_log_card(format!("{} completed successfully", func.name));
         } else {
             let tx = TransactionRequest::default()
                 .to(address)
@@ -1415,6 +1500,20 @@ impl<P: Provider + Clone> App<P> {
                     return;
                 }
             };
+
+            // Create a transaction card with actual status and gas from receipt
+            let status = if receipt.status() {
+                crate::cards::TransactionStatus::Success
+            } else {
+                crate::cards::TransactionStatus::Failed
+            };
+            let gas_used = format!("{}", receipt.gas_used);
+            self.add_transaction_card(
+                tx_hash,
+                status,
+                call_str.clone(),
+                Some(gas_used),
+            );
 
             if receipt.status() {
                 self.state.output.push_success("Status: Success");
@@ -1501,6 +1600,380 @@ impl<P: Provider + Clone> App<P> {
             }
         }
         None
+    }
+
+    async fn handle_card_menu_key(&mut self, key: KeyEvent) -> Result<()> {
+        match key.code {
+            KeyCode::Esc => {
+                self.state.popup = PopupState::None;
+            }
+            KeyCode::Up | KeyCode::Char('k') => {
+                if let PopupState::CardMenu { selected, actions, .. } = &mut self.state.popup {
+                    if *selected > 0 {
+                        *selected -= 1;
+                    } else {
+                        *selected = actions.len() - 1;
+                    }
+                }
+            }
+            KeyCode::Down | KeyCode::Char('j') => {
+                if let PopupState::CardMenu { selected, actions, .. } = &mut self.state.popup {
+                    *selected = (*selected + 1) % actions.len();
+                }
+            }
+            KeyCode::Enter => {
+                if let PopupState::CardMenu { card_index, actions, selected } = self.state.popup.clone() {
+                    let action = actions[selected];
+                    self.state.popup = PopupState::None;
+                    self.handle_card_action(card_index, action).await?;
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    async fn handle_tracer_menu_key(&mut self, key: KeyEvent) -> Result<()> {
+        match key.code {
+            KeyCode::Esc => {
+                self.state.popup = PopupState::None;
+            }
+            KeyCode::Up | KeyCode::Char('k') => {
+                if let PopupState::TracerMenu { selected, tracers, .. } = &mut self.state.popup {
+                    if *selected > 0 {
+                        *selected -= 1;
+                    } else {
+                        *selected = tracers.len() - 1;
+                    }
+                }
+            }
+            KeyCode::Down | KeyCode::Char('j') => {
+                if let PopupState::TracerMenu { selected, tracers, .. } = &mut self.state.popup {
+                    *selected = (*selected + 1) % tracers.len();
+                }
+            }
+            KeyCode::Enter => {
+                if let PopupState::TracerMenu { card_index, tracers, selected } = self.state.popup.clone() {
+                    let tracer = tracers[selected];
+                    self.state.popup = PopupState::TracerConfig {
+                        card_index,
+                        config: crate::cards::TracerConfig {
+                            tracer_type: tracer,
+                            ..Default::default()
+                        },
+                    };
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    async fn handle_tracer_config_key(&mut self, key: KeyEvent) -> Result<()> {
+        match key.code {
+            KeyCode::Esc => {
+                self.state.popup = PopupState::None;
+            }
+            KeyCode::Char('t') => {
+                // Toggle onlyTopCall for Call tracer
+                if let PopupState::TracerConfig { config, .. } = &mut self.state.popup {
+                    if matches!(config.tracer_type, crate::cards::TracerType::Call) {
+                        config.only_top_call = !config.only_top_call;
+                    }
+                }
+            }
+            KeyCode::Char('d') => {
+                // Toggle diffMode for Prestate tracer
+                if let PopupState::TracerConfig { config, .. } = &mut self.state.popup {
+                    if matches!(config.tracer_type, crate::cards::TracerType::Prestate) {
+                        config.diff_mode = !config.diff_mode;
+                    }
+                }
+            }
+            KeyCode::Enter => {
+                if let PopupState::TracerConfig { card_index, config } = self.state.popup.clone() {
+                    self.state.popup = PopupState::None;
+                    self.execute_debug_trace(card_index, &config).await?;
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    async fn handle_card_action(&mut self, card_index: usize, action: crate::cards::CardAction) -> Result<()> {
+        if card_index >= self.state.cards.cards.len() {
+            return Ok(());
+        }
+
+        let card = &self.state.cards.cards[card_index];
+
+        match action {
+            crate::cards::CardAction::ViewReceipt => {
+                if let crate::cards::Card::Transaction { hash, .. } = card {
+                    self.execute_view_receipt(*hash).await?;
+                }
+            }
+            crate::cards::CardAction::DebugTrace => {
+                if let crate::cards::Card::Transaction { .. } = card {
+                    let tracers = crate::cards::get_tracer_types();
+                    self.state.popup = PopupState::TracerMenu {
+                        card_index,
+                        tracers,
+                        selected: 0,
+                    };
+                }
+            }
+            crate::cards::CardAction::DebugCall => {
+                if let crate::cards::Card::Call { .. } = card {
+                    self.execute_debug_call(card_index).await?;
+                }
+            }
+        }
+        Ok(())
+    }
+
+    async fn execute_view_receipt(&mut self, tx_hash: alloy::primitives::TxHash) -> Result<()> {
+        self.state.output.push("Fetching transaction receipt...", OutputStyle::Waiting);
+
+        match self.provider.get_transaction_receipt(tx_hash).await? {
+            Some(receipt) => {
+                let json = serde_json::to_string_pretty(&receipt)?;
+                self.display_in_editor(&json)?;
+                self.state.output.push_success("Receipt displayed in editor");
+            }
+            None => {
+                self.state.output.push_error("Receipt not found");
+            }
+        }
+        self.state.output.push_separator();
+        self.state.output.scroll_to_bottom();
+        Ok(())
+    }
+
+    async fn execute_debug_call(&mut self, _card_index: usize) -> Result<()> {
+        self.state.output.push_info("Debug call execution not yet implemented");
+        self.state.output.push_separator();
+        self.state.output.scroll_to_bottom();
+        Ok(())
+    }
+
+    async fn execute_debug_trace(&mut self, card_index: usize, config: &crate::cards::TracerConfig) -> Result<()> {
+        if card_index >= self.state.cards.cards.len() {
+            return Ok(());
+        }
+
+        let card = &self.state.cards.cards[card_index];
+
+        if let crate::cards::Card::Transaction { hash: _, .. } = card {
+            self.state.output.push(
+                format!("Executing debug_traceTransaction with {:?} tracer...", config.tracer_type),
+                OutputStyle::Waiting,
+            );
+
+            // For now, show a placeholder trace result
+            let trace_json = serde_json::json!({
+                "tracer": config.tracer_name(),
+                "config": config.to_json(),
+                "result": "Debug trace execution would require Geth RPC endpoint with debug API enabled"
+            });
+
+            let json = serde_json::to_string_pretty(&trace_json)?;
+            self.display_in_editor(&json)?;
+            self.state.output.push_success("Debug trace result displayed in editor");
+        }
+
+        self.state.output.push_separator();
+        self.state.output.scroll_to_bottom();
+        Ok(())
+    }
+
+    fn display_in_editor(&mut self, content: &str) -> Result<()> {
+        use std::fs;
+        use std::io::Write;
+        use std::process::Command;
+
+        // Get EDITOR from environment, default to "vim"
+        let editor = std::env::var("EDITOR").unwrap_or_else(|_| "vim".to_string());
+
+        // Create a temporary file in /tmp
+        let temp_path = format!("/tmp/evm-cli-{}.json", chrono::Local::now().timestamp_millis());
+
+        let mut file = fs::File::create(&temp_path)
+            .with_context(|| format!("Failed to create temp file: {}", temp_path))?;
+
+        file.write_all(content.as_bytes())?;
+        file.flush()?;
+
+        // Open in editor
+        let status = Command::new(&editor)
+            .arg(&temp_path)
+            .status()
+            .with_context(|| format!("Failed to open editor: {}", editor))?;
+
+        // Clean up the temporary file
+        let _ = fs::remove_file(&temp_path);
+
+        // Return error if editor returned non-zero status
+        if !status.success() {
+            anyhow::bail!("Editor exited with error status");
+        }
+
+        Ok(())
+    }
+
+    fn render_card_menu(&self, frame: &mut Frame, actions: &[crate::cards::CardAction], selected: usize) {
+        use crate::tui::layout::centered_popup;
+        use ratatui::widgets::{Block, Borders, Clear};
+        use ratatui::style::{Color, Style, Modifier};
+        use ratatui::text::{Line, Span};
+
+        let popup_area = centered_popup(frame.area(), 40, 30);
+        frame.render_widget(Clear, popup_area);
+
+        let block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(Color::Cyan))
+            .title(" Card Actions ");
+        let inner = block.inner(popup_area);
+        frame.render_widget(block, popup_area);
+
+        let lines: Vec<Line> = actions
+            .iter()
+            .enumerate()
+            .map(|(i, action)| {
+                let prefix = if i == selected { "> " } else { "  " };
+                let style = if i == selected {
+                    Style::default()
+                        .bg(Color::DarkGray)
+                        .fg(Color::White)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default().fg(Color::Yellow)
+                };
+                Line::from(Span::styled(format!("{}{}", prefix, action), style))
+            })
+            .collect();
+
+        let paragraph = ratatui::widgets::Paragraph::new(lines);
+        paragraph.render(inner, frame.buffer_mut());
+    }
+
+    fn render_tracer_menu(&self, frame: &mut Frame, tracers: &[crate::cards::TracerType], selected: usize) {
+        use crate::tui::layout::centered_popup;
+        use ratatui::widgets::{Block, Borders, Clear};
+        use ratatui::style::{Color, Style, Modifier};
+        use ratatui::text::{Line, Span};
+
+        let popup_area = centered_popup(frame.area(), 40, 30);
+        frame.render_widget(Clear, popup_area);
+
+        let block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(Color::Cyan))
+            .title(" Select Tracer ");
+        let inner = block.inner(popup_area);
+        frame.render_widget(block, popup_area);
+
+        let lines: Vec<Line> = tracers
+            .iter()
+            .enumerate()
+            .map(|(i, tracer)| {
+                let prefix = if i == selected { "> " } else { "  " };
+                let style = if i == selected {
+                    Style::default()
+                        .bg(Color::DarkGray)
+                        .fg(Color::White)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default().fg(Color::Cyan)
+                };
+                Line::from(Span::styled(format!("{}{}", prefix, tracer), style))
+            })
+            .collect();
+
+        let paragraph = ratatui::widgets::Paragraph::new(lines);
+        paragraph.render(inner, frame.buffer_mut());
+    }
+
+    fn render_tracer_config(&self, frame: &mut Frame, config: &crate::cards::TracerConfig) {
+        use crate::tui::layout::centered_popup;
+        use ratatui::widgets::{Block, Borders, Clear};
+        use ratatui::style::{Color, Style, Modifier};
+        use ratatui::text::{Line, Span};
+
+        let popup_area = centered_popup(frame.area(), 50, 40);
+        frame.render_widget(Clear, popup_area);
+
+        let block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(Color::Cyan))
+            .title(" Tracer Config ");
+        let inner = block.inner(popup_area);
+        frame.render_widget(block, popup_area);
+
+        let mut lines = vec![
+            Line::from(Span::styled(
+                format!("Tracer: {}", config.tracer_type),
+                Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
+            )),
+            Line::from(""),
+        ];
+
+        match config.tracer_type {
+            crate::cards::TracerType::Call => {
+                lines.push(Line::from(Span::raw(format!(
+                    "onlyTopCall: {} (press 't' to toggle)",
+                    config.only_top_call
+                ))));
+            }
+            crate::cards::TracerType::Prestate => {
+                lines.push(Line::from(Span::raw(format!(
+                    "diffMode: {} (press 'd' to toggle)",
+                    config.diff_mode
+                ))));
+            }
+            crate::cards::TracerType::Oplog => {
+                lines.push(Line::from(Span::raw("No configuration options")));
+            }
+        }
+
+        lines.push(Line::from(""));
+        lines.push(Line::from(Span::styled(
+            "Press ENTER to execute, ESC to cancel",
+            Style::default().fg(Color::DarkGray).add_modifier(Modifier::ITALIC),
+        )));
+
+        let paragraph = ratatui::widgets::Paragraph::new(lines);
+        paragraph.render(inner, frame.buffer_mut());
+    }
+
+    fn add_transaction_card(&mut self, hash: alloy::primitives::TxHash, status: crate::cards::TransactionStatus, function: String, gas: Option<String>) {
+        let card = crate::cards::Card::Transaction {
+            hash,
+            status,
+            function_name: function,
+            gas_used: gas,
+        };
+        self.state.cards.cards.push(card);
+        self.state.cards.selected_index = self.state.cards.cards.len() - 1;
+    }
+
+    fn add_call_card(&mut self, from: Address, to: Address, function: String, value: String) {
+        let card = crate::cards::Card::Call {
+            from,
+            to,
+            function_signature: function,
+            value,
+        };
+        self.state.cards.cards.push(card);
+        self.state.cards.selected_index = self.state.cards.cards.len() - 1;
+    }
+
+    fn add_log_card(&mut self, message: String) {
+        let card = crate::cards::Card::Log { message };
+        self.state.cards.cards.push(card);
+        self.state.cards.selected_index = self.state.cards.cards.len() - 1;
     }
 }
 

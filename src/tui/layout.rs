@@ -3,6 +3,7 @@ use ratatui::layout::{Constraint, Direction, Layout, Rect};
 pub struct AppLayout {
     pub sidebar: Rect,
     pub output: Rect,
+    pub cards: Rect,
     pub status_bar: Rect,
 }
 
@@ -23,6 +24,7 @@ impl AppLayout {
         Self {
             sidebar: content_split[0],
             output: content_split[1],
+            cards: content_split[1],  // Cards use same space as output
             status_bar: main_split[1],
         }
     }
