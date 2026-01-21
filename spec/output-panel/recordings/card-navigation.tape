@@ -1,5 +1,5 @@
 # Output Panel: Card Navigation
-# Demonstrates navigating through output cards and viewing card details
+# Demonstrates navigating through output cards with j/k keys
 
 Set Shell bash
 Set Theme Molokai
@@ -16,41 +16,39 @@ Require solc
 # Start the app
 Type "cargo run --release"
 Enter
-Sleep 3s
+Sleep 4s
 
-# Load a contract to generate output
-Type "Enter"
-Sleep 1s
-
-Type "examples/Demo.sol"
-Enter
-Sleep 3s
-
-# Switch to output area with Tab
-Type "Tab"
+# Cancel the "Load new contract" prompt to avoid dialog
+Escape
 Sleep 0.5s
 
-# Navigate through cards with j/k
+# Switch to output area with Tab to see any existing cards/output
+Tab
+Sleep 0.5s
+
+# Demonstrate card navigation with j (down)
 Type "j"
 Sleep 0.3s
 
+# Demonstrate navigation with k (up)
 Type "k"
 Sleep 0.3s
 
-# Press Enter or Space to show card actions/menu
-Type "Enter"
-Sleep 0.5s
-
-# Navigate through action menu with arrow keys (if visible)
-Type "Right"
+# Navigate down again with j
+Type "j"
 Sleep 0.3s
 
-Type "Left"
+# Demonstrate scrolling with Down arrow (alternative to j)
+Down
 Sleep 0.3s
 
-# Close menu with Escape
-Type "Escape"
+# Demonstrate scrolling with Up arrow (alternative to k)
+Up
+Sleep 0.3s
+
+# Show that output area is focused
+Type "j"
 Sleep 0.5s
 
-# Exit
-Type "C-c"
+# Exit the app
+Ctrl+C
