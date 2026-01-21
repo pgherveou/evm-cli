@@ -19,18 +19,18 @@ Enter
 Sleep 3s
 
 # Demo Tab to switch focus
-Type "Tab"
+Tab
 Sleep 0.5s
 
-Type "Tab"
+Tab
 Sleep 0.5s
 
 # Demo Ctrl+P to open command palette
-Type "C-p"
+Ctrl+P
 Sleep 1s
 
 # Close palette
-Type "Escape"
+Escape
 Sleep 0.5s
 
 # Demo navigation with vim keys (j/k/h/l)
@@ -46,10 +46,12 @@ Sleep 0.3s
 Type "h"
 Sleep 0.3s
 
-# Demo Delete key (should delete item, but confirm first)
-# Skip actual deletion, just show the key works
-Type "Delete"
-Sleep 0.5s
+# Demo arrow key navigation
+Up
+Sleep 0.3s
+
+Down
+Sleep 0.3s
 
 # Exit with Ctrl+C
-Type "C-c"
+Ctrl+C

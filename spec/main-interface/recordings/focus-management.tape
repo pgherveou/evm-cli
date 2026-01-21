@@ -19,11 +19,11 @@ Enter
 Sleep 3s
 
 # Tab switches focus from sidebar (default) to output
-Type "Tab"
+Tab
 Sleep 0.5s
 
 # Tab switches back to sidebar
-Type "Tab"
+Tab
 Sleep 0.5s
 
 # Show navigation with focus on sidebar
@@ -33,7 +33,7 @@ Type "k"
 Sleep 0.3s
 
 # Tab to output area
-Type "Tab"
+Tab
 Sleep 0.5s
 
 # Navigation in output area (when there are cards)
@@ -43,8 +43,8 @@ Type "k"
 Sleep 0.3s
 
 # Tab back to sidebar
-Type "Tab"
+Tab
 Sleep 0.5s
 
 # Exit
-Type "C-c"
+Ctrl+C
