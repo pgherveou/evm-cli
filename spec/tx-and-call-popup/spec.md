@@ -82,11 +82,29 @@ amount (uint256):
 
 | Type | Input Format | Example |
 |------|--------------|---------|
-| `address[]` | Comma-separated addresses | `0xaaa...,0xbbb...,0xccc...` |
-| `uint256[]` | Comma-separated numbers | `1,2,3,100` |
-| `bytes[]` | Comma-separated hex strings | `0xaa,0xbb,0xcc` |
-| `tuple` / `struct` | Sub-form with fields | Field-by-field nested input |
-| `(address,uint256)` | Multiple fields | As tuple |
+| `address[]` | Comma-separated in single field | `0xaaa...,0xbbb...,0xccc...` |
+| `uint256[]` | Comma-separated in single field | `1,2,3,100` |
+| `bytes[]` | Comma-separated in single field | `0xaa,0xbb,0xcc` |
+| `tuple` / `struct` | Dot notation fields | `recipient.address`, `recipient.amount` as separate fields |
+| `(address,uint256)` | Dot notation fields | For parameter named `recipient`, creates `recipient.address` and `recipient.amount` fields |
+
+### Tuple/Struct Input Example
+
+For a function `transfer((address,uint256) recipient)`:
+
+```
+┌─────────────────────────────────────────────┐
+│ transfer((address,uint256))           esc  │
+│                                             │
+│ recipient.address (address):                │
+│ 0x742d35Cc6634C0532925a3b844Bc9e7595f█      │
+│                                             │
+│ recipient.amount (uint256):                 │
+│ 1000█                                       │
+│                                             │
+│ Press return to confirm, tab to next field  │
+└─────────────────────────────────────────────┘
+```
 
 ---
 
@@ -111,12 +129,21 @@ amount (uint256):
 | `Ctrl+A` | Select all (optional) |
 | `Ctrl+U` | Clear field (optional) |
 
-### In Dropdown (bool fields)
+### Boolean Fields
+
+Boolean fields use a toggle mechanism:
 
 | Key | Action |
 |-----|--------|
 | `↑` / `↓` or `j` / `k` | Toggle between true/false |
-| `Enter` | Confirm selection |
+| Type | No typing allowed - use arrows to toggle |
+| `Enter` | Confirm selection and move to next field |
+
+**Visual:**
+```
+enabled (bool):
+true  ← Current value, press ↑/↓ to toggle
+```
 
 ---
 
@@ -146,17 +173,50 @@ Validation occurs on each field as user types or after field completion:
 - No strict validation (accept any text)
 - Optional: Warn if string exceeds certain length
 
+### Validation Feedback
+
+Validation occurs in real-time as user types. Invalid fields show an inline error message below the input:
+
+**Example - Invalid Address:**
+```
+to (address):
+0x742d35Cc_INVALID_CHARACTER
+✗ Invalid address format: must be 0x followed by 40 hex characters
+```
+
+**Example - Out of Range:**
+```
+amount (uint256):
+-500
+✗ Invalid uint256: value must be non-negative
+```
+
+**Validation Rules:**
+- Errors appear immediately after invalid input
+- Red ✗ icon precedes error message
+- Error message describes what's wrong and how to fix it
+- Field cannot be submitted while invalid
+
 ### Form Submission
 
-Form can only be submitted when:
-- All required fields are filled
-- All fields pass validation
-- No pending network requests
+**Validation on Submit:**
+- When user presses `Enter`, all fields are validated
+- If ANY field is invalid:
+  - Form does NOT submit
+  - All invalid fields show error messages
+  - Cursor moves to first invalid field
+  - User must fix errors before resubmitting
 
-**Feedback:**
-- Invalid field highlighted/marked
-- Error message shown for failing field
-- Submit button disabled if any field invalid
+**Success Flow:**
+- All fields valid → Form submits immediately
+- Popup closes
+- Transaction/call is executed
+- Result appears as new card in output panel
+
+**Cancellation:**
+- Press `Escape` at any time to cancel
+- No data is submitted
+- Popup closes, returns to previous view
 
 ---
 

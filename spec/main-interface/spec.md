@@ -35,12 +35,12 @@ The TUI uses a full-screen terminal layout built with ratatui, featuring a sideb
 ### Sidebar (Left Panel)
 - **Purpose:** Contract navigation and method selection
 - **Width:** ~25-30% of terminal width (configurable based on content)
-- **Content:** [See Contracts Menu specification](./contracts-menu.md)
+- **Content:** [See Contracts Menu specification](../contracts-menu/spec.md)
 
 ### Output Area (Center/Right)
 - **Purpose:** Display command results, transaction history, and interactive output cards
 - **Width:** ~70-75% of terminal width
-- **Content:** [See Output Panel specification](./output-panel.md)
+- **Content:** [See Output Panel specification](../output-panel/spec.md)
 
 ### Status Bar (Bottom)
 - **Purpose:** Display connection status and account information
@@ -65,7 +65,10 @@ A thin footer bar spanning the full width of the terminal.
 - **Chain ID:** Currently connected blockchain (e.g., `1` for Ethereum mainnet)
 - **Account address:** Currently active account (truncated to last 8 characters: `0xabc...`)
 - **Account balance:** ETH balance formatted with appropriate decimals
-- **Loading indicator:** Shows during transactions (e.g., `⟳ Transaction pending...`)
+- **Loading indicator:** Shows during:
+  - RPC calls (`⟳ Fetching transaction...`)
+  - Contract compilation (`⟳ Compiling Contract.sol...`)
+  - Pending transactions (`⟳ Waiting for confirmation...`)
 
 **Status Bar States:**
 
@@ -147,6 +150,19 @@ The interface supports two focus areas:
 - Output panel text wraps at terminal width
 - Long contract addresses/hashes truncated with ellipsis
 - Method signatures may wrap but remain readable
+
+### Terminal Resize Behavior
+
+**Real-time Adaptation:**
+- Layout re-renders immediately when terminal is resized
+- Sidebar and output area widths adjust proportionally
+- SIGWINCH signal triggers immediate redraw
+- No lag or delay in resize response
+
+**Below Minimum Size (<80 width):**
+- Alert message displayed: `Terminal too small. Please resize to at least 80 characters wide.`
+- Application pauses until terminal is resized
+- Layout resumes normal operation when size is acceptable
 
 ---
 

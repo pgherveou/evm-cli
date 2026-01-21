@@ -10,19 +10,19 @@
 
 The evm-cli application is organized into the following key feature areas:
 
-### 1. [Main Interface](./main-interface.md)
+### 1. [Main Interface](./main-interface/spec.md)
 The overall layout and visual design of the TUI, including the sidebar, output area, and status bar that form the core structure of the application.
 
-### 2. [Contracts Menu](./contracts-menu.md)
+### 2. [Contracts Menu](./contracts-menu/spec.md)
 The persistent sidebar navigation tree for managing loaded contracts, deployed instances, and method selection with keyboard-driven interaction.
 
-### 3. [Ctrl+P Menu (Command Palette)](./ctrl-p-menu.md)
+### 3. [Ctrl+P Menu (Command Palette)](./ctrl-p-menu/spec.md)
 A centered overlay menu for accessing application-wide commands and configuration options via keyboard search and selection.
 
-### 4. [Transaction & Call Popup](./tx-and-call-popup.md)
+### 4. [Transaction & Call Popup](./tx-and-call-popup/spec.md)
 Parameter input popups for contract methods and constructors, enabling users to input arguments before execution.
 
-### 5. [Output Panel](./output-panel.md)
+### 5. [Output Panel](./output-panel/spec.md)
 The interactive card-based output display system for viewing results, transaction history, decoded logs, and accessing debugging tools.
 
 ---
@@ -51,16 +51,16 @@ Event logs are automatically decoded using the contract ABI:
 
 ## General Features
 
-### [Configuration](./general-settings.md#configuration)
+### [Configuration](./general-settings/spec.md#configuration)
 User settings stored in `.evm-cli/config.json` with support for environment variable overrides.
 
-### [Keyboard Shortcuts](./general-settings.md#keyboard-shortcuts)
+### [Keyboard Shortcuts](./general-settings/spec.md#keyboard-shortcuts)
 Complete list of keyboard bindings organized by context (Global, Sidebar, Command Palette, etc.).
 
-### [Error Handling](./general-settings.md#error-handling)
+### [Error Handling](./general-settings/spec.md#error-handling)
 Transaction, compilation, and input validation error handling strategies.
 
-### [Supported Parameter Types](./general-settings.md#supported-parameter-types)
+### [Supported Parameter Types](./general-settings/spec.md#supported-parameter-types)
 Complete listing of Solidity types and their input formats.
 
 ---
@@ -70,13 +70,25 @@ Complete listing of Solidity types and their input formats.
 ```
 evm-cli/
 ├── spec/
-│   ├── README.md                    # This document
-│   ├── main-interface.md            # Layout, visual design
-│   ├── contracts-menu.md            # Sidebar navigation
-│   ├── ctrl-p-menu.md               # Command palette
-│   ├── tx-and-call-popup.md         # Parameter input
-│   ├── output-panel.md              # Output display & cards
-│   └── general-settings.md          # Config, shortcuts, errors
+│   ├── README.md                           # This document
+│   ├── main-interface/                     # Layout, visual design
+│   │   ├── spec.md                         # Main interface specification
+│   │   └── recordings/                     # VHS recordings for this spec
+│   ├── contracts-menu/                     # Sidebar navigation
+│   │   ├── spec.md                         # Contracts menu specification
+│   │   └── recordings/                     # VHS recordings for this spec
+│   ├── ctrl-p-menu/                        # Command palette
+│   │   ├── spec.md                         # Ctrl+P menu specification
+│   │   └── recordings/                     # VHS recordings for this spec
+│   ├── tx-and-call-popup/                  # Parameter input
+│   │   ├── spec.md                         # Popup specification
+│   │   └── recordings/                     # VHS recordings for this spec
+│   ├── output-panel/                       # Output display & cards
+│   │   ├── spec.md                         # Output panel specification
+│   │   └── recordings/                     # VHS recordings for this spec
+│   └── general-settings/                   # Config, shortcuts, errors
+│       ├── spec.md                         # General settings specification
+│       └── recordings/                     # VHS recordings for this spec
 ├── src/
 │   ├── main.rs              # Entry point, CLI args
 │   ├── app.rs               # Main application logic

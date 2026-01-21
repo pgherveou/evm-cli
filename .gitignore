@@ -12,3 +12,6 @@ Cargo.lock
 *~
 .DS_Store
 Thumbs.db
+
+# Include .claude directory (override global gitignore)
+!/.claude

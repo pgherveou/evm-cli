@@ -31,7 +31,7 @@
 | `rpc_url` | string | Ethereum RPC endpoint URL | `http://localhost:8545` |
 | `address` | string | Active account address (0x + 40 hex chars) | `0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac` |
 | `private_key` | string | Private key for signing transactions | `5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133` |
-| `deployments` | object | Map of contract paths to deployed addresses | `{}` |
+| `deployments` | object | Map of contract paths to deployed addresses (cleared by "Clear State" command) | `{}` |
 
 ### Deployment Storage
 
@@ -58,6 +58,32 @@ ETH_ACCOUNT=0xyour_account_here
 ```
 
 **Priority:** Environment variables > Config file > Defaults
+
+### Config File Creation
+
+The `.evm-cli/config.json` file is created automatically on first application run with default values:
+
+```json
+{
+  "config": {
+    "rpc_url": "http://localhost:8545",
+    "address": "0xf24FF3a9CF04c71Dbc94D0b566f7A27B94566cac",
+    "private_key": "5fb92d6e98884f76de468fa3f6278f8807c48bebc13595d45af5bdc4da702133"
+  },
+  "deployments": {}
+}
+```
+
+Users can then modify this file manually or override with environment variables.
+
+### Clear State Behavior
+
+The "Clear State" command:
+- **Clears:** Only the `deployments` object
+- **Preserves:** RPC URL, account address, private key
+- **Effect:** All deployed instance addresses removed from config.json
+- **UI:** All instances removed from sidebar tree
+- **Irreversible:** No undo mechanism (instances can be manually re-loaded)
 
 ---
 
@@ -113,9 +139,8 @@ ETH_ACCOUNT=0xyour_account_here
 |-----|--------|--------|
 | `↑` or `k` | Previous card | Navigate to previous output card |
 | `↓` or `j` | Next card | Navigate to next output card |
-| `Enter` or `Space` | Open menu | Show card action menu |
-| `Escape` | Close menu | Close card menu, stay on card |
-| `q` | Close view | Return to card list |
+| `Enter` or `Space` | Open menu | Show card action menu in footer |
+| `Escape` | Close menu | Dismiss footer menu, keep card selected |
 | `c` | Copy | Copy card content |
 | `Home` or `Ctrl+Home` | First card | Jump to first card |
 | `End` or `Ctrl+End` | Last card | Jump to last card |

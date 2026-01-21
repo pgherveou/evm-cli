@@ -17,8 +17,8 @@ The Contracts Menu is a persistent sidebar displaying all loaded contracts and t
   ◇ Load existing...       ← Level 2: Load existing instance action
   ▾ 0x12...ab              ← Level 2: Deployed instance (address)
     ├ increment() [pay]    ← Level 3: Payable method
-    ├ retrieve() [v]       ← Level 3: View method
-    └ store(uint256) [pay] ← Level 3: Method with parameters
+    ├ retrieve() [v]       ← Level 3: View method (no params)
+    └ store(...) [pay]     ← Level 3: Method with parameters (name only + indicator)
 ▸ MyToken.sol              ← Level 1: Collapsed contract
 ```
 
@@ -48,10 +48,19 @@ Methods display their characteristics with tags:
 
 **Example Methods:**
 ```
-├ balanceOf(address) [view]        ← View function, read-only
-├ transfer(address,uint256) [pay]   ← Payable function
-├ approve(address,uint256)      ← State-changing (not view/payable)
+├ balanceOf(...) [view]        ← View function, read-only
+├ transfer(...) [pay]          ← Payable function
+├ approve(...)                 ← State-changing (not view/payable)
 ```
+
+**Method Name Display:**
+- Methods shown with name only: `functionName(...)`
+- Parameter types NOT shown in sidebar to save space
+- Full signature shown in parameter popup when selected
+- Examples:
+  - `balanceOf(...)` instead of `balanceOf(address)`
+  - `transfer(...)` instead of `transfer(address,uint256)`
+  - `increment()` for parameterless methods
 
 ---
 
@@ -90,14 +99,35 @@ The tree automatically expands in specific scenarios to improve UX:
 | `←` or `h` | Collapse | Collapse expanded node |
 | `→` or `l` | Expand | Expand collapsed node |
 | `Enter` | Select | Execute item action or expand |
-| `Delete` / `Backspace` | Remove | Delete deployment or contract |
+| `Delete` or `Backspace` | Remove | Immediately delete deployment or contract (no confirmation) |
 
 ### Selection & Focus
 
 - **Visual Feedback:** Selected item highlighted with cyan background
-- **Navigation Wrapping:** Optional wrapping from last to first item
+- **Navigation Wrapping:** Disabled - navigation stops at first/last item
 - **Auto-Select:** First item automatically selected when sidebar loads
 - **Persistence:** Last selected item persists within a session
+
+### Delete Behavior
+
+**Immediate Deletion (No Confirmation):**
+
+**Deleting a Deployed Instance:**
+- Pressing `Delete` or `Backspace` on an instance address (e.g., `0x789...`)
+- Instance immediately removed from tree
+- Address removed from `.evm-cli/config.json` deployments array
+- No confirmation dialog
+
+**Deleting a Contract:**
+- Pressing `Delete` or `Backspace` on a contract (e.g., `Demo.sol`)
+- Contract and ALL its deployed instances removed from tree
+- All instance addresses removed from config.json
+- No confirmation dialog
+
+**Undo:**
+- No undo mechanism
+- Deleted items can be re-loaded manually
+- Deployments can be re-added via "Load existing..." action
 
 ---
 
@@ -112,6 +142,7 @@ The tree automatically expands in specific scenarios to improve UX:
 2. Filters for `.sol` files
 3. Supports autocomplete/search
 4. On selection:
+   - Creates a "Loading contract card" in the output panel (See [output-panel.md](./output-panel.md) for card details)
    - Contract loaded and compiled
    - Contract added to sidebar as new node
    - Contract automatically expanded
@@ -132,7 +163,7 @@ The tree automatically expands in specific scenarios to improve UX:
 2. On parameter submission:
    - Optionally shows [Deployment Target Selection](./tx-and-call-popup.md#deployment-target-selection)
    - Transaction sent to blockchain
-   - Shows transaction hash in output panel
+   - Displays a deployment card in the output panel (See [output-panel.md](./output-panel.md) for card details)
    - Waits for confirmation
    - Deployed instance added to sidebar
    - Instance automatically expanded
@@ -174,7 +205,7 @@ The tree automatically expands in specific scenarios to improve UX:
 2. If parameters: Show [Parameter Input Popup](./tx-and-call-popup.md)
    - User enters parameter values
    - On submission: Execute as `eth_call`
-3. Result displayed in [Output Panel](./output-panel.md)
+3. Displays a call card in the output panel (See [output-panel.md](./output-panel.md) for card details)
 
 #### For State-Changing Methods:
 1. If no parameters: Prompt for execution confirmation
@@ -182,11 +213,10 @@ The tree automatically expands in specific scenarios to improve UX:
    - User enters parameter values
    - On submission: Show transaction confirmation
 3. Transaction sent with gas estimation
-4. Hash displayed in output panel
+4. Displays a transaction card in the output panel (See [output-panel.md](./output-panel.md) for card details)
 5. After confirmation:
    - Full receipt displayed
    - Decoded logs shown
-   - Result added as output card
 
 #### For Payable Methods:
 1. Parameter popup includes optional ETH value field
@@ -214,6 +244,16 @@ The tree automatically expands in specific scenarios to improve UX:
 **Confirmation:**
 - Optional confirmation prompt before deletion
 - Message shown in output panel confirming removal
+
+### ABI Parsing Errors
+
+**When ABI Cannot Be Extracted:**
+
+If contract compilation succeeds but ABI parsing fails:
+- Error message shown in output panel: `✗ Failed to parse ABI for Contract.sol`
+- Contract is NOT loaded into sidebar
+- User must fix contract and recompile
+- Common causes: Malformed JSON, invalid ABI structure
 
 ---
 
