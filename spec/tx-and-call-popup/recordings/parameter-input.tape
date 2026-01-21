@@ -13,14 +13,7 @@ Output parameter-input.mp4
 
 Require solc
 
-# Start the app
-Type "cargo run --release"
-Enter
-Sleep 4s
-
-# Cancel the initial Load Contract prompt
-Escape
-Sleep 0.5s
+Source spec/shared/load_demo.tape
 
 # Show main interface with sidebar focus
 Type "j"

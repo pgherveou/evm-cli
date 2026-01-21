@@ -1,26 +1,17 @@
-# Output Panel: Card Types
-# Demonstrates different card types (Transaction, Call, Log)
-
-Set Shell bash
-Set Theme Molokai
-Set Width 1200
-Set Height 600
-Set TypingSpeed 50ms
-Set FontSize 14
-
 Output card-types.ascii
-Output card-types.mp4
+Source ./spec/shared/load_demo.tape
 
-Require solc
-
-# Start the app
-Type "cargo run --release"
+# Deploy a new instance, make a call and a transaction
+Down
+Sleep 0.3s
+Type "42"
 Enter
-Sleep 4s
-
-# Cancel the "Load new contract" prompt
-Escape
-Sleep 0.5s
+# Call getCount
+Down
+Enter
+# Tx decrement
+Down
+Enter
 
 # Switch to output area
 Tab
@@ -39,13 +30,6 @@ Down
 Sleep 0.3s
 
 Up
-Sleep 0.3s
-
-# Show j/k navigation again
-Type "j"
-Sleep 0.3s
-
-Type "k"
 Sleep 0.3s
 
 # Exit

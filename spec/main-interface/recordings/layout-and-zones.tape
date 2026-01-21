@@ -13,10 +13,7 @@ Output layout-and-zones.mp4
 
 Require solc
 
-# Start the app with existing config
-Type "cargo run --release"
-Enter
-Sleep 3s
+Source spec/shared/load_demo.tape
 
 # Should see main interface with three zones:
 # - Sidebar (left) with contract tree

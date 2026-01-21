@@ -13,14 +13,7 @@ Output card-navigation.mp4
 
 Require solc
 
-# Start the app
-Type "cargo run --release"
-Enter
-Sleep 4s
-
-# Cancel the "Load new contract" prompt to avoid dialog
-Escape
-Sleep 0.5s
+Source spec/shared/load_demo.tape
 
 # Switch to output area with Tab to see any existing cards/output
 Tab

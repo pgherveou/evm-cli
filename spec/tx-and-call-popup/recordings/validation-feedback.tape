@@ -13,18 +13,7 @@ Output validation-feedback.mp4
 
 Require solc
 
-# Start the app
-Type "cargo run --release"
-Enter
-Sleep 3s
-
-# Load a contract
-Type "Enter"
-Sleep 1s
-
-Type "examples/Demo.sol"
-Enter
-Sleep 2s
+Source spec/shared/load_demo.tape
 
 # Navigate to deploy to show parameter popup
 Type "j"

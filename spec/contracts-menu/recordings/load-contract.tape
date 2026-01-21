@@ -13,19 +13,7 @@ Output load-contract.mp4
 
 Require solc
 
-# Start the app
-Type "cargo run --release"
-Enter
-Sleep 3s
-
-# Press Enter on "Load new contract" option
-Type "Enter"
-Sleep 1s
-
-# Type the demo contract path
-Type "examples/Demo.sol"
-Enter
-Sleep 3s
+Source spec/shared/load_demo.tape
 
 # Exit
 Type "C-c"

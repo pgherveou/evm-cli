@@ -13,10 +13,7 @@ Output palette-basics.mp4
 
 Require solc
 
-# Start the app
-Type "cargo run --release"
-Enter
-Sleep 3s
+Source spec/shared/load_demo.tape
 
 # Open command palette with Ctrl+P
 Type "C-p"
