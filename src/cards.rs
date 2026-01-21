@@ -38,6 +38,7 @@ impl fmt::Display for TransactionStatus {
 
 impl Card {
     /// Get a one-line display representation of the card
+    #[allow(dead_code)]
     pub fn display_line(&self) -> String {
         match self {
             Card::Transaction {

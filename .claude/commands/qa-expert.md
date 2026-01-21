@@ -1,61 +1,229 @@
----
-description: Create VHS recordings for specs and store in specs/recording
-argument-hint: "[spec-file] - spec file to create recording for"
----
+# QA Expert - VHS Recording Guidelines
 
-You are a QA Expert specializing in creating automated recordings for specification documentation. Your role is to:
+The QA Expert skill creates VHS recordings of specification demonstrations. This document defines what constitutes a valid recording.
 
-1. **Record Features**: Create VHS recordings that demonstrate each spec in action
-2. **Organize Recordings**: Store recordings in spec/[spec-name]/recordings/ with clear naming conventions
-3. **Coverage**: Ensure all specs have corresponding visual documentation
-4. **Quality**: Verify recordings clearly demonstrate the features described in specs
+## Valid Recording Format
 
-## Spec File Structure
+### ASCII Recording Structure
 
-Each spec is organized in its own folder:
+A valid `.ascii` file should contain:
+
+1. **Shell prompt and command execution**
+   ```
+   > cargo run --release
+   [startup output/initialization]
+   ```
+
+2. **Application TUI rendering**
+   - The full terminal UI should be visible
+   - Layout zones (sidebar, output, status bar) should be clearly rendered
+   - Components should show proper styling and structure
+
+3. **User interactions captured**
+   - Keyboard input commands
+   - Navigation sequences
+   - Menu selections
+   - State changes
+
+4. **Output showing feature behavior**
+   - Feature being demonstrated works as expected
+   - Visual feedback is present
+   - Interactions produce expected results
+
+### Example: Valid Recording (demo.ascii)
+
 ```
-spec/
-├── [spec-name]/
-│   ├── spec.md          # The specification document
-│   └── recordings/      # VHS recordings for this spec
-│       ├── [feature-1].vhs
-│       ├── [feature-2].vhs
-│       └── [feature-3].vhs
+> cargo run --release
+   Compiling evm-cli v0.1.0 (/home/pg/github/evm-cli)
+    Finished `release` profile [optimized] target(s) in ...
+     Running `target/release/evm-cli`
+
+[Blank lines representing application startup]
+
+┌ Contracts ───────────┐┌ Output ─────────────────────────────────────┐
+│ + Load new contract  ││ ● Connected | Chain: 1 | Account: 0x...     │
+│                      ││ Balance: 10000.000000 ETH                    │
+└──────────────────────┘└──────────────────────────────────────────────┘
+● Connected | Chain: 1 | Account: 0xf39fd6e... | Balance: 10000.000000
+
+[User interaction - pressing 'j' to navigate]
+
+[Output updates showing result of interaction]
+
+[More interactions and state changes]
 ```
 
-## Recording Standards
+### Invalid Recording Indicators
 
-- **Format**: VHS recordings stored in `spec/[spec-name]/recordings/` folder
-- **Naming**: Descriptive names like `navigation.vhs`, `menu-interaction.vhs`, `error-handling.vhs`
-- **Duration**: Keep recordings focused and concise (typically 30-120 seconds)
-- **Clarity**: Ensure user actions and feature behavior are clearly visible
-- **Coverage**: Record all major workflows and edge cases mentioned in spec
+A recording is **INVALID** if it contains:
 
-## Workflow
+❌ `bash: ./target/release/evm-cli: No such file or directory`
+- Indicates the command failed to execute
+- Build was not run before recording
+- Use `cargo run --release` instead
 
-1. Review specs in spec/[spec-name]/spec.md files
-2. Identify specs that need recordings
-3. For each spec:
-   - Analyze the feature requirements in spec/[spec-name]/spec.md
-   - Determine key user interactions to record
-   - Create VHS recording script/automation
-   - Store recording in spec/[spec-name]/recordings/
-4. Maintain a recording manifest/index
+❌ File ends immediately after startup without interactions
+- No actual feature demonstration
+- Application didn't run successfully
+- Missing expected UI elements
 
-## VHS Recording Tips
+❌ Empty lines only (no UI rendered)
+- Application failed to start
+- Terminal capture incomplete
+- Build verification needed
 
-- Use clear, consistent interactions
-- Include relevant UI elements and feedback
-- Demonstrate both happy path and error cases
-- Add timing delays for readability
-- Include command output and results
+❌ Error messages instead of TUI
+- Application crashed or errored
+- Prerequisites missing (solc, blockchain, etc.)
+- Configuration issues
 
-## Output Format
+## Recording Prerequisites
 
-After creating recordings:
-- List recorded specs with their recording file paths
-- Verify recording coverage against all specs
-- Flag any specs still needing recordings
-- Provide recording manifest for easy reference
+Before creating a recording, ensure:
 
-Help create comprehensive visual documentation for all features.
+1. ✅ **Build is clean**
+   ```bash
+   cargo build --release
+   ```
+
+2. ✅ **All dependencies available**
+   - `solc` installed for contract compilation
+   - Blockchain accessible (anvil running for some specs)
+   - VHS tool installed and working
+
+3. ✅ **Tape file uses correct command**
+   - ❌ Wrong: `Type "clear && ./target/release/evm-cli"`
+   - ✅ Correct: `Type "cargo run --release"`
+   - Or: `Type "cd /full/path && cargo run --release"`
+
+## Tape File Best Practices
+
+### Timing
+- Use `Sleep` commands appropriately between interactions
+- Wait for UI to render: minimum `Sleep 1s` after app startup
+- Wait between interactions: `Sleep 0.3s-0.5s` for navigation
+- Wait for operations: `Sleep 1s-2s` for transactions/async operations
+
+### Commands
+```vhs
+# ✅ GOOD: Full path, proper timing
+Type "cd /home/pg/github/evm-cli && cargo run --release"
+Enter
+Sleep 2s
+
+# ✅ GOOD: Relative to working directory
+Type "cargo run --release"
+Enter
+Sleep 2s
+
+# ❌ BAD: Pre-built binary that may not exist
+Type "./target/release/evm-cli"
+Enter
+
+# ❌ BAD: Assumes shell state/aliases
+Type "evm-cli"
+Enter
+```
+
+### Navigation
+```vhs
+# ✅ GOOD: Clear, deliberate navigation
+Type "j"
+Sleep 0.3s
+Type "k"
+Sleep 0.3s
+
+# ❌ BAD: Too fast, might not capture state changes
+Type "j"
+Type "k"
+```
+
+## ASCII File Validation Checklist
+
+When reviewing a recorded ASCII file, verify:
+
+- [ ] Recording starts with a shell prompt (>)
+- [ ] Command shows proper execution (not "No such file or directory")
+- [ ] Application TUI is visible (box drawing characters, layout zones)
+- [ ] Feature being demonstrated is shown
+- [ ] User interactions are captured (j/k navigation, menu selections, etc.)
+- [ ] Expected output/state changes are present
+- [ ] Recording ends cleanly (app closes with Ctrl+C or naturally)
+- [ ] No error messages or crashes in output
+
+## Examples by Specification
+
+### Main Interface (layout-and-zones)
+✅ Should show:
+- Three-zone layout (sidebar, output, status bar)
+- Connection status indicator (● Connected)
+- Chain info and account displayed
+- Layout proportions correct
+
+### Contracts Menu (tree-navigation)
+✅ Should show:
+- Sidebar with tree structure
+- Navigation with j/k keys
+- Node indicators (▾, ▸, ◇)
+- Selection highlighting
+
+### Output Panel (card-navigation)
+✅ Should show:
+- Cards displayed in output area
+- Selection with cyan background
+- Card content visible (hash, status, function, etc.)
+- Navigation between cards with j/k
+
+## Recording Recovery
+
+If a recording is invalid:
+
+1. **Verify build succeeded**
+   ```bash
+   cargo build --release
+   ```
+
+2. **Check tape file command**
+   - Ensure it uses `cargo run --release`
+   - Not a pre-built binary path
+
+3. **Test prerequisites**
+   ```bash
+   which cargo
+   which solc
+   command -v vhs
+   ```
+
+4. **Re-record the spec**
+   ```bash
+   ./scripts/record-spec-tape.sh <spec-name> <feature-name>
+   ```
+
+5. **Verify ASCII output**
+   - Check first 50 lines show proper UI
+   - Verify interactions are captured
+   - Ensure feature works as expected
+
+## Reference Commands
+
+```bash
+# View recorded ASCII file
+cat spec/*/recordings/*.ascii | head -100
+
+# Play recording with VHS
+vhs play spec/*/recordings/*.ascii
+
+# View with less (preserves formatting)
+less -R spec/*/recordings/*.ascii
+
+# Search for specific content
+grep -n "Connected" spec/*/recordings/*.ascii
+
+# Check file size (large files = more content captured)
+ls -lh spec/*/recordings/*.ascii
+```
+
+---
+
+**Last Updated**: January 21, 2026
+**Status**: Documentation for QA recording standards and validation

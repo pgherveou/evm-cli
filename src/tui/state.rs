@@ -10,7 +10,6 @@ pub enum Focus {
     Sidebar,
     Output,
     CommandPalette,
-    CardView,
 }
 
 #[derive(Debug, Clone, Default)]

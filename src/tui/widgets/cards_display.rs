@@ -8,12 +8,14 @@ use ratatui::{
     widgets::{Block, Borders, Paragraph, Widget},
 };
 
+#[allow(dead_code)]
 pub struct CardsDisplay<'a> {
     state: &'a CardState,
     focused: bool,
 }
 
 impl<'a> CardsDisplay<'a> {
+    #[allow(dead_code)]
     pub fn new(state: &'a CardState) -> Self {
         Self {
             state,
@@ -21,6 +23,7 @@ impl<'a> CardsDisplay<'a> {
         }
     }
 
+    #[allow(dead_code)]
     pub fn focused(mut self, focused: bool) -> Self {
         self.focused = focused;
         self

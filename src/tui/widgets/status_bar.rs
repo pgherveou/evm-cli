@@ -43,16 +43,13 @@ impl Widget for StatusBarWidget<'_> {
             hint_spans.push(Span::styled("Del", Style::default().fg(Color::Yellow)));
             hint_spans.push(Span::styled(": remove  ", Style::default().fg(Color::DarkGray)));
         } else if matches!(self.state.focus, crate::tui::state::Focus::Output) {
-            hint_spans.push(Span::styled("c", Style::default().fg(Color::Yellow)));
-            hint_spans.push(Span::styled(": cards  ", Style::default().fg(Color::DarkGray)));
-        } else if matches!(self.state.focus, crate::tui::state::Focus::CardView) {
-            let card_count = self.state.cards.cards.len();
-            hint_spans.push(Span::styled(
-                format!("[{}/{}]  ", self.state.cards.selected_index + 1, card_count),
-                Style::default().fg(Color::Cyan),
-            ));
-            hint_spans.push(Span::styled("c", Style::default().fg(Color::Yellow)));
-            hint_spans.push(Span::styled(": back  ", Style::default().fg(Color::DarkGray)));
+            if !self.state.cards.cards.is_empty() {
+                let card_count = self.state.cards.cards.len();
+                hint_spans.push(Span::styled(
+                    format!("[{}/{}]  ", self.state.cards.selected_index + 1, card_count),
+                    Style::default().fg(Color::Cyan),
+                ));
+            }
         }
 
         hint_spans.extend(vec![

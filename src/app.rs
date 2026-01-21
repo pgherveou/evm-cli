@@ -394,19 +394,10 @@ impl<P: Provider + Clone> App<P> {
             .with_nodes(nodes);
         frame.render_widget(tree, layout.sidebar);
 
-        // Render output or cards based on focus
-        match self.state.focus {
-            Focus::CardView => {
-                let cards = crate::tui::widgets::CardsDisplay::new(&self.state.cards)
-                    .focused(true);
-                frame.render_widget(cards, layout.cards);
-            }
-            _ => {
-                let output = OutputArea::new(&self.state.output)
-                    .focused(matches!(self.state.focus, Focus::Output));
-                frame.render_widget(output, layout.output);
-            }
-        }
+        // Render output panel (which shows cards when available)
+        let output = OutputArea::new(&self.state.output, &self.state.cards)
+            .focused(matches!(self.state.focus, Focus::Output));
+        frame.render_widget(output, layout.output);
 
         // Render status bar
         let status = StatusBarWidget::new(&self.state);
@@ -613,47 +604,7 @@ impl<P: Provider + Clone> App<P> {
     async fn handle_main_key(&mut self, key: KeyEvent) -> Result<()> {
         match self.state.focus {
             Focus::Sidebar => self.handle_sidebar_key(key).await?,
-            Focus::Output => self.handle_output_key(key),
-            Focus::CardView => self.handle_card_view_key(key).await?,
-            _ => {}
-        }
-        Ok(())
-    }
-
-    async fn handle_card_view_key(&mut self, key: KeyEvent) -> Result<()> {
-        match key.code {
-            KeyCode::Esc | KeyCode::Char('c') => {
-                self.state.focus = Focus::Output;
-            }
-            KeyCode::Up | KeyCode::Char('k') => {
-                if self.state.cards.selected_index > 0 {
-                    self.state.cards.selected_index -= 1;
-                } else if !self.state.cards.cards.is_empty() {
-                    self.state.cards.selected_index = self.state.cards.cards.len() - 1;
-                }
-            }
-            KeyCode::Down | KeyCode::Char('j') => {
-                if !self.state.cards.cards.is_empty() {
-                    self.state.cards.selected_index = (self.state.cards.selected_index + 1) % self.state.cards.cards.len();
-                }
-            }
-            KeyCode::Enter | KeyCode::Char(' ') => {
-                let card_index = self.state.cards.selected_index;
-                if card_index < self.state.cards.cards.len() {
-                    let card = &self.state.cards.cards[card_index];
-                    if card.is_interactive() {
-                        let actions = crate::cards::get_card_actions(card);
-                        self.state.popup = PopupState::CardMenu {
-                            card_index,
-                            actions,
-                            selected: 0,
-                        };
-                    }
-                }
-            }
-            KeyCode::Tab => {
-                self.state.focus = Focus::Output;
-            }
+            Focus::Output => self.handle_output_key(key).await?,
             _ => {}
         }
         Ok(())
@@ -767,25 +718,48 @@ impl<P: Provider + Clone> App<P> {
         Ok(())
     }
 
-    fn handle_output_key(&mut self, key: KeyEvent) {
+    async fn handle_output_key(&mut self, key: KeyEvent) -> Result<()> {
         match key.code {
-            KeyCode::Char('c') => {
-                // Toggle card view
-                if !self.state.cards.cards.is_empty() {
-                    self.state.focus = Focus::CardView;
-                } else {
-                    self.state.output.push_info("No cards available yet. Execute transactions or calls first.");
-                }
-            }
             KeyCode::Up | KeyCode::Char('k') => {
-                if self.state.output.scroll_offset > 0 {
-                    self.state.output.scroll_offset -= 1;
+                // If cards exist, navigate cards; otherwise scroll lines
+                if !self.state.cards.cards.is_empty() {
+                    if self.state.cards.selected_index > 0 {
+                        self.state.cards.selected_index -= 1;
+                    } else if !self.state.cards.cards.is_empty() {
+                        self.state.cards.selected_index = self.state.cards.cards.len() - 1;
+                    }
+                } else {
+                    if self.state.output.scroll_offset > 0 {
+                        self.state.output.scroll_offset -= 1;
+                    }
                 }
             }
             KeyCode::Down | KeyCode::Char('j') => {
-                let max_scroll = self.state.output.lines.len().saturating_sub(10);
-                if self.state.output.scroll_offset < max_scroll {
-                    self.state.output.scroll_offset += 1;
+                // If cards exist, navigate cards; otherwise scroll lines
+                if !self.state.cards.cards.is_empty() {
+                    self.state.cards.selected_index = (self.state.cards.selected_index + 1) % self.state.cards.cards.len();
+                } else {
+                    let max_scroll = self.state.output.lines.len().saturating_sub(10);
+                    if self.state.output.scroll_offset < max_scroll {
+                        self.state.output.scroll_offset += 1;
+                    }
+                }
+            }
+            KeyCode::Enter | KeyCode::Char(' ') => {
+                // Show card menu if card is interactive
+                if !self.state.cards.cards.is_empty() {
+                    let card_index = self.state.cards.selected_index;
+                    if card_index < self.state.cards.cards.len() {
+                        let card = &self.state.cards.cards[card_index];
+                        if card.is_interactive() {
+                            let actions = crate::cards::get_card_actions(card);
+                            self.state.popup = PopupState::CardMenu {
+                                card_index,
+                                actions,
+                                selected: 0,
+                            };
+                        }
+                    }
                 }
             }
             KeyCode::Tab => {
@@ -793,6 +767,7 @@ impl<P: Provider + Clone> App<P> {
             }
             _ => {}
         }
+        Ok(())
     }
 
     async fn handle_command_palette_key(&mut self, key: KeyEvent) -> Result<()> {
@@ -1613,7 +1588,7 @@ impl<P: Provider + Clone> App<P> {
         match key.code {
             KeyCode::Esc => {
                 self.state.popup = PopupState::None;
-                self.state.focus = Focus::CardView;
+                self.state.focus = Focus::Output;
             }
             KeyCode::Up | KeyCode::Char('k') => {
                 if let PopupState::CardMenu { selected, actions, .. } = &mut self.state.popup {
@@ -1645,7 +1620,7 @@ impl<P: Provider + Clone> App<P> {
         match key.code {
             KeyCode::Esc => {
                 self.state.popup = PopupState::None;
-                self.state.focus = Focus::CardView;
+                self.state.focus = Focus::Output;
             }
             KeyCode::Up | KeyCode::Char('k') => {
                 if let PopupState::TracerMenu { selected, tracers, .. } = &mut self.state.popup {
@@ -1682,7 +1657,7 @@ impl<P: Provider + Clone> App<P> {
         match key.code {
             KeyCode::Esc => {
                 self.state.popup = PopupState::None;
-                self.state.focus = Focus::CardView;
+                self.state.focus = Focus::Output;
             }
             KeyCode::Char('t') => {
                 // Toggle onlyTopCall for Call tracer
@@ -1723,7 +1698,7 @@ impl<P: Provider + Clone> App<P> {
                 if let crate::cards::Card::Transaction { hash, .. } = card {
                     self.execute_view_receipt(*hash).await?;
                     // Return to card view with selection preserved
-                    self.state.focus = Focus::CardView;
+                    self.state.focus = Focus::Output;
                 }
             }
             crate::cards::CardAction::DebugTrace => {
@@ -1740,7 +1715,7 @@ impl<P: Provider + Clone> App<P> {
                 if let crate::cards::Card::Call { .. } = card {
                     self.execute_debug_call(card_index).await?;
                     // Return to card view with selection preserved
-                    self.state.focus = Focus::CardView;
+                    self.state.focus = Focus::Output;
                 }
             }
         }
@@ -1839,7 +1814,7 @@ impl<P: Provider + Clone> App<P> {
             }
 
             // Return to card view with selection preserved
-            self.state.focus = Focus::CardView;
+            self.state.focus = Focus::Output;
             self.state.output.push_separator();
             self.state.output.scroll_to_bottom();
         }

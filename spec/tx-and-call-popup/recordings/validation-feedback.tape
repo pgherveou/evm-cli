@@ -1,0 +1,55 @@
+# Transaction & Call Popup: Validation Feedback
+# Demonstrates real-time parameter validation and error messages
+
+Set Shell bash
+Set Theme Molokai
+Set Width 1200
+Set Height 600
+Set TypingSpeed 50ms
+Set FontSize 14
+
+Output validation-feedback.ascii
+Output validation-feedback.mp4
+
+Require solc
+
+# Start the app
+Type "cargo run --release"
+Enter
+Sleep 3s
+
+# Load a contract
+Type "Enter"
+Sleep 1s
+
+Type "examples/Demo.sol"
+Enter
+Sleep 2s
+
+# Navigate to deploy to show parameter popup
+Type "j"
+Sleep 0.3s
+Type "j"
+Sleep 0.3s
+
+# Press Enter on Deploy new instance
+Type "Enter"
+Sleep 1s
+
+# Type invalid address (too short)
+Type "0x123"
+Sleep 0.5s
+
+# Backspace to clear and fix
+Type "C-u"
+Sleep 0.3s
+
+Type "0x742d35Cc6634C0532925a3b844Bc9e7595f7a3"
+Sleep 0.3s
+
+# Cancel
+Type "Escape"
+Sleep 0.5s
+
+# Exit
+Type "C-c"
