@@ -16,48 +16,37 @@ Require solc
 # Start the app
 Type "cargo run --release"
 Enter
-Sleep 3s
+Sleep 4s
 
-# Load a contract
-Type "Enter"
-Sleep 1s
-
-Type "examples/Demo.sol"
-Enter
-Sleep 3s
-
-# Switch to output
-Type "Tab"
+# Cancel the "Load new contract" prompt
+Escape
 Sleep 0.5s
 
-# Navigate through cards to see different types
-Type "j"
-Sleep 0.3s
-Type "j"
-Sleep 0.3s
-Type "j"
-Sleep 0.3s
-
-# If we deploy, transaction cards will appear
-# Navigate back to contracts to deploy
-Type "Tab"
+# Switch to output area
+Tab
 Sleep 0.5s
 
-# Navigate to deploy option
-Type "l"
-Sleep 0.3s
-Type "j"
-Sleep 0.3s
+# Navigate through output with j (down)
 Type "j"
 Sleep 0.3s
 
-# Press Enter on deploy (would show parameter popup)
-Type "Enter"
-Sleep 1s
+# Navigate with k (up)
+Type "k"
+Sleep 0.3s
 
-# Should see parameter input, cancel for now
-Type "Escape"
-Sleep 0.5s
+# Demonstrate scrolling with arrow keys
+Down
+Sleep 0.3s
+
+Up
+Sleep 0.3s
+
+# Show j/k navigation again
+Type "j"
+Sleep 0.3s
+
+Type "k"
+Sleep 0.3s
 
 # Exit
-Type "C-c"
+Ctrl+C
