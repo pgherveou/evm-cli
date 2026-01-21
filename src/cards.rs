@@ -1,5 +1,4 @@
 use alloy::primitives::{Address, TxHash};
-use alloy::json_abi::Function;
 use std::fmt;
 
 /// Represents a single output card that can be displayed and interacted with
@@ -86,6 +85,7 @@ impl Card {
     }
 
     /// Get the type name for styling purposes
+    #[allow(dead_code)]
     pub fn type_name(&self) -> &'static str {
         match self {
             Card::Transaction { .. } => "Transaction",

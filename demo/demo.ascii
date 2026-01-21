@@ -51,59 +51,6 @@
 
 
 ────────────────────────────────────────────────────────────────────────────────
->
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-────────────────────────────────────────────────────────────────────────────────
 > cd /home/pg/github/evm-cli && ./target/release/evm-cli
 
 
@@ -138,7 +85,7 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│                      ││ Balance: 9997.195707 ETH                            │
+│                      ││ Balance: 10000.000000 ETH                           │
 │                      ││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
@@ -168,7 +115,7 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│                      ││ Balance: 9997.195707 ETH                            │
+│                      ││ Balance: 10000.000000 ETH                           │
 │                      ││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
@@ -198,7 +145,7 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│                      ││ Balance: 9997.195707 ETH                            │
+│                      ││ Balance: 10000.000000 ETH                           │
 │                      ││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
@@ -228,11 +175,161 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│                      ││ Balance: 9997.195707 ETH                            │
+│                      ││ Balance: 10000.000000 ETH                           │
 │                      ││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+└──────────────────────┘└─────────────────────────────────────────────────────┘
+● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
+
+────────────────────────────────────────────────────────────────────────────────
+┌ Contracts ───────────┐┌ Output ─────────────────────────────────────────────┐
+│                      ││                                                     │
+│ + Load new contract..││ Connected with account:                             │
+│                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
+│                      ││ Balance: 10000.000000 ETH                           │
+│                      ││ Logs: /home/pg/.evm-cli/output.log                  │
+│                      ││ ─────────────────────────────────────────────────── │
+│               ┌ Commands (Ctrl+P) ──────────────────────────┐               │
+│               │> █                                          │               │
+│               │─────────────────────────────────────────────│               │
+│               │> Edit config - Open config file in $EDITOR  │               │
+│               │  Reset - Clear all saved state              │               │
+│               │  Clear output - Clear the output area       │               │
+│               │  Quit - Exit the application [Ctrl+C]       │               │
+│               │                                             │               │
+│               │                                             │               │
+│               │                                             │               │
+│               │                                             │               │
+│               │                                             │               │
+│               │                                             │               │
+│               │                                             │               │
+│               └─────────────────────────────────────────────┘               │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+└──────────────────────┘└─────────────────────────────────────────────────────┘
+● Chain:31337                                  Ctrl+P: commands  Ctrl+C: quit
+
+────────────────────────────────────────────────────────────────────────────────
+┌ Contracts ───────────┐┌ Output ─────────────────────────────────────────────┐
+│                      ││                                                     │
+│ + Load new contract..││ Connected with account:                             │
+│                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
+│                      ││ Balance: 10000.000000 ETH                           │
+│                      ││ Logs: /home/pg/.evm-cli/output.log                  │
+│                      ││ ─────────────────────────────────────────────────── │
+│               ┌ Commands (Ctrl+P) ──────────────────────────┐               │
+│               │> █                                          │               │
+│               │─────────────────────────────────────────────│               │
+│               │  Edit config - Open config file in $EDITOR  │               │
+│               │> Reset - Clear all saved state              │               │
+│               │  Clear output - Clear the output area       │               │
+│               │  Quit - Exit the application [Ctrl+C]       │               │
+│               │                                             │               │
+│               │                                             │               │
+│               │                                             │               │
+│               │                                             │               │
+│               │                                             │               │
+│               │                                             │               │
+│               │                                             │               │
+│               └─────────────────────────────────────────────┘               │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+└──────────────────────┘└─────────────────────────────────────────────────────┘
+● Chain:31337                                  Ctrl+P: commands  Ctrl+C: quit
+
+────────────────────────────────────────────────────────────────────────────────
+┌ Contracts ───────────┐┌ Output ─────────────────────────────────────────────┐
+│                      ││                                                     │
+│ + Load new contract..││ Connected with account:                             │
+│                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
+│                      ││ Balance: 10000.000000 ETH                           │
+│                      ││ Logs: /home/pg/.evm-cli/output.log                  │
+│                      ││ ─────────────────────────────────────────────────── │
+│                      ││ ─────────                                           │
+│                      ││ State cleared                                       │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+└──────────────────────┘└─────────────────────────────────────────────────────┘
+● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
+
+────────────────────────────────────────────────────────────────────────────────
+┌ Contracts ───────────┐┌ Output ─────────────────────────────────────────────┐
+│                      ││                                                     │
+│ + Load new contract..││ Connected with account:                             │
+│                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
+│                      ││ Balance: 10000.000000 ETH                           │
+│                      ││ Logs: /home/pg/.evm-cli/output.log                  │
+│                      ││ ─────────────────────────────────────────────────── │
+│                      ││ ─────────                                           │
+│                      ││ State cleared                                       │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+│                      ││                                                     │
+└──────────────────────┘└─────────────────────────────────────────────────────┘
+● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
+
+────────────────────────────────────────────────────────────────────────────────
+┌ Contracts ───────────┐┌ Output ─────────────────────────────────────────────┐
+│                      ││                                                     │
+│ + Load new contract..││ Connected with account:                             │
+│                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
+│                      ││ Balance: 10000.000000 ETH                           │
+│                      ││ Logs: /home/pg/.evm-cli/output.log                  │
+│                      ││ ─────────────────────────────────────────────────── │
+│                      ││ ─────────                                           │
+│                      ││ State cleared                                       │
 │               ┌ Load Contract ──────────────────────────────┐               │
 │               │                                             │               │
 │               │                                             │               │
@@ -258,11 +355,11 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│                      ││ Balance: 9997.195707 ETH                            │
+│                      ││ Balance: 10000.000000 ETH                           │
 │                      ││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
+│                      ││ State cleared                                       │
 │               ┌ Load Contract ──────────────────────────────┐               │
 │               │                                             │               │
 │               │                                             │               │
@@ -288,11 +385,11 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│                      ││ Balance: 9997.195707 ETH                            │
+│                      ││ Balance: 10000.000000 ETH                           │
 │                      ││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
+│                      ││ State cleared                                       │
 │               ┌ Load Contract ──────────────────────────────┐               │
 │               │                                             │               │
 │               │                                             │               │
@@ -318,11 +415,11 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│                      ││ Balance: 9997.195707 ETH                            │
+│                      ││ Balance: 10000.000000 ETH                           │
 │                      ││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
+│                      ││ State cleared                                       │
 │               ┌ Load Contract ──────────────────────────────┐               │
 │               │                                             │               │
 │               │                                             │               │
@@ -348,11 +445,11 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │                      ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│                      ││ Balance: 9997.195707 ETH                            │
+│                      ││ Balance: 10000.000000 ETH                           │
 │                      ││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
+│                      ││ State cleared                                       │
 │               ┌ Load Contract ──────────────────────────────┐               │
 │               │                                             │               │
 │               │                                             │               │
@@ -378,11 +475,11 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
+│                      ││ State cleared                                       │
 │                      ││                                                     │
 │                      ││                                                     │
 │                      ││                                                     │
@@ -408,11 +505,11 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
+│                      ││ State cleared                                       │
 │                      ││                                                     │
 │                      ││                                                     │
 │                      ││                                                     │
@@ -438,11 +535,11 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
+│                      ││ State cleared                                       │
 │                      ││                                                     │
 │                      ││                                                     │
 │                      ││                                                     │
@@ -468,11 +565,11 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││ Preparing to deploy Demo...                         │
+│                      ││ State cleared                                       │
 │           ┌ constructor - Enter Parameters ─────────────────────┐           │
 │           │                                                     │           │
 │           │ Target:  EVM   PVM   (←/→ to switch)                │           │
@@ -498,11 +595,11 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││ Preparing to deploy Demo...                         │
+│                      ││ State cleared                                       │
 │           ┌ constructor - Enter Parameters ─────────────────────┐           │
 │           │                                                     │           │
 │           │ Target:  EVM   PVM   (←/→ to switch)                │           │
@@ -528,11 +625,11 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││ Preparing to deploy Demo...                         │
+│                      ││ State cleared                                       │
 │           ┌ constructor - Enter Parameters ─────────────────────┐           │
 │           │                                                     │           │
 │           │ Target:  EVM   PVM   (←/→ to switch)                │           │
@@ -558,11 +655,11 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││ Preparing to deploy Demo...                         │
+│                      ││ State cleared                                       │
 │           ┌ constructor - Enter Parameters ─────────────────────┐           │
 │           │                                                     │           │
 │           │ Target:  EVM   PVM   (←/→ to switch)                │           │
@@ -588,23 +685,23 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
-│   ▾ 0xa51c1fc2f0d1a1b││ ─────────────────────────────────────────────────── │
+│   ▾ 0x5fbdb2315678afe││ ─────────────────────────────────────────────────── │
 │     ├ getCount() [vie││ ─────────                                           │
-│     ├ decrement() [se││ Preparing to deploy Demo...                         │
-│     ├ increment() [se││ Compiling Demo for EVM...                           │
-│     ├ setCount(_count││ Compilation successful (EVM)                        │
+│     ├ decrement() [se││ State cleared                                       │
+│     ├ increment() [se││ Preparing to deploy Demo...                         │
+│     ├ setCount(_count││ Compiling Demo for EVM...                           │
+│                      ││ Compilation successful (EVM)                        │
 │                      ││ Deploying Demo contract...                          │
 │                      ││ Transaction:                                        │
-│                      ││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│                      ││ 45ebce92a18cf17                                     │
+│                      ││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│                      ││ 51d79b47725f722                                     │
 │                      ││ Waiting for confirmation...                         │
 │                      ││ Deployed at:                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
 │                      ││                                                     │
 │                      ││                                                     │
 │                      ││                                                     │
@@ -618,23 +715,23 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
-│   ▾ 0xa51c1fc2f0d1a1b││ ─────────────────────────────────────────────────── │
+│   ▾ 0x5fbdb2315678afe││ ─────────────────────────────────────────────────── │
 │     ├ getCount() [vie││ ─────────                                           │
-│     ├ decrement() [se││ Preparing to deploy Demo...                         │
-│     ├ increment() [se││ Compiling Demo for EVM...                           │
-│     ├ setCount(_count││ Compilation successful (EVM)                        │
+│     ├ decrement() [se││ State cleared                                       │
+│     ├ increment() [se││ Preparing to deploy Demo...                         │
+│     ├ setCount(_count││ Compiling Demo for EVM...                           │
+│                      ││ Compilation successful (EVM)                        │
 │                      ││ Deploying Demo contract...                          │
 │                      ││ Transaction:                                        │
-│                      ││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│                      ││ 45ebce92a18cf17                                     │
+│                      ││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│                      ││ 51d79b47725f722                                     │
 │                      ││ Waiting for confirmation...                         │
 │                      ││ Deployed at:                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
 │                      ││                                                     │
 │                      ││                                                     │
 │                      ││                                                     │
@@ -648,23 +745,23 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
-│   ▾ 0xa51c1fc2f0d1a1b││ ─────────────────────────────────────────────────── │
+│   ▾ 0x5fbdb2315678afe││ ─────────────────────────────────────────────────── │
 │     ├ getCount() [vie││ ─────────                                           │
-│     ├ decrement() [se││ Preparing to deploy Demo...                         │
-│     ├ increment() [se││ Compiling Demo for EVM...                           │
-│     ├ setCount(_count││ Compilation successful (EVM)                        │
+│     ├ decrement() [se││ State cleared                                       │
+│     ├ increment() [se││ Preparing to deploy Demo...                         │
+│     ├ setCount(_count││ Compiling Demo for EVM...                           │
+│                      ││ Compilation successful (EVM)                        │
 │                      ││ Deploying Demo contract...                          │
 │                      ││ Transaction:                                        │
-│                      ││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│                      ││ 45ebce92a18cf17                                     │
+│                      ││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│                      ││ 51d79b47725f722                                     │
 │                      ││ Waiting for confirmation...                         │
 │                      ││ Deployed at:                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
 │                      ││                                                     │
 │                      ││                                                     │
 │                      ││                                                     │
@@ -678,28 +775,28 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
-│   ▾ 0xa51c1fc2f0d1a1b││ ─────────────────────────────────────────────────── │
+│   ▾ 0x5fbdb2315678afe││ ─────────────────────────────────────────────────── │
 │     ├ getCount() [vie││ ─────────                                           │
-│     ├ decrement() [se││ Preparing to deploy Demo...                         │
-│     ├ increment() [se││ Compiling Demo for EVM...                           │
-│     ├ setCount(_count││ Compilation successful (EVM)                        │
+│     ├ decrement() [se││ State cleared                                       │
+│     ├ increment() [se││ Preparing to deploy Demo...                         │
+│     ├ setCount(_count││ Compiling Demo for EVM...                           │
+│                      ││ Compilation successful (EVM)                        │
 │                      ││ Deploying Demo contract...                          │
 │                      ││ Transaction:                                        │
-│                      ││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│                      ││ 45ebce92a18cf17                                     │
+│                      ││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│                      ││ 51d79b47725f722                                     │
 │                      ││ Waiting for confirmation...                         │
 │                      ││ Deployed at:                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││ getCount() @                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Result: 42                                          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
 └──────────────────────┘└─────────────────────────────────────────────────────┘
 ● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
 
@@ -708,28 +805,28 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
-│   ▾ 0xa51c1fc2f0d1a1b││ ─────────────────────────────────────────────────── │
+│   ▾ 0x5fbdb2315678afe││ ─────────────────────────────────────────────────── │
 │     ├ getCount() [vie││ ─────────                                           │
-│     ├ decrement() [se││ Preparing to deploy Demo...                         │
-│     ├ increment() [se││ Compiling Demo for EVM...                           │
-│     ├ setCount(_count││ Compilation successful (EVM)                        │
+│     ├ decrement() [se││ State cleared                                       │
+│     ├ increment() [se││ Preparing to deploy Demo...                         │
+│     ├ setCount(_count││ Compiling Demo for EVM...                           │
+│                      ││ Compilation successful (EVM)                        │
 │                      ││ Deploying Demo contract...                          │
 │                      ││ Transaction:                                        │
-│                      ││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│                      ││ 45ebce92a18cf17                                     │
+│                      ││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│                      ││ 51d79b47725f722                                     │
 │                      ││ Waiting for confirmation...                         │
 │                      ││ Deployed at:                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││ getCount() @                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Result: 42                                          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
 └──────────────────────┘└─────────────────────────────────────────────────────┘
 ● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
 
@@ -738,28 +835,28 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
-│   ▾ 0xa51c1fc2f0d1a1b││ ─────────────────────────────────────────────────── │
+│   ▾ 0x5fbdb2315678afe││ ─────────────────────────────────────────────────── │
 │     ├ getCount() [vie││ ─────────                                           │
-│     ├ decrement() [se││ Preparing to deploy Demo...                         │
-│     ├ increment() [se││ Compiling Demo for EVM...                           │
-│     ├ setCount(_count││ Compilation successful (EVM)                        │
+│     ├ decrement() [se││ State cleared                                       │
+│     ├ increment() [se││ Preparing to deploy Demo...                         │
+│     ├ setCount(_count││ Compiling Demo for EVM...                           │
+│                      ││ Compilation successful (EVM)                        │
 │                      ││ Deploying Demo contract...                          │
 │                      ││ Transaction:                                        │
-│                      ││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│                      ││ 45ebce92a18cf17                                     │
+│                      ││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│                      ││ 51d79b47725f722                                     │
 │                      ││ Waiting for confirmation...                         │
 │                      ││ Deployed at:                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││ getCount() @                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Result: 42                                          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
 └──────────────────────┘└─────────────────────────────────────────────────────┘
 ● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
 
@@ -768,28 +865,28 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
-│   ▾ 0xa51c1fc2f0d1a1b││ ─────────────────────────────────────────────────── │
+│   ▾ 0x5fbdb2315678afe││ ─────────────────────────────────────────────────── │
 │     ├ getCount() [vie││ ─────────                                           │
-│     ├ decrement() [se││ Preparing to deploy Demo...                         │
-│     ├ increment() [se││ Compiling Demo for EVM...                           │
-│     ├ setCount(_count││ Compilation successful (EVM)                        │
+│     ├ decrement() [se││ State cleared                                       │
+│     ├ increment() [se││ Preparing to deploy Demo...                         │
+│     ├ setCount(_count││ Compiling Demo for EVM...                           │
+│                      ││ Compilation successful (EVM)                        │
 │                      ││ Deploying Demo contract...                          │
 │                      ││ Transaction:                                        │
-│                      ││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│                      ││ 45ebce92a18cf17                                     │
+│                      ││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│                      ││ 51d79b47725f722                                     │
 │                      ││ Waiting for confirmation...                         │
 │                      ││ Deployed at:                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││ getCount() @                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Result: 42                                          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
 └──────────────────────┘└─────────────────────────────────────────────────────┘
 ● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
 
@@ -798,28 +895,28 @@
 │                      ││                                                     │
 │ + Load new contract..││ Connected with account:                             │
 │ ▾ Demo               ││ 0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266          │
-│   ◇ Deploy new instan││ Balance: 9997.195707 ETH                            │
+│   ◇ Deploy new instan││ Balance: 10000.000000 ETH                           │
 │   ◇ Load existing ins││ Logs: /home/pg/.evm-cli/output.log                  │
-│   ▾ 0xa51c1fc2f0d1a1b││ ─────────────────────────────────────────────────── │
+│   ▾ 0x5fbdb2315678afe││ ─────────────────────────────────────────────────── │
 │     ├ getCount() [vie││ ─────────                                           │
-│     ├ decrement() [se││ Preparing to deploy Demo...                         │
-│     ├ increment() [se││ Compiling Demo for EVM...                           │
-│     ├ setCount(_count││ Compilation successful (EVM)                        │
+│     ├ decrement() [se││ State cleared                                       │
+│     ├ increment() [se││ Preparing to deploy Demo...                         │
+│     ├ setCount(_count││ Compiling Demo for EVM...                           │
+│                      ││ Compilation successful (EVM)                        │
 │                      ││ Deploying Demo contract...                          │
 │                      ││ Transaction:                                        │
-│                      ││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│                      ││ 45ebce92a18cf17                                     │
+│                      ││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│                      ││ 51d79b47725f722                                     │
 │                      ││ Waiting for confirmation...                         │
 │                      ││ Deployed at:                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││ getCount() @                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Result: 42                                          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
-│                      ││                                                     │
 └──────────────────────┘└─────────────────────────────────────────────────────┘
 ● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
 
@@ -830,55 +927,25 @@
 │ ▾ Demo               ││ Compilation successful (EVM)                        │
 │   ◇ Deploy new instan││ Deploying Demo contract...                          │
 │   ◇ Load existing ins││ Transaction:                                        │
-│   ▾ 0xa51c1fc2f0d1a1b││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│     ├ getCount() [vie││ 45ebce92a18cf17                                     │
+│   ▾ 0x5fbdb2315678afe││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│     ├ getCount() [vie││ 51d79b47725f722                                     │
 │     ├ decrement() [se││ Waiting for confirmation...                         │
 │     ├ increment() [se││ Deployed at:                                        │
-│     ├ setCount(_count││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│     ├ setCount(_count││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││ getCount() @                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Result: 42                                          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││ Sending transaction to Demo                         │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0...       │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3...       │
 │                      ││ Transaction:                                        │
-│                      ││ 0x6b34024f7afa6f5008991f0461a421f6c06e962f6ea00f22f │
-│                      ││ 4ad319cdfeafee9                                     │
+│                      ││ 0x8edfc24428a69415fe384a31cf6ae4f8129e00591d00bff3e │
+│                      ││ 2c3e0ee7da22292                                     │
 │                      ││ decrement() @                                       │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
-│                      ││ Waiting for confirmation...                         │
-└──────────────────────┘└─────────────────────────────────────────────────────┘
-● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
-
-────────────────────────────────────────────────────────────────────────────────
-┌ Contracts ───────────┐┌ Output ─────────────────────────────────────────────┐
-│                      ││                                                     │
-│ + Load new contract..││ Compiling Demo for EVM...                           │
-│ ▾ Demo               ││ Compilation successful (EVM)                        │
-│   ◇ Deploy new instan││ Deploying Demo contract...                          │
-│   ◇ Load existing ins││ Transaction:                                        │
-│   ▾ 0xa51c1fc2f0d1a1b││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│     ├ getCount() [vie││ 45ebce92a18cf17                                     │
-│     ├ decrement() [se││ Waiting for confirmation...                         │
-│     ├ increment() [se││ Deployed at:                                        │
-│     ├ setCount(_count││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
-│                      ││ ─────────────────────────────────────────────────── │
-│                      ││ ─────────                                           │
-│                      ││ getCount() @                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
-│                      ││ Result: 42                                          │
-│                      ││ ─────────────────────────────────────────────────── │
-│                      ││ ─────────                                           │
-│                      ││ Sending transaction to Demo                         │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0...       │
-│                      ││ Transaction:                                        │
-│                      ││ 0x6b34024f7afa6f5008991f0461a421f6c06e962f6ea00f22f │
-│                      ││ 4ad319cdfeafee9                                     │
-│                      ││ decrement() @                                       │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Waiting for confirmation...                         │
 └──────────────────────┘└─────────────────────────────────────────────────────┘
 ● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
@@ -890,25 +957,55 @@
 │ ▾ Demo               ││ Compilation successful (EVM)                        │
 │   ◇ Deploy new instan││ Deploying Demo contract...                          │
 │   ◇ Load existing ins││ Transaction:                                        │
-│   ▾ 0xa51c1fc2f0d1a1b││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│     ├ getCount() [vie││ 45ebce92a18cf17                                     │
+│   ▾ 0x5fbdb2315678afe││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│     ├ getCount() [vie││ 51d79b47725f722                                     │
 │     ├ decrement() [se││ Waiting for confirmation...                         │
 │     ├ increment() [se││ Deployed at:                                        │
-│     ├ setCount(_count││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│     ├ setCount(_count││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││ getCount() @                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Result: 42                                          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││ Sending transaction to Demo                         │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0...       │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3...       │
 │                      ││ Transaction:                                        │
-│                      ││ 0x6b34024f7afa6f5008991f0461a421f6c06e962f6ea00f22f │
-│                      ││ 4ad319cdfeafee9                                     │
+│                      ││ 0x8edfc24428a69415fe384a31cf6ae4f8129e00591d00bff3e │
+│                      ││ 2c3e0ee7da22292                                     │
 │                      ││ decrement() @                                       │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
+│                      ││ Waiting for confirmation...                         │
+└──────────────────────┘└─────────────────────────────────────────────────────┘
+● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
+
+────────────────────────────────────────────────────────────────────────────────
+┌ Contracts ───────────┐┌ Output ─────────────────────────────────────────────┐
+│                      ││                                                     │
+│ + Load new contract..││ Compiling Demo for EVM...                           │
+│ ▾ Demo               ││ Compilation successful (EVM)                        │
+│   ◇ Deploy new instan││ Deploying Demo contract...                          │
+│   ◇ Load existing ins││ Transaction:                                        │
+│   ▾ 0x5fbdb2315678afe││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│     ├ getCount() [vie││ 51d79b47725f722                                     │
+│     ├ decrement() [se││ Waiting for confirmation...                         │
+│     ├ increment() [se││ Deployed at:                                        │
+│     ├ setCount(_count││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
+│                      ││ ─────────────────────────────────────────────────── │
+│                      ││ ─────────                                           │
+│                      ││ getCount() @                                        │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
+│                      ││ Result: 42                                          │
+│                      ││ ─────────────────────────────────────────────────── │
+│                      ││ ─────────                                           │
+│                      ││ Sending transaction to Demo                         │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3...       │
+│                      ││ Transaction:                                        │
+│                      ││ 0x8edfc24428a69415fe384a31cf6ae4f8129e00591d00bff3e │
+│                      ││ 2c3e0ee7da22292                                     │
+│                      ││ decrement() @                                       │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Waiting for confirmation...                         │
 └──────────────────────┘└─────────────────────────────────────────────────────┘
 ● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
@@ -917,28 +1014,28 @@
 ┌ Contracts ───────────┐┌ Output ─────────────────────────────────────────────┐
 │                      ││                                                     │
 │ + Load new contract..││ Transaction:                                        │
-│ ▾ Demo               ││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│   ◇ Deploy new instan││ 45ebce92a18cf17                                     │
+│ ▾ Demo               ││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│   ◇ Deploy new instan││ 51d79b47725f722                                     │
 │   ◇ Load existing ins││ Waiting for confirmation...                         │
-│   ▾ 0xa51c1fc2f0d1a1b││ Deployed at:                                        │
-│     ├ getCount() [vie││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│   ▾ 0x5fbdb2315678afe││ Deployed at:                                        │
+│     ├ getCount() [vie││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │     ├ decrement() [se││ ─────────────────────────────────────────────────── │
 │     ├ increment() [se││ ─────────                                           │
 │     ├ setCount(_count││ getCount() @                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Result: 42                                          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││ Sending transaction to Demo                         │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0...       │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3...       │
 │                      ││ Transaction:                                        │
-│                      ││ 0x6b34024f7afa6f5008991f0461a421f6c06e962f6ea00f22f │
-│                      ││ 4ad319cdfeafee9                                     │
+│                      ││ 0x8edfc24428a69415fe384a31cf6ae4f8129e00591d00bff3e │
+│                      ││ 2c3e0ee7da22292                                     │
 │                      ││ decrement() @                                       │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Waiting for confirmation...                         │
 │                      ││ Status: Success                                     │
-│                      ││ Gas used: 296416021                                 │
+│                      ││ Gas used: 2953835080                                │
 │                      ││ Logs (1)                                            │
 └──────────────────────┘└─────────────────────────────────────────────────────┘
 ● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
@@ -947,28 +1044,28 @@
 ┌ Contracts ───────────┐┌ Output ─────────────────────────────────────────────┐
 │                      ││                                                     │
 │ + Load new contract..││ Transaction:                                        │
-│ ▾ Demo               ││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│   ◇ Deploy new instan││ 45ebce92a18cf17                                     │
+│ ▾ Demo               ││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│   ◇ Deploy new instan││ 51d79b47725f722                                     │
 │   ◇ Load existing ins││ Waiting for confirmation...                         │
-│   ▾ 0xa51c1fc2f0d1a1b││ Deployed at:                                        │
-│     ├ getCount() [vie││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│   ▾ 0x5fbdb2315678afe││ Deployed at:                                        │
+│     ├ getCount() [vie││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │     ├ decrement() [se││ ─────────────────────────────────────────────────── │
 │     ├ increment() [se││ ─────────                                           │
 │     ├ setCount(_count││ getCount() @                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Result: 42                                          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││ Sending transaction to Demo                         │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0...       │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3...       │
 │                      ││ Transaction:                                        │
-│                      ││ 0x6b34024f7afa6f5008991f0461a421f6c06e962f6ea00f22f │
-│                      ││ 4ad319cdfeafee9                                     │
+│                      ││ 0x8edfc24428a69415fe384a31cf6ae4f8129e00591d00bff3e │
+│                      ││ 2c3e0ee7da22292                                     │
 │                      ││ decrement() @                                       │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Waiting for confirmation...                         │
 │                      ││ Status: Success                                     │
-│                      ││ Gas used: 296416021                                 │
+│                      ││ Gas used: 2953835080                                │
 │                      ││ Logs (1)                                            │
 └──────────────────────┘└─────────────────────────────────────────────────────┘
 ● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
@@ -977,28 +1074,28 @@
 ┌ Contracts ───────────┐┌ Output ─────────────────────────────────────────────┐
 │                      ││                                                     │
 │ + Load new contract..││ Transaction:                                        │
-│ ▾ Demo               ││ 0xaeeca6602bbe677a4df9b1d1e5b331a7c85edd0d275419138 │
-│   ◇ Deploy new instan││ 45ebce92a18cf17                                     │
+│ ▾ Demo               ││ 0x8540d58ee6621dea6c40116768831cee00a36f757e4f5ffca │
+│   ◇ Deploy new instan││ 51d79b47725f722                                     │
 │   ◇ Load existing ins││ Waiting for confirmation...                         │
-│   ▾ 0xa51c1fc2f0d1a1b││ Deployed at:                                        │
-│     ├ getCount() [vie││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│   ▾ 0x5fbdb2315678afe││ Deployed at:                                        │
+│     ├ getCount() [vie││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │     ├ decrement() [se││ ─────────────────────────────────────────────────── │
 │     ├ increment() [se││ ─────────                                           │
 │     ├ setCount(_count││ getCount() @                                        │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Result: 42                                          │
 │                      ││ ─────────────────────────────────────────────────── │
 │                      ││ ─────────                                           │
 │                      ││ Sending transaction to Demo                         │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0...       │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3...       │
 │                      ││ Transaction:                                        │
-│                      ││ 0x6b34024f7afa6f5008991f0461a421f6c06e962f6ea00f22f │
-│                      ││ 4ad319cdfeafee9                                     │
+│                      ││ 0x8edfc24428a69415fe384a31cf6ae4f8129e00591d00bff3e │
+│                      ││ 2c3e0ee7da22292                                     │
 │                      ││ decrement() @                                       │
-│                      ││ 0xa51c1fc2f0d1a1b8494ed1fe312d7c3a78ed91c0          │
+│                      ││ 0x5fbdb2315678afecb367f032d93f642f64180aa3          │
 │                      ││ Waiting for confirmation...                         │
 │                      ││ Status: Success                                     │
-│                      ││ Gas used: 296416021                                 │
+│                      ││ Gas used: 2953835080                                │
 │                      ││ Logs (1)                                            │
 └──────────────────────┘└─────────────────────────────────────────────────────┘
 ● Chain:31337                     Del: remove  Ctrl+P: commands  Ctrl+C: quit
