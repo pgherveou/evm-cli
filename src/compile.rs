@@ -84,7 +84,7 @@ pub fn load_contract_abi(sol_path: &Path) -> Result<Vec<(String, JsonAbi)>> {
         .ok_or_else(|| anyhow::anyhow!("Invalid file path"))?
         .to_string_lossy();
 
-    let artifact_dir = output_dir.join(format!("{}.sol", filename));
+    let artifact_dir = output_dir.join(format!("{filename}.sol"));
 
     if !artifact_dir.exists() {
         let detailed_error = format!(
@@ -92,7 +92,7 @@ pub fn load_contract_abi(sol_path: &Path) -> Result<Vec<(String, JsonAbi)>> {
             artifact_dir.display(),
             build_cmd
         );
-        log::error!("{}", detailed_error);
+        log::error!("{detailed_error}");
 
         // Simplified error for UI
         bail!("No artifacts found. The build may have succeeded but produced no artifacts. Check ~/.evm-cli/output.log for details.");
@@ -100,9 +100,12 @@ pub fn load_contract_abi(sol_path: &Path) -> Result<Vec<(String, JsonAbi)>> {
 
     let mut contracts = Vec::new();
 
-    for entry in std::fs::read_dir(&artifact_dir)
-        .with_context(|| format!("Failed to read artifact directory: {}", artifact_dir.display()))?
-    {
+    for entry in std::fs::read_dir(&artifact_dir).with_context(|| {
+        format!(
+            "Failed to read artifact directory: {}",
+            artifact_dir.display()
+        )
+    })? {
         let entry = entry?;
         let path = entry.path();
 
@@ -120,7 +123,7 @@ pub fn load_contract_abi(sol_path: &Path) -> Result<Vec<(String, JsonAbi)>> {
                 .with_context(|| format!("Failed to parse artifact: {}", path.display()))?;
 
             let abi: JsonAbi = serde_json::from_value(artifact.abi)
-                .with_context(|| format!("Failed to parse ABI for {}", contract_name))?;
+                .with_context(|| format!("Failed to parse ABI for {contract_name}"))?;
 
             contracts.push((contract_name, abi));
         }
@@ -156,10 +159,10 @@ pub fn compile_contract(
             build_cmd,
             contract_name
         );
-        log::error!("{}", detailed_error);
+        log::error!("{detailed_error}");
 
         // Simplified error for UI
-        bail!("Contract '{}' not found in artifacts. The name may not match. Check ~/.evm-cli/output.log for details.", contract_name);
+        bail!("Contract '{contract_name}' not found in artifacts. The name may not match. Check ~/.evm-cli/output.log for details.");
     }
 
     let content = std::fs::read_to_string(&artifact_path)
@@ -169,25 +172,24 @@ pub fn compile_contract(
         .with_context(|| format!("Failed to parse artifact: {}", artifact_path.display()))?;
 
     let abi: JsonAbi = serde_json::from_value(artifact.abi)
-        .with_context(|| format!("Failed to parse ABI for {}", contract_name))?;
+        .with_context(|| format!("Failed to parse ABI for {contract_name}"))?;
 
     // Decode bytecode
-    let bytecode_hex = artifact.bytecode.object.strip_prefix("0x").unwrap_or(&artifact.bytecode.object);
+    let bytecode_hex = artifact
+        .bytecode
+        .object
+        .strip_prefix("0x")
+        .unwrap_or(&artifact.bytecode.object);
     let bytecode = hex::decode(bytecode_hex)
-        .with_context(|| format!("Failed to decode bytecode for {}", contract_name))?;
+        .with_context(|| format!("Failed to decode bytecode for {contract_name}"))?;
 
     if bytecode.is_empty() {
-        bail!(
-            "Empty bytecode for {}. This may be an interface or abstract contract.",
-            contract_name
-        );
+        bail!("Empty bytecode for {contract_name}. This may be an interface or abstract contract.");
     }
 
     // Validate PVM magic if targeting PVM
     if target == BytecodeTarget::Pvm && (bytecode.len() < 4 || bytecode[..4] != PVM_MAGIC) {
-        bail!(
-            "Invalid PVM bytecode: missing magic bytes. Ensure resolc is installed and working."
-        );
+        bail!("Invalid PVM bytecode: missing magic bytes. Ensure resolc is installed and working.");
     }
 
     Ok(CompiledContract {
@@ -219,7 +221,11 @@ fn run_forge_build(sol_path: &Path, target: BytecodeTarget) -> Result<String> {
         parent_dir.display(),
         output_dir.display(),
         sol_path.display(),
-        if target == BytecodeTarget::Pvm { " --resolc-compile" } else { "" }
+        if target == BytecodeTarget::Pvm {
+            " --resolc-compile"
+        } else {
+            ""
+        }
     );
 
     let output = cmd
@@ -232,34 +238,38 @@ fn run_forge_build(sol_path: &Path, target: BytecodeTarget) -> Result<String> {
         let combined = if stderr.is_empty() { stdout } else { stderr };
 
         // Log detailed error
-        let detailed_error = format!(
-            "forge build failed.\n\nCommand:\n  {}\n\nOutput:\n{}",
-            cmd_display, combined
-        );
-        log::error!("{}", detailed_error);
-        log::info!("Command: {}", cmd_display);
+        let detailed_error =
+            format!("forge build failed.\n\nCommand:\n  {cmd_display}\n\nOutput:\n{combined}");
+        log::error!("{detailed_error}");
+        log::info!("Command: {cmd_display}");
 
         // Simplified error for UI - show first line of error
-        let first_error_line = combined.lines().find(|line| !line.trim().is_empty()).unwrap_or("Unknown error");
-        bail!("forge build failed: {}\n\nCheck ~/.evm-cli/output.log for full details.", first_error_line);
+        let first_error_line = combined
+            .lines()
+            .find(|line| !line.trim().is_empty())
+            .unwrap_or("Unknown error");
+        bail!(
+            "forge build failed: {first_error_line}\n\nCheck ~/.evm-cli/output.log for full details."
+        );
     }
 
     // Log successful builds too
-    log::info!("Command: {}", cmd_display);
+    log::info!("Command: {cmd_display}");
 
     Ok(cmd_display)
 }
 
 /// Get the artifact path for a compiled contract
-fn get_artifact_path(sol_path: &Path, contract_name: &str, target: BytecodeTarget) -> std::path::PathBuf {
+fn get_artifact_path(
+    sol_path: &Path,
+    contract_name: &str,
+    target: BytecodeTarget,
+) -> std::path::PathBuf {
     let parent_dir = sol_path.parent().unwrap_or(Path::new("."));
-    let filename = sol_path
-        .file_stem()
-        .unwrap_or_default()
-        .to_string_lossy();
+    let filename = sol_path.file_stem().unwrap_or_default().to_string_lossy();
 
     parent_dir
         .join(target.output_dir())
-        .join(format!("{}.sol", filename))
-        .join(format!("{}.json", contract_name))
+        .join(format!("{filename}.sol"))
+        .join(format!("{contract_name}.json"))
 }

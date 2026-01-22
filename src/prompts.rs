@@ -11,7 +11,7 @@ pub fn format_method_call(name: &str, params: &[Param], args: &[DynSolValue]) ->
             } else {
                 param.name.clone()
             };
-            format!("{}: {}", param_name, format_return_value(arg))
+            format!("{param_name}: {}", format_return_value(arg))
         })
         .collect();
 
@@ -20,13 +20,13 @@ pub fn format_method_call(name: &str, params: &[Param], args: &[DynSolValue]) ->
 
 pub fn format_return_value(value: &DynSolValue) -> String {
     match value {
-        DynSolValue::Address(a) => format!("{:?}", a),
+        DynSolValue::Address(a) => format!("{a:?}"),
         DynSolValue::Bool(b) => b.to_string(),
         DynSolValue::Bytes(b) => format!("0x{}", hex::encode(b)),
         DynSolValue::FixedBytes(b, _) => format!("0x{}", hex::encode(b)),
         DynSolValue::Int(i, _) => i.to_string(),
         DynSolValue::Uint(u, _) => u.to_string(),
-        DynSolValue::String(s) => format!("\"{}\"", s),
+        DynSolValue::String(s) => format!("\"{s}\""),
         DynSolValue::Array(arr) | DynSolValue::FixedArray(arr) => {
             let items: Vec<_> = arr.iter().map(format_return_value).collect();
             format!("[{}]", items.join(", "))

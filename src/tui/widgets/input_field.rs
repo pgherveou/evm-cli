@@ -56,7 +56,9 @@ impl Widget for InputField<'_> {
 
         // Label
         let label_style = if self.focused {
-            Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD)
         } else {
             Style::default().fg(Color::White)
         };
@@ -77,7 +79,9 @@ impl Widget for InputField<'_> {
 
         if self.focused && !self.value.is_empty() {
             // Show cursor in the middle of text
-            let (before, after) = self.value.split_at(self.cursor_position.min(self.value.len()));
+            let (before, after) = self
+                .value
+                .split_at(self.cursor_position.min(self.value.len()));
             spans.push(Span::styled(before, value_style));
             if after.is_empty() {
                 spans.push(Span::styled(
@@ -91,9 +95,7 @@ impl Widget for InputField<'_> {
                 if let Some(cursor_char) = chars.next() {
                     spans.push(Span::styled(
                         cursor_char.to_string(),
-                        Style::default()
-                            .fg(Color::Black)
-                            .bg(Color::Cyan),
+                        Style::default().fg(Color::Black).bg(Color::Cyan),
                     ));
                     let rest: String = chars.collect();
                     if !rest.is_empty() {
@@ -120,7 +122,7 @@ impl Widget for InputField<'_> {
         if let Some(error) = self.error {
             if area.height > 1 {
                 let error_line = Line::from(Span::styled(
-                    format!("  └ {}", error),
+                    format!("  └ {error}"),
                     Style::default().fg(Color::Red),
                 ));
                 buf.set_line(area.x, area.y + 1, &error_line, area.width);

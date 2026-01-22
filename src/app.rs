@@ -1,13 +1,14 @@
 use alloy::dyn_abi::{DynSolType, DynSolValue, EventExt, FunctionExt, JsonAbiExt};
 use alloy::json_abi::{Function, JsonAbi};
 use alloy::network::TransactionBuilder;
-use alloy::primitives::Address;
+use alloy::primitives::{Address, U256};
 use alloy::providers::Provider;
 use alloy::rpc::types::TransactionRequest;
 use anyhow::{Context, Result};
 use crossterm::event::{KeyCode, KeyEvent, KeyModifiers};
 use ratatui::Frame;
 use ratatui::widgets::Widget;
+use separator::Separatable;
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::PathBuf;
@@ -18,7 +19,7 @@ use crate::compile::{BytecodeTarget, CompiledContract};
 type AbiCache = RefCell<HashMap<PathBuf, Vec<(String, Arc<JsonAbi>)>>>;
 
 use crate::prompts;
-use crate::store::DeploymentStore;
+use crate::store::{ContractId, DeploymentStore};
 use crate::tui::layout::AppLayout;
 use crate::tui::state::{
     AppState, ConnectionStatus, FieldState, Focus, OutputStyle, PopupState,
@@ -52,61 +53,123 @@ pub struct App<P> {
     pub contract: Option<CompiledContract>,
     pub contract_path: Option<PathBuf>,
     pub address: Option<Address>,
+    pub signer_address: Address,
     running: bool,
     pending_action: PendingAction,
     edit_config_requested: bool,
+    /// Content to display in external editor. Set this field and the main loop
+    /// will handle terminal restore, editor launch, and terminal re-setup.
+    pending_editor_content: Option<String>,
     /// Cache of loaded ABIs to avoid re-parsing files on every render
     abi_cache: AbiCache,
 }
 
 impl<P: Provider + Clone> App<P> {
-    pub fn new(provider: P, store: DeploymentStore) -> Self {
+    pub fn new(provider: P, store: DeploymentStore, signer_address: Address) -> Self {
+        let mut state = AppState::default();
+        state.account = Some(signer_address);
+        
         Self {
             provider,
             store,
-            state: AppState::default(),
+            state,
             contract: None,
             contract_path: None,
             address: None,
+            signer_address,
             running: true,
             pending_action: PendingAction::None,
             edit_config_requested: false,
+            pending_editor_content: None,
             abi_cache: RefCell::new(HashMap::new()),
         }
     }
 
-    pub async fn initialize(&mut self) -> Result<()> {
-        let chain_id = self.provider.get_chain_id().await?;
-        self.state.chain_id = Some(chain_id);
-        self.state.connection = ConnectionStatus::Connected;
-        Ok(())
+    /// Attempt to connect to RPC, returns true if successful.
+    /// On success, updates connection status, chain_id, and balance.
+    /// On failure, stores the error message for display.
+    pub async fn try_connect(&mut self) -> bool {
+        match self.provider.get_chain_id().await {
+            Ok(chain_id) => {
+                self.state.chain_id = Some(chain_id);
+                self.state.connection = ConnectionStatus::Connected;
+                self.state.connection_error = None;
+                
+                // Fetch balance
+                if let Ok(balance) = self.provider.get_balance(self.signer_address).await {
+                    self.state.balance = Some(format_ether(balance));
+                }
+                
+                log::info!("Connected to chain ID: {chain_id}");
+                
+                // Update connection card if it exists
+                self.update_connection_card();
+                true
+            }
+            Err(e) => {
+                let error_msg = e.to_string();
+                log::warn!("Connection failed: {error_msg}");
+                self.state.connection = ConnectionStatus::Disconnected;
+                self.state.connection_error = Some(error_msg);
+                false
+            }
+        }
+    }
+
+    /// Add the connection card (should be called once at startup)
+    pub fn add_connection_card(&mut self) {
+        let card = crate::cards::Card::Connection {
+            connected: matches!(self.state.connection, ConnectionStatus::Connected),
+            account: self.signer_address,
+            balance: self.state.balance.clone(),
+            chain_id: self.state.chain_id,
+            error: self.state.connection_error.clone(),
+        };
+        self.state.cards.cards.insert(0, card);
+    }
+
+    /// Update the connection card with current state (called after reconnection)
+    fn update_connection_card(&mut self) {
+        if let Some(crate::cards::Card::Connection { connected, balance, chain_id, error, .. }) = 
+            self.state.cards.cards.first_mut() 
+        {
+            *connected = matches!(self.state.connection, ConnectionStatus::Connected);
+            *balance = self.state.balance.clone();
+            *chain_id = self.state.chain_id;
+            *error = self.state.connection_error.clone();
+        }
     }
 
     pub fn set_contract(&mut self, contract: CompiledContract, path: PathBuf) {
+        let contract_name = contract.name.clone();
         self.contract = Some(contract);
         self.contract_path = Some(path.clone());
         self.address = None;
 
-        // Expand the contract (use canonicalized path for consistency with store)
+        // Expand the contract (use canonicalized path + name for per-contract expansion)
         let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
-        self.state.sidebar.expanded_contracts.insert(canonical_path);
+        self.state.sidebar.expanded_contracts.insert((canonical_path, contract_name.clone()));
 
-        // Select the contract in the sidebar
-        self.select_contract_in_sidebar(&path);
+        // Select the contract in the sidebar (must match both path AND name for multi-contract files)
+        self.select_contract_in_sidebar(&path, &contract_name);
 
         // Ensure the contract is in the store (with empty deployments if not yet deployed)
-        self.store.ensure_contract(&path);
+        let contract_id = ContractId::new(path, contract_name);
+        self.store.ensure_contract(&contract_id);
         if let Err(e) = self.store.save() {
-            self.state.output.push_error(format!("Failed to save contract: {}", e));
+            self.state.output.push_error(format!("Failed to save contract: {e}"));
         }
     }
 
-    /// Find and select a contract by path in the sidebar
-    fn select_contract_in_sidebar(&mut self, path: &PathBuf) {
+    /// Find and select a contract by path and name in the sidebar.
+    /// For files with multiple contracts, we must match both path AND name.
+    fn select_contract_in_sidebar(&mut self, path: &PathBuf, contract_name: &str) {
+        let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
         let nodes = self.build_tree_nodes();
         for (i, node) in nodes.iter().enumerate() {
-            if let TreeNode::Contract { path: node_path, .. } = node {
-                if node_path == path {
+            if let TreeNode::Contract { path: node_path, name: node_name } = node {
+                // Match both path AND contract name (node_path is already canonicalized)
+                if *node_path == canonical_path && node_name == contract_name {
                     self.state.sidebar.selected = i;
                     // Adjust scroll if needed
                     if self.state.sidebar.selected < self.state.sidebar.scroll_offset {
@@ -139,9 +202,17 @@ impl<P: Provider + Clone> App<P> {
         self.address = Some(address);
     }
 
-    pub fn set_account_info(&mut self, address: Address, balance: String) {
-        self.state.account = Some(address);
-        self.state.balance = Some(balance);
+    /// Refresh the account balance from the provider and update connection card
+    async fn refresh_balance(&mut self) {
+        match self.provider.get_balance(self.signer_address).await {
+            Ok(balance) => {
+                self.state.balance = Some(format_ether(balance));
+                self.update_connection_card();
+            }
+            Err(e) => {
+                log::warn!("Failed to refresh balance: {e}");
+            }
+        }
     }
 
     pub fn clear_state(&mut self) {
@@ -151,7 +222,7 @@ impl<P: Provider + Clone> App<P> {
         self.state.sidebar = Default::default();
         self.store.clear();
         if let Err(e) = self.store.save() {
-            self.state.output.push_error(format!("Failed to save after clearing: {}", e));
+            self.state.output.push_error(format!("Failed to save after clearing: {e}"));
         }
         self.state.output.push_info("State cleared");
         self.abi_cache.borrow_mut().clear();
@@ -179,31 +250,6 @@ impl<P: Provider + Clone> App<P> {
         }
     }
 
-    /// Get name and ABI for a contract path, using current contract or cache
-    fn get_contract_name_and_abi(&self, contract_path: &PathBuf) -> (String, Arc<JsonAbi>) {
-        // Use current contract if this is the active one
-        let is_current = self.contract_path.as_ref() == Some(contract_path);
-        if is_current {
-            if let Some(contract) = &self.contract {
-                return (contract.name.clone(), Arc::new(contract.abi.clone()));
-            }
-        }
-
-        // Fall back to cached ABI loading
-        if let Some(contracts) = self.load_contract_abi_cached(contract_path) {
-            if let Some((name, abi)) = contracts.into_iter().next() {
-                return (name, abi);
-            }
-        }
-
-        // Last resort: use filename as name with empty ABI
-        let name = contract_path
-            .file_stem()
-            .map(|s| s.to_string_lossy().to_string())
-            .unwrap_or_else(|| contract_path.to_string_lossy().to_string());
-        (name, Arc::new(JsonAbi::new()))
-    }
-
     /// Build tree nodes with ABI caching for performance
     fn build_tree_nodes(&self) -> Vec<TreeNode> {
         use crate::method_list::{self, MethodSelection};
@@ -214,36 +260,47 @@ impl<P: Provider + Clone> App<P> {
         nodes.push(TreeNode::NewContract);
 
         // Get all contracts and sort them for stable ordering
-        let mut all_contracts: Vec<PathBuf> = self.store.all_contracts().into_iter().collect();
+        let mut all_contracts: Vec<ContractId> = self.store.all_contracts();
 
         // Add current contract if it's not already in the store
-        // We need to canonicalize for comparison since the store uses canonicalized paths
-        if let Some(current_path) = &self.contract_path {
+        // We canonicalize for comparison since the store uses canonicalized paths
+        if let (Some(current_path), Some(current_contract)) = (&self.contract_path, &self.contract) {
             let current_canonical = current_path.canonicalize().unwrap_or_else(|_| current_path.clone());
-            let is_in_store = all_contracts.iter().any(|p| {
-                let p_canonical = p.canonicalize().unwrap_or_else(|_| p.clone());
-                p_canonical == current_canonical
+            let current_id = ContractId::new(current_canonical.clone(), current_contract.name.clone());
+            // Check if this exact contract (path + name) is in the store
+            let is_in_store = all_contracts.iter().any(|c| {
+                let c_canonical = c.path.canonicalize().unwrap_or_else(|_| c.path.clone());
+                c_canonical == current_canonical && c.name == current_contract.name
             });
 
             if !is_in_store {
-                all_contracts.push(current_path.clone());
+                all_contracts.push(current_id);
             }
         }
 
-        // Sort for stable ordering
-        all_contracts.sort();
+        // Sort for stable ordering (by path then name)
+        all_contracts.sort_by(|a, b| {
+            let path_cmp = a.path.cmp(&b.path);
+            if path_cmp == std::cmp::Ordering::Equal {
+                a.name.cmp(&b.name)
+            } else {
+                path_cmp
+            }
+        });
 
         // Add each contract in sorted order
-        for contract_path in all_contracts {
-            let (name, abi) = self.get_contract_name_and_abi(&contract_path);
+        for contract_id in all_contracts {
+            let contract_path = &contract_id.path;
+            let name = &contract_id.name;
+            let abi = self.get_abi_for_contract(&contract_id);
 
             nodes.push(TreeNode::Contract {
                 name: name.clone(),
                 path: contract_path.clone(),
             });
 
-            // Check if this contract is expanded
-            if self.state.sidebar.expanded_contracts.contains(&contract_path) {
+            // Check if this contract is expanded (by path + name)
+            if self.state.sidebar.expanded_contracts.contains(&(contract_path.clone(), name.clone())) {
                 // Add constructor and load options for all expanded contracts
                 let abi_clone = Arc::clone(&abi);
                 nodes.push(TreeNode::Constructor {
@@ -259,11 +316,12 @@ impl<P: Provider + Clone> App<P> {
                     abi: abi_clone,
                 });
 
-                // Show deployed instances for all expanded contracts
-                let deployments = self.store.get_deployments(&contract_path);
+                // Show deployed instances for this contract
+                let deployments = self.store.get_deployments(&contract_id);
                 for address in &deployments {
                     nodes.push(TreeNode::DeployedInstance {
                         address: *address,
+                        contract_name: name.clone(),
                         contract_path: contract_path.clone(),
                     });
 
@@ -287,11 +345,61 @@ impl<P: Provider + Clone> App<P> {
         nodes
     }
 
+    /// Get ABI for a contract, using cache or current contract
+    fn get_abi_for_contract(&self, contract_id: &ContractId) -> Arc<JsonAbi> {
+        // Use current contract if this matches
+        if let (Some(current_path), Some(current_contract)) = (&self.contract_path, &self.contract) {
+            let current_canonical = current_path.canonicalize().unwrap_or_else(|_| current_path.clone());
+            let contract_canonical = contract_id.path.canonicalize().unwrap_or_else(|_| contract_id.path.clone());
+            if current_canonical == contract_canonical && current_contract.name == contract_id.name {
+                return Arc::new(current_contract.abi.clone());
+            }
+        }
+
+        // Fall back to cached ABI loading
+        if let Some(contracts) = self.load_contract_abi_cached(&contract_id.path) {
+            for (name, abi) in contracts {
+                if name == contract_id.name {
+                    return abi;
+                }
+            }
+        }
+
+        // Last resort: empty ABI
+        Arc::new(JsonAbi::new())
+    }
+
     pub async fn run_interactive(&mut self) -> Result<()> {
         let mut terminal = crate::tui::setup()?;
         let mut output_area = ratatui::layout::Rect::default();
+        
+        // Reconnection polling state
+        let mut last_reconnect_attempt = std::time::Instant::now();
+        let reconnect_interval = std::time::Duration::from_secs(5);
 
         while self.running {
+            // Poll for reconnection if disconnected
+            if matches!(self.state.connection, ConnectionStatus::Disconnected) {
+                if last_reconnect_attempt.elapsed() >= reconnect_interval {
+                    last_reconnect_attempt = std::time::Instant::now();
+                    self.try_connect().await;
+                }
+            }
+            // Check if we need to display content in editor
+            if let Some(content) = self.pending_editor_content.take() {
+                // Restore terminal before launching editor
+                crate::tui::restore(&mut terminal)?;
+
+                // Display in editor
+                if let Err(e) = self.display_in_editor_impl(&content) {
+                    self.state.output.push_error(format!("Editor error: {e}"));
+                }
+
+                // Re-setup terminal
+                terminal = crate::tui::setup()?;
+                continue;
+            }
+
             // Check if we need to open the config editor
             if self.edit_config_requested {
                 self.edit_config_requested = false;
@@ -309,12 +417,31 @@ impl<P: Provider + Clone> App<P> {
                         // Reset sidebar selection to ensure it's valid after reload
                         self.state.sidebar.selected = 0;
                         self.state.sidebar.scroll_offset = 0;
+                        
+                        // Update signer address from new config (if private key changed)
+                        if let Ok(new_signer) = self.store.config.private_key
+                            .strip_prefix("0x")
+                            .unwrap_or(&self.store.config.private_key)
+                            .parse::<alloy::signers::local::PrivateKeySigner>()
+                        {
+                            let new_address = new_signer.address();
+                            if new_address != self.signer_address {
+                                self.signer_address = new_address;
+                                self.state.account = Some(new_address);
+                                self.state.output.push_info("Account updated from config");
+                            }
+                        }
+                        
                         self.state.output.push_success("Config reloaded");
+                        self.state.output.push_info("Note: RPC URL changes require restart");
                     }
                     Err(e) => {
-                        self.state.output.push_error(format!("Failed to reload config: {}", e));
+                        self.state.output.push_error(format!("Failed to reload config: {e}"));
                     }
                 }
+                
+                // Refresh connection status and balance with new account
+                self.try_connect().await;
 
                 // Re-setup terminal
                 terminal = crate::tui::setup()?;
@@ -324,12 +451,22 @@ impl<P: Provider + Clone> App<P> {
             terminal.draw(|f| {
                 let layout = AppLayout::new(f.area());
                 output_area = layout.output;
+                // Update output area height for scroll calculation
+                // Subtract borders and padding (2 for borders, 2 for padding)
+                self.state.output_area_height = layout.output.height.saturating_sub(4);
                 self.render(f);
             })?;
 
             if let Some(event) = crate::tui::poll_event()? {
                 match event {
                     InputEvent::Key(key) => self.handle_key(key).await?,
+                    InputEvent::Resize(width, height) => {
+                        // Update terminal size
+                        self.state.terminal_size = (width, height);
+                        // Check minimum size (80 characters wide)
+                        self.state.terminal_too_small = width < 80;
+                        // Redraw will happen automatically on next loop iteration
+                    }
                     InputEvent::ScrollUp(col, row) => {
                         // Check if scroll is within output area
                         if col >= output_area.x
@@ -364,7 +501,7 @@ impl<P: Provider + Clone> App<P> {
     fn open_config_in_editor(&self) -> Result<()> {
         use std::process::Command;
 
-        let config_path = DeploymentStore::config_path();
+        let config_path = self.store.config_path();
 
         // Ensure config file exists
         if !config_path.exists() {
@@ -379,12 +516,42 @@ impl<P: Provider + Clone> App<P> {
         Command::new(&editor)
             .arg(&config_path)
             .status()
-            .with_context(|| format!("Failed to open {} with {}", config_path.display(), editor))?;
+            .with_context(|| format!("Failed to open {} with {editor}", config_path.display()))?;
 
         Ok(())
     }
 
     fn render(&self, frame: &mut Frame) {
+        // Check if terminal is too small
+        if self.state.terminal_too_small {
+            use ratatui::widgets::{Block, Borders, Paragraph, Wrap};
+            use ratatui::style::{Color, Style};
+            use ratatui::text::{Line, Span};
+
+            let area = crate::tui::layout::centered_popup(frame.area(), 60, 30);
+            let warning_text = vec![
+                Line::from(""),
+                Line::from(Span::styled(
+                    "⚠ Terminal Too Small",
+                    Style::default().fg(Color::Yellow).add_modifier(ratatui::style::Modifier::BOLD)
+                )),
+                Line::from(""),
+                Line::from("Please resize your terminal to at least 80 characters wide."),
+                Line::from(""),
+                Line::from(Span::styled(
+                    format!("Current size: {} × {}", self.state.terminal_size.0, self.state.terminal_size.1),
+                    Style::default().fg(Color::DarkGray)
+                )),
+            ];
+
+            let paragraph = Paragraph::new(warning_text)
+                .block(Block::default().borders(Borders::ALL).border_style(Style::default().fg(Color::Yellow)))
+                .wrap(Wrap { trim: true });
+
+            frame.render_widget(paragraph, area);
+            return;
+        }
+
         let layout = AppLayout::new(frame.area());
 
         // Render sidebar with cached tree building
@@ -430,14 +597,14 @@ impl<P: Provider + Clone> App<P> {
             PopupState::ContractSelector { contracts, selected } => {
                 self.render_contract_selector(frame, contracts, *selected);
             }
-            PopupState::CardMenu { card_index: _, actions, selected } => {
-                self.render_card_menu(frame, actions, *selected);
-            }
             PopupState::TracerMenu { card_index: _, tracers, selected } => {
                 self.render_tracer_menu(frame, tracers, *selected);
             }
-            PopupState::TracerConfig { card_index: _, config } => {
-                self.render_tracer_config(frame, config);
+            PopupState::TracerConfig { card_index: _, config, current } => {
+                self.render_tracer_config(frame, config, *current);
+            }
+            PopupState::CopyMenu { card_index: _, options, selected } => {
+                self.render_copy_menu(frame, options, *selected);
             }
         }
     }
@@ -566,6 +733,21 @@ impl<P: Provider + Clone> App<P> {
     }
 
     async fn handle_key(&mut self, key: KeyEvent) -> Result<()> {
+        // Log all key events for debugging (trace level to avoid verbosity)
+        let key_str = format_key_event(&key);
+        let popup_state = match &self.state.popup {
+            PopupState::None => "None",
+            PopupState::CommandPalette { .. } => "CommandPalette",
+            PopupState::ParameterPopup { .. } => "ParameterPopup",
+            PopupState::FilePicker { .. } => "FilePicker",
+            PopupState::AddressInput { .. } => "AddressInput",
+            PopupState::ContractSelector { .. } => "ContractSelector",
+            PopupState::TracerMenu { .. } => "TracerMenu",
+            PopupState::TracerConfig { .. } => "TracerConfig",
+            PopupState::CopyMenu { .. } => "CopyMenu",
+        };
+        log::trace!("[KEY] {} | focus={:?} popup={}", key_str, self.state.focus, popup_state);
+
         // Global shortcuts
         if key.modifiers.contains(KeyModifiers::CONTROL) {
             match key.code {
@@ -585,6 +767,44 @@ impl<P: Provider + Clone> App<P> {
             }
         }
 
+        // Global card action shortcuts (work regardless of focus, but only when no popup is open)
+        if matches!(self.state.popup, PopupState::None) && !self.state.cards.cards.is_empty() {
+            let card_index = self.state.cards.selected_index;
+            if card_index < self.state.cards.cards.len() {
+                match key.code {
+                    KeyCode::Char('r') => {
+                        // View Receipt shortcut for Transaction cards
+                        if matches!(&self.state.cards.cards[card_index], crate::cards::Card::Transaction { .. }) {
+                            self.handle_card_action(card_index, crate::cards::CardAction::ViewReceipt).await?;
+                            return Ok(());
+                        }
+                    }
+                    KeyCode::Char('d') => {
+                        // Debug Trace/Call shortcut
+                        match &self.state.cards.cards[card_index] {
+                            crate::cards::Card::Transaction { .. } => {
+                                self.handle_card_action(card_index, crate::cards::CardAction::DebugTrace).await?;
+                                return Ok(());
+                            }
+                            crate::cards::Card::Call { .. } => {
+                                self.handle_card_action(card_index, crate::cards::CardAction::DebugCall).await?;
+                                return Ok(());
+                            }
+                            _ => {}
+                        }
+                    }
+                    KeyCode::Char('c') => {
+                        // Copy shortcut for Transaction cards
+                        if matches!(&self.state.cards.cards[card_index], crate::cards::Card::Transaction { .. }) {
+                            self.handle_card_action(card_index, crate::cards::CardAction::Copy).await?;
+                            return Ok(());
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+
         // Handle based on focus/popup state
         match &self.state.popup {
             PopupState::None => self.handle_main_key(key).await?,
@@ -593,9 +813,9 @@ impl<P: Provider + Clone> App<P> {
             PopupState::FilePicker { .. } => self.handle_file_picker_key(key).await?,
             PopupState::AddressInput { .. } => self.handle_address_input_key(key).await?,
             PopupState::ContractSelector { .. } => self.handle_contract_selector_key(key).await?,
-            PopupState::CardMenu { .. } => self.handle_card_menu_key(key).await?,
             PopupState::TracerMenu { .. } => self.handle_tracer_menu_key(key).await?,
             PopupState::TracerConfig { .. } => self.handle_tracer_config_key(key).await?,
+            PopupState::CopyMenu { .. } => self.handle_copy_menu_key(key).await?,
         }
 
         Ok(())
@@ -634,10 +854,10 @@ impl<P: Provider + Clone> App<P> {
                 // Collapse current node
                 if let Some(node) = nodes.get(self.state.sidebar.selected) {
                     match node {
-                        TreeNode::Contract { path, .. } => {
-                            // Use canonicalized path for consistency
+                        TreeNode::Contract { path, name } => {
+                            // Use canonicalized path + name for per-contract expansion
                             let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
-                            self.state.sidebar.expanded_contracts.remove(&canonical_path);
+                            self.state.sidebar.expanded_contracts.remove(&(canonical_path, name.clone()));
                         }
                         TreeNode::DeployedInstance { address, .. } => {
                             self.state.sidebar.expanded_instances.remove(address);
@@ -650,15 +870,10 @@ impl<P: Provider + Clone> App<P> {
                 // Expand current node
                 if let Some(node) = nodes.get(self.state.sidebar.selected) {
                     match node {
-                        TreeNode::Contract { path, .. } => {
-                            // Load and expand this contract
-                            if self.contract_path.as_ref() != Some(path) {
-                                self.load_contract_from_path(path.clone()).await?;
-                            } else {
-                                // Already loaded, just expand (use canonicalized path)
-                                let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
-                                self.state.sidebar.expanded_contracts.insert(canonical_path);
-                            }
+                        TreeNode::Contract { path, name } => {
+                            // Just expand this contract (no need to load)
+                            let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
+                            self.state.sidebar.expanded_contracts.insert((canonical_path, name.clone()));
                         }
                         TreeNode::DeployedInstance { address, .. } => {
                             self.state.sidebar.expanded_instances.insert(*address);
@@ -676,9 +891,12 @@ impl<P: Provider + Clone> App<P> {
             KeyCode::Delete | KeyCode::Backspace => {
                 if let Some(node) = nodes.get(self.state.sidebar.selected) {
                     let removed = match node {
-                        TreeNode::DeployedInstance { address, contract_path, .. } => {
-                            if self.store.remove_deployment(contract_path, *address) {
-                                self.state.output.push_info(format!("Removed deployment: {:?}", address));
+                        TreeNode::DeployedInstance { address, contract_name, contract_path, .. } => {
+                            let contract_id = ContractId::new(contract_path.clone(), contract_name.clone());
+                            if self.store.remove_deployment(&contract_id, *address) {
+                                self.state.output.push_info(format!("Removed deployment: {address:?}"));
+                                // Clear expanded state for this instance
+                                self.state.sidebar.expanded_instances.remove(address);
                                 if self.address == Some(*address) {
                                     self.address = None;
                                 }
@@ -688,9 +906,16 @@ impl<P: Provider + Clone> App<P> {
                             }
                         }
                         TreeNode::Contract { path, name, .. } => {
-                            if self.store.remove_contract(path) {
-                                self.state.output.push_info(format!("Removed all deployments for: {}", name));
-                                if self.contract_path.as_ref() == Some(path) {
+                            let contract_id = ContractId::new(path.clone(), name.clone());
+                            if self.store.remove_contract(&contract_id) {
+                                self.state.output.push_info(format!("Removed all deployments for: {name}"));
+                                // Clear expanded state for this contract
+                                self.state.sidebar.expanded_contracts.remove(&(path.clone(), name.clone()));
+                                // Compare canonicalized paths since tree node path is canonicalized
+                                let is_current = self.contract_path.as_ref().map(|p| {
+                                    p.canonicalize().unwrap_or_else(|_| p.clone()) == *path
+                                }).unwrap_or(false);
+                                if is_current {
                                     self.address = None;
                                 }
                                 true
@@ -704,7 +929,10 @@ impl<P: Provider + Clone> App<P> {
                     if removed {
                         self.store.save()?;
                         let new_count = self.build_tree_nodes().len();
-                        if new_count > 0 && self.state.sidebar.selected >= new_count {
+                        if new_count == 0 {
+                            self.state.sidebar.selected = 0;
+                            self.state.sidebar.scroll_offset = 0;
+                        } else if self.state.sidebar.selected >= new_count {
                             self.state.sidebar.selected = new_count - 1;
                         }
                     }
@@ -728,6 +956,9 @@ impl<P: Provider + Clone> App<P> {
                     } else if !self.state.cards.cards.is_empty() {
                         self.state.cards.selected_index = self.state.cards.cards.len() - 1;
                     }
+                    // Update scroll offset to keep selected card visible
+                    let viewport_height = self.state.output_area_height as usize;
+                    self.state.cards.scroll_offset = self.state.cards.calculate_scroll_offset(viewport_height);
                 } else {
                     if self.state.output.scroll_offset > 0 {
                         self.state.output.scroll_offset -= 1;
@@ -738,27 +969,13 @@ impl<P: Provider + Clone> App<P> {
                 // If cards exist, navigate cards; otherwise scroll lines
                 if !self.state.cards.cards.is_empty() {
                     self.state.cards.selected_index = (self.state.cards.selected_index + 1) % self.state.cards.cards.len();
+                    // Update scroll offset to keep selected card visible
+                    let viewport_height = self.state.output_area_height as usize;
+                    self.state.cards.scroll_offset = self.state.cards.calculate_scroll_offset(viewport_height);
                 } else {
                     let max_scroll = self.state.output.lines.len().saturating_sub(10);
                     if self.state.output.scroll_offset < max_scroll {
                         self.state.output.scroll_offset += 1;
-                    }
-                }
-            }
-            KeyCode::Enter | KeyCode::Char(' ') => {
-                // Show card menu if card is interactive
-                if !self.state.cards.cards.is_empty() {
-                    let card_index = self.state.cards.selected_index;
-                    if card_index < self.state.cards.cards.len() {
-                        let card = &self.state.cards.cards[card_index];
-                        if card.is_interactive() {
-                            let actions = crate::cards::get_card_actions(card);
-                            self.state.popup = PopupState::CardMenu {
-                                card_index,
-                                actions,
-                                selected: 0,
-                            };
-                        }
                     }
                 }
             }
@@ -835,7 +1052,20 @@ impl<P: Provider + Clone> App<P> {
     async fn handle_parameter_popup_key(&mut self, key: KeyEvent) -> Result<()> {
         // Handle Enter separately to avoid borrow checker issues
         if key.code == KeyCode::Enter {
-            if let PopupState::ParameterPopup { params, fields, bytecode_target, .. } = &self.state.popup {
+            if let PopupState::ParameterPopup { params, fields, bytecode_target, method_name, .. } = &self.state.popup {
+                // Log parameter submission
+                let field_values: Vec<_> = fields.iter().map(|f| f.value.as_str()).collect();
+                log::info!(
+                    "[PARAMS] Submitting {} with values: {:?} (pending_action={:?})",
+                    method_name,
+                    field_values,
+                    match &self.pending_action {
+                        PendingAction::None => "None".to_string(),
+                        PendingAction::Deploy { contract_name, .. } => format!("Deploy({})", contract_name),
+                        PendingAction::CallMethod { function, address } => format!("Call({} @ {:?})", function.name, address),
+                    }
+                );
+
                 // Clone data we need for parsing
                 let params_clone = params.clone();
                 let fields_clone = fields.clone();
@@ -946,7 +1176,7 @@ impl<P: Provider + Clone> App<P> {
                     if let Some(suggestion) = self.state.file_picker_suggestions.get(self.state.file_picker_selected_idx) {
                         let new_path = suggestion.full_path.to_string_lossy().to_string();
                         *path = if suggestion.is_directory {
-                            format!("{}/", new_path)
+                            format!("{new_path}/")
                         } else {
                             new_path
                         };
@@ -963,7 +1193,7 @@ impl<P: Provider + Clone> App<P> {
                     // If selected suggestion is a directory, navigate into it
                     if let Some(s) = suggestion.filter(|s| s.is_directory) {
                         let new_path = s.full_path.to_string_lossy().to_string();
-                        *path = format!("{}/", new_path);
+                        *path = format!("{new_path}/");
                         *error = None;
                         let path_clone = path.clone();
                         self.update_file_picker_suggestions(&path_clone);
@@ -1015,11 +1245,13 @@ impl<P: Provider + Clone> App<P> {
                 KeyCode::Enter => {
                     match address.parse::<Address>() {
                         Ok(addr) => {
+                            log::info!("[ADDRESS] set_address: {:?} for contract {:?}", addr, self.contract.as_ref().map(|c| &c.name));
                             self.state.popup = PopupState::None;
                             self.state.focus = Focus::Sidebar;
                             self.set_address(addr);
                         }
                         Err(_) => {
+                            log::warn!("[ADDRESS] Invalid address format: {}", address);
                             *error = Some("Invalid address format".to_string());
                         }
                     }
@@ -1069,6 +1301,7 @@ impl<P: Provider + Clone> App<P> {
     }
 
     async fn execute_tree_node(&mut self, node: TreeNode) -> Result<()> {
+        log::info!("[ACTION] execute_tree_node: {}", node.label());
         match node {
             TreeNode::NewContract => {
                 self.state.popup = PopupState::FilePicker {
@@ -1078,20 +1311,13 @@ impl<P: Provider + Clone> App<P> {
                 self.state.focus = Focus::CommandPalette;
                 self.update_file_picker_suggestions("");
             }
-            TreeNode::Contract { path, .. } => {
-                // If this is not the current contract, load it
-                // If it is the current contract, toggle expansion
-                if self.contract_path.as_ref() == Some(&path) {
-                    // Toggle expansion for current contract (use canonicalized path)
-                    let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
-                    if self.state.sidebar.expanded_contracts.contains(&canonical_path) {
-                        self.state.sidebar.expanded_contracts.remove(&canonical_path);
-                    } else {
-                        self.state.sidebar.expanded_contracts.insert(canonical_path);
-                    }
+            TreeNode::Contract { path, name } => {
+                // Toggle expansion for this contract (path is already canonicalized from tree)
+                let key = (path.clone(), name.clone());
+                if self.state.sidebar.expanded_contracts.contains(&key) {
+                    self.state.sidebar.expanded_contracts.remove(&key);
                 } else {
-                    // Load a different contract (will auto-expand and select)
-                    self.load_contract_from_path(path).await?;
+                    self.state.sidebar.expanded_contracts.insert(key);
                 }
             }
             TreeNode::Constructor { contract_name, contract_path, abi } => {
@@ -1133,20 +1359,57 @@ impl<P: Provider + Clone> App<P> {
     }
 
     async fn execute_command(&mut self, command_idx: usize) -> Result<()> {
+        let command_names = ["Edit config", "Clear output", "Open Logs", "Clear Logs", "Reconnect", "Reset", "Quit"];
+        let cmd_name = command_names.get(command_idx).unwrap_or(&"Unknown");
+        log::info!("[COMMAND] execute_command: {} (idx={})", cmd_name, command_idx);
         match command_idx {
             0 => {
                 // Edit config
                 self.edit_config_requested = true;
             }
             1 => {
-                // Reset
-                self.clear_state();
-            }
-            2 => {
                 // Clear output
                 self.state.output.clear();
             }
+            2 => {
+                // Open Logs
+                if let Some(home) = std::env::var_os("HOME") {
+                    let log_path = std::path::PathBuf::from(home).join(".evm-cli/output.log");
+                    if log_path.exists() {
+                        if let Ok(content) = std::fs::read_to_string(&log_path) {
+                            self.pending_editor_content = Some(content);
+                        } else {
+                            self.state.output.push_error("Failed to read log file");
+                        }
+                    } else {
+                        self.state.output.push_info("Log file does not exist yet");
+                    }
+                }
+            }
             3 => {
+                // Clear Logs
+                if let Some(home) = std::env::var_os("HOME") {
+                    let log_path = std::path::PathBuf::from(home).join(".evm-cli/output.log");
+                    if log_path.exists() {
+                        if let Err(e) = std::fs::remove_file(&log_path) {
+                            self.state.output.push_error(format!("Failed to clear log file: {e}"));
+                        } else {
+                            self.state.output.push_success("Log file cleared");
+                        }
+                    } else {
+                        self.state.output.push_info("Log file does not exist");
+                    }
+                }
+            }
+            4 => {
+                // Reconnect
+                self.try_connect().await;
+            }
+            5 => {
+                // Reset
+                self.clear_state();
+            }
+            6 => {
                 // Quit
                 self.running = false;
             }
@@ -1156,6 +1419,7 @@ impl<P: Provider + Clone> App<P> {
     }
 
     async fn load_contract_from_path(&mut self, path: PathBuf) -> Result<()> {
+        log::info!("[LOAD] load_contract_from_path: {:?}", path);
         match crate::compile::load_contract_abi(&path) {
             Ok(contracts) => {
                 if contracts.len() == 1 {
@@ -1179,8 +1443,8 @@ impl<P: Provider + Clone> App<P> {
                 }
             }
             Err(e) => {
-                let error_msg = format!("Failed to load contract: {}", e);
-                log::error!("{}", error_msg);
+                let error_msg = format!("Failed to load contract: {e}");
+                log::error!("{error_msg}");
                 self.state.output.push_error(error_msg);
             }
         }
@@ -1204,7 +1468,7 @@ impl<P: Provider + Clone> App<P> {
     }
 
     async fn start_deploy(&mut self, contract_name: String, contract_path: PathBuf, abi: Arc<JsonAbi>) {
-        self.state.output.push_normal(format!("\nPreparing to deploy {}...", contract_name));
+        self.state.output.push_normal(format!("\nPreparing to deploy {contract_name}..."));
 
         // Get constructor parameters (empty vec if no constructor)
         let params = abi
@@ -1231,6 +1495,7 @@ impl<P: Provider + Clone> App<P> {
     }
 
     async fn start_call_function(&mut self, func: Function, address: Address) {
+        log::info!("[ACTION] start_call_function: {}() at {:?}", func.name, address);
         if !func.inputs.is_empty() {
             let fields: Vec<FieldState> = func
                 .inputs
@@ -1280,14 +1545,27 @@ impl<P: Provider + Clone> App<P> {
     }
 
     async fn do_deploy(&mut self, contract_name: String, contract_path: PathBuf, _abi: Arc<JsonAbi>, args: Vec<DynSolValue>, target: BytecodeTarget) {
+        log::info!(
+            "[DEPLOY] do_deploy: {} from {:?} with args {:?} target={:?}",
+            contract_name,
+            contract_path,
+            args,
+            target
+        );
+        // Check connection status
+        if matches!(self.state.connection, ConnectionStatus::Disconnected) {
+            self.add_log_card("Cannot deploy: not connected to RPC".to_string());
+            return;
+        }
+        
         // Compile on demand for the selected target
-        self.state.output.push_info(format!("Compiling {} for {}...", contract_name, target));
+        self.state.output.push_info(format!("Compiling {contract_name} for {target}..."));
 
         let compiled = match crate::compile::compile_contract(&contract_path, &contract_name, target) {
             Ok(c) => c,
             Err(e) => {
-                let error_msg = format!("Compilation failed: {}", e);
-                log::error!("{}", error_msg);
+                let error_msg = format!("Compilation failed: {e}");
+                log::error!("{error_msg}");
                 self.state.output.push_error(error_msg);
                 self.state.output.push_separator();
                 self.state.output.scroll_to_bottom();
@@ -1295,7 +1573,7 @@ impl<P: Provider + Clone> App<P> {
             }
         };
 
-        self.state.output.push_success(format!("Compilation successful ({})", target));
+        self.state.output.push_success(format!("Compilation successful ({target})"));
 
         let mut deploy_data = compiled.bytecode.clone();
 
@@ -1304,68 +1582,94 @@ impl<P: Provider + Clone> App<P> {
             deploy_data.extend(encoded);
         }
 
-        let tx = TransactionRequest::default().with_deploy_code(deploy_data);
+        let mut tx = TransactionRequest::default().with_deploy_code(deploy_data.clone());
+        if let Some(chain_id) = self.state.chain_id {
+            tx = tx.with_chain_id(chain_id);
+        }
 
         self.state.output.push(
-            format!("Deploying {} contract...", contract_name),
+            format!("Deploying {contract_name} contract..."),
             OutputStyle::Waiting
         );
 
-        let pending = match self.provider.send_transaction(tx).await {
+        let pending = match self.provider.send_transaction(tx.clone()).await {
             Ok(p) => p,
             Err(e) => {
-                self.state.output.push_error(format!("Transaction failed: {}", e));
+                let error_msg = format!("Deployment failed: {e}");
+                self.state.output.push_error(&error_msg);
                 self.state.output.push_separator();
                 self.state.output.scroll_to_bottom();
+                // Add a log card so the error is visible in the card view
+                self.add_log_card(format!("Failed: Deploy {contract_name}\n\n{error_msg}"));
                 return;
             }
         };
 
         let tx_hash = *pending.tx_hash();
-        self.state.output.push_success(format!("Transaction: {:?}", tx_hash));
+        self.state.output.push_success(format!("Transaction: {tx_hash:?}"));
         self.state.output.push("Waiting for confirmation...", OutputStyle::Waiting);
 
         let receipt = match pending.get_receipt().await {
             Ok(r) => r,
             Err(e) => {
-                self.state.output.push_error(format!("Failed to get receipt: {}", e));
+                let error_msg = format!("Failed to get receipt: {e}");
+                self.state.output.push_error(&error_msg);
                 self.state.output.push_separator();
                 self.state.output.scroll_to_bottom();
+                // Add a log card so the error is visible in the card view
+                self.add_log_card(format!("Failed: Deploy {contract_name} (tx: {tx_hash:?})\n\n{error_msg}"));
+                return;
+            }
+        };
+
+        let address = match receipt.contract_address {
+            Some(a) => a,
+            None => {
+                let error_msg = "No contract address in receipt";
+                self.state.output.push_error(error_msg);
+                self.state.output.push_separator();
+                self.state.output.scroll_to_bottom();
+                // Add a log card so the error is visible in the card view
+                self.add_log_card(format!("Failed: Deploy {contract_name} (tx: {tx_hash:?})\n\n{error_msg}"));
                 return;
             }
         };
 
         // Create a transaction card with actual status and gas from receipt
-        let status = if receipt.status() {
-            crate::cards::TransactionStatus::Success
+        let (status, error_message) = if receipt.status() {
+            (crate::cards::TransactionStatus::Success, None)
         } else {
-            crate::cards::TransactionStatus::Failed
+            // Deployment reverted - try to get the revert reason
+            let error_msg = self.get_revert_reason(&tx, receipt.block_number).await;
+            (crate::cards::TransactionStatus::Failed, Some(error_msg))
         };
-        let gas_used = format!("{}", receipt.gas_used);
+        let gas_used = receipt.gas_used.separated_string();
         self.add_transaction_card(
             tx_hash,
             status,
+            format!("Deploy {contract_name}"),
+            Some(gas_used.clone()),
             contract_name.to_string(),
-            Some(gas_used),
+            Some(address),
+            error_message.clone(),
         );
 
-        let address = match receipt.contract_address {
-            Some(a) => a,
-            None => {
-                self.state.output.push_error("No contract address in receipt");
-                self.state.output.push_separator();
-                self.state.output.scroll_to_bottom();
-                return;
-            }
-        };
+        if !receipt.status() {
+            let error_display = error_message.as_deref().unwrap_or("Unknown reason");
+            self.state.output.push_error(format!("Deployment reverted: {error_display}"));
+            self.state.output.push_separator();
+            self.state.output.scroll_to_bottom();
+            return;
+        }
 
-        self.state.output.push_success(format!("Deployed at: {:?}", address));
+        self.state.output.push_success(format!("Deployed at: {address:?}"));
 
         self.set_address(address);
 
-        self.store.add_deployment(&contract_path, address);
+        let contract_id = ContractId::new(contract_path.clone(), contract_name.to_string());
+        self.store.add_deployment(&contract_id, address);
         if let Err(e) = self.store.save() {
-            self.state.output.push_error(format!("Failed to save deployment: {}", e));
+            self.state.output.push_error(format!("Failed to save deployment: {e}"));
         }
 
         // Expand and select the newly deployed instance in the sidebar
@@ -1374,6 +1678,9 @@ impl<P: Provider + Clone> App<P> {
 
         self.state.output.push_separator();
         self.state.output.scroll_to_bottom();
+
+        // Refresh balance after transaction
+        self.refresh_balance().await;
     }
 
     async fn do_call_function(
@@ -1383,21 +1690,34 @@ impl<P: Provider + Clone> App<P> {
         args: Vec<DynSolValue>,
     ) {
         let contract_name = self.contract.as_ref().map(|c| c.name.as_str()).unwrap_or("Unknown");
-
-        let calldata = match func.abi_encode_input(&args) {
-            Ok(data) => data,
-            Err(e) => {
-                self.state.output.push_error(format!("Failed to encode function call: {}", e));
-                self.state.output.push_separator();
-                self.state.output.scroll_to_bottom();
-                return;
-            }
-        };
+        log::info!(
+            "[CALL] do_call_function: {}.{}({:?}) at {:?}",
+            contract_name,
+            func.name,
+            args,
+            address
+        );
 
         let is_view = matches!(
             func.state_mutability,
             alloy::json_abi::StateMutability::View | alloy::json_abi::StateMutability::Pure
         );
+
+        // Check connection status for state-changing functions
+        if !is_view && matches!(self.state.connection, ConnectionStatus::Disconnected) {
+            self.add_log_card(format!("Cannot call {}: not connected to RPC", func.name));
+            return;
+        }
+
+        let calldata = match func.abi_encode_input(&args) {
+            Ok(data) => data,
+            Err(e) => {
+                self.state.output.push_error(format!("Failed to encode function call: {e}"));
+                self.state.output.push_separator();
+                self.state.output.scroll_to_bottom();
+                return;
+            }
+        };
 
         if is_view {
             let tx = TransactionRequest::default()
@@ -1407,7 +1727,7 @@ impl<P: Provider + Clone> App<P> {
             let result = match self.provider.call(tx).await {
                 Ok(r) => r,
                 Err(e) => {
-                    self.state.output.push_error(format!("Call to {} {:?} failed: {}", contract_name, address, e));
+                    self.state.output.push_error(format!("Call to {contract_name} {address:?} failed: {e}"));
                     self.state.output.push_separator();
                     self.state.output.scroll_to_bottom();
                     return;
@@ -1417,7 +1737,7 @@ impl<P: Provider + Clone> App<P> {
             let decoded = match func.abi_decode_output(&result) {
                 Ok(d) => d,
                 Err(e) => {
-                    self.state.output.push_error(format!("Failed to decode return value: {}", e));
+                    self.state.output.push_error(format!("Failed to decode return value: {e}"));
                     self.state.output.push_separator();
                     self.state.output.scroll_to_bottom();
                     return;
@@ -1435,75 +1755,90 @@ impl<P: Provider + Clone> App<P> {
             };
 
             let call_str = prompts::format_method_call(&func.name, &func.inputs, &args);
-            self.state.output.push(format!("{} @ {:?}", call_str, address), OutputStyle::Highlight);
-            self.state.output.push_success(format!("Result: {}", result_str));
+            self.state.output.push(format!("{call_str} @ {address:?}"), OutputStyle::Highlight);
+            self.state.output.push_success(format!("Result: {result_str}"));
 
             // Add a call card for view/pure calls
             if let Some(from_addr) = self.address {
-                self.add_call_card(from_addr, address, func.name.clone(), "0 ETH".to_string());
+                self.add_call_card(from_addr, address, call_str.clone(), result_str.clone());
             } else {
                 // Fallback to log card if no account is available
                 self.add_log_card(format!("{} completed successfully", func.name));
             }
         } else {
-            let tx = TransactionRequest::default()
+            let mut tx = TransactionRequest::default()
                 .to(address)
                 .input(calldata.into());
+            if let Some(chain_id) = self.state.chain_id {
+                tx = tx.with_chain_id(chain_id);
+            }
 
             self.state.output.push(
-                format!("Sending transaction to {} {:?}...", contract_name, address),
+                format!("Sending transaction to {contract_name} {address:?}..."),
                 OutputStyle::Waiting
             );
 
-            let pending = match self.provider.send_transaction(tx).await {
+            let pending = match self.provider.send_transaction(tx.clone()).await {
                 Ok(p) => p,
                 Err(e) => {
-                    self.state.output.push_error(format!("Transaction failed: {}", e));
+                    let error_msg = format!("Transaction failed: {e}");
+                    self.state.output.push_error(&error_msg);
                     self.state.output.push_separator();
                     self.state.output.scroll_to_bottom();
+                    // Add a log card so the error is visible in the card view
+                    self.add_log_card(format!("Failed: {} @ {address:?}\n\n{error_msg}", func.name));
                     return;
                 }
             };
 
             let tx_hash = *pending.tx_hash();
-            self.state.output.push_success(format!("Transaction: {:?}", tx_hash));
+            self.state.output.push_success(format!("Transaction: {tx_hash:?}"));
 
             let call_str = prompts::format_method_call(&func.name, &func.inputs, &args);
-            self.state.output.push(format!("{} @ {:?}", call_str, address), OutputStyle::Highlight);
+            self.state.output.push(format!("{call_str} @ {address:?}"), OutputStyle::Highlight);
 
             self.state.output.push("Waiting for confirmation...", OutputStyle::Waiting);
 
             let receipt = match pending.get_receipt().await {
                 Ok(r) => r,
                 Err(e) => {
-                    self.state.output.push_error(format!("Failed to get receipt: {}", e));
+                    let error_msg = format!("Failed to get receipt: {e}");
+                    self.state.output.push_error(&error_msg);
                     self.state.output.push_separator();
                     self.state.output.scroll_to_bottom();
+                    // Add a log card so the error is visible in the card view
+                    self.add_log_card(format!("Failed: {} @ {address:?} (tx: {tx_hash:?})\n\n{error_msg}", func.name));
                     return;
                 }
             };
 
             // Create a transaction card with actual status and gas from receipt
-            let status = if receipt.status() {
-                crate::cards::TransactionStatus::Success
+            let (status, error_message) = if receipt.status() {
+                (crate::cards::TransactionStatus::Success, None)
             } else {
-                crate::cards::TransactionStatus::Failed
+                // Transaction reverted - try to get the revert reason by simulating the call
+                let error_msg = self.get_revert_reason(&tx, receipt.block_number).await;
+                (crate::cards::TransactionStatus::Failed, Some(error_msg))
             };
-            let gas_used = format!("{}", receipt.gas_used);
+            let gas_used = receipt.gas_used.separated_string();
             self.add_transaction_card(
                 tx_hash,
                 status,
                 call_str.clone(),
-                Some(gas_used),
+                Some(gas_used.clone()),
+                contract_name.to_string(),
+                Some(address),
+                error_message.clone(),
             );
 
             if receipt.status() {
                 self.state.output.push_success("Status: Success");
             } else {
-                self.state.output.push_error("Transaction reverted");
+                let error_display = error_message.as_deref().unwrap_or("Unknown reason");
+                self.state.output.push_error(format!("Transaction reverted: {error_display}"));
             }
 
-            self.state.output.push_info(format!("Gas used: {}", receipt.gas_used));
+            self.state.output.push_info(format!("Gas used: {gas_used}"));
 
             // Display logs if any
             let logs = receipt.inner.logs();
@@ -1513,6 +1848,9 @@ impl<P: Provider + Clone> App<P> {
                     self.display_log(i, log);
                 }
             }
+
+            // Refresh balance after transaction
+            self.refresh_balance().await;
         }
 
         self.state.output.push_separator();
@@ -1533,19 +1871,19 @@ impl<P: Provider + Clone> App<P> {
                 // Convert Log to LogData
                 let log_data = alloy::primitives::LogData::new_unchecked(
                     log.topics().to_vec(),
-                    log.data().data.clone().into(),
+                    log.data().data.clone(),
                 );
 
                 // Try to decode the log
                 match event.decode_log(&log_data) {
                     Ok(decoded) => {
                         // Successfully decoded
-                        self.state.output.push_info(format!("  [{}] {} @ {:?}", index, event.name, log_address));
+                        self.state.output.push_info(format!("  [{index}] {} @ {log_address:?}", event.name));
 
                         // Display decoded parameters
                         for (param, value) in event.inputs.iter().zip(decoded.indexed.iter().chain(decoded.body.iter())) {
                             let value_str = prompts::format_return_value(value);
-                            self.state.output.push_info(format!("      {}: {}", param.name, value_str));
+                            self.state.output.push_info(format!("      {}: {value_str}", param.name));
                         }
                         return;
                     }
@@ -1557,11 +1895,11 @@ impl<P: Provider + Clone> App<P> {
         }
 
         // Fall back to raw display
-        self.state.output.push_info(format!("  [{}] Address: {:?}", index, log_address));
+        self.state.output.push_info(format!("  [{index}] Address: {log_address:?}"));
         if !log.topics().is_empty() {
             self.state.output.push_info(format!("      Topics: {}",
                 log.topics().iter()
-                    .map(|t| format!("{:?}", t))
+                    .map(|t| format!("{t:?}"))
                     .collect::<Vec<_>>()
                     .join(", ")));
         }
@@ -1573,47 +1911,54 @@ impl<P: Provider + Clone> App<P> {
     /// Try to find an ABI for a given address by checking known deployments
     fn find_abi_for_address(&self, address: Address) -> Option<Arc<JsonAbi>> {
         // Check all contracts in the store
-        for contract_path in self.store.all_contracts() {
-            let deployments = self.store.get_deployments(&contract_path);
+        for contract_id in self.store.all_contracts() {
+            let deployments = self.store.get_deployments(&contract_id);
             if deployments.contains(&address) {
                 // This contract has this address
-                let (_, abi) = self.get_contract_name_and_abi(&contract_path);
-                return Some(abi);
+                return Some(self.get_abi_for_contract(&contract_id));
             }
         }
         None
     }
 
-    async fn handle_card_menu_key(&mut self, key: KeyEvent) -> Result<()> {
-        match key.code {
-            KeyCode::Esc => {
-                self.state.popup = PopupState::None;
-                self.state.focus = Focus::Output;
-            }
-            KeyCode::Up | KeyCode::Char('k') => {
-                if let PopupState::CardMenu { selected, actions, .. } = &mut self.state.popup {
-                    if *selected > 0 {
-                        *selected -= 1;
+    /// Try to get the revert reason for a failed transaction by simulating the call
+    async fn get_revert_reason(&self, tx: &TransactionRequest, block_number: Option<u64>) -> String {
+        // Use the block number from the receipt to simulate at the same state
+        let block_id = block_number.map(alloy::eips::BlockId::number);
+        
+        // Try to call the transaction to get the revert reason
+        let result = match block_id {
+            Some(block) => self.provider.call(tx.clone()).block(block).await,
+            None => self.provider.call(tx.clone()).await,
+        };
+        
+        match result {
+            Ok(_) => "Transaction reverted (no revert reason available)".to_string(),
+            Err(e) => {
+                let error_str = e.to_string();
+                // Try to extract a meaningful error message
+                // Common patterns: "execution reverted: <reason>", "revert: <reason>"
+                if let Some(pos) = error_str.find("execution reverted:") {
+                    let reason = error_str[pos + 19..].trim();
+                    if reason.is_empty() {
+                        "Execution reverted".to_string()
                     } else {
-                        *selected = actions.len() - 1;
+                        reason.to_string()
                     }
+                } else if let Some(pos) = error_str.find("revert:") {
+                    let reason = error_str[pos + 7..].trim();
+                    if reason.is_empty() {
+                        "Execution reverted".to_string()
+                    } else {
+                        reason.to_string()
+                    }
+                } else if error_str.contains("reverted") || error_str.contains("revert") {
+                    error_str
+                } else {
+                    format!("Execution reverted: {error_str}")
                 }
             }
-            KeyCode::Down | KeyCode::Char('j') => {
-                if let PopupState::CardMenu { selected, actions, .. } = &mut self.state.popup {
-                    *selected = (*selected + 1) % actions.len();
-                }
-            }
-            KeyCode::Enter => {
-                if let PopupState::CardMenu { card_index, actions, selected } = self.state.popup.clone() {
-                    let action = actions[selected];
-                    self.state.popup = PopupState::None;
-                    self.handle_card_action(card_index, action).await?;
-                }
-            }
-            _ => {}
         }
-        Ok(())
     }
 
     async fn handle_tracer_menu_key(&mut self, key: KeyEvent) -> Result<()> {
@@ -1645,6 +1990,7 @@ impl<P: Provider + Clone> App<P> {
                             tracer_type: tracer,
                             ..Default::default()
                         },
+                        current: 0,
                     };
                 }
             }
@@ -1659,24 +2005,28 @@ impl<P: Provider + Clone> App<P> {
                 self.state.popup = PopupState::None;
                 self.state.focus = Focus::Output;
             }
-            KeyCode::Char('t') => {
-                // Toggle onlyTopCall for Call tracer
-                if let PopupState::TracerConfig { config, .. } = &mut self.state.popup {
-                    if matches!(config.tracer_type, crate::cards::TracerType::Call) {
-                        config.only_top_call = !config.only_top_call;
-                    }
+            KeyCode::Tab | KeyCode::Down => {
+                // Move to next field
+                if let PopupState::TracerConfig { config, current, .. } = &mut self.state.popup {
+                    let field_count = Self::get_tracer_field_count(config.tracer_type);
+                    *current = (*current + 1) % field_count;
                 }
             }
-            KeyCode::Char('d') => {
-                // Toggle diffMode for Prestate tracer
-                if let PopupState::TracerConfig { config, .. } = &mut self.state.popup {
-                    if matches!(config.tracer_type, crate::cards::TracerType::Prestate) {
-                        config.diff_mode = !config.diff_mode;
-                    }
+            KeyCode::BackTab | KeyCode::Up => {
+                // Move to previous field
+                if let PopupState::TracerConfig { config, current, .. } = &mut self.state.popup {
+                    let field_count = Self::get_tracer_field_count(config.tracer_type);
+                    *current = current.checked_sub(1).unwrap_or(field_count - 1);
+                }
+            }
+            KeyCode::Char(' ') => {
+                // Toggle the current field
+                if let PopupState::TracerConfig { config, current, .. } = &mut self.state.popup {
+                    Self::toggle_tracer_field(config, *current);
                 }
             }
             KeyCode::Enter => {
-                if let PopupState::TracerConfig { card_index, config } = self.state.popup.clone() {
+                if let PopupState::TracerConfig { card_index, config, .. } = self.state.popup.clone() {
                     self.state.popup = PopupState::None;
                     self.execute_debug_trace(card_index, &config).await?;
                 }
@@ -1686,7 +2036,36 @@ impl<P: Provider + Clone> App<P> {
         Ok(())
     }
 
+    fn get_tracer_field_count(tracer_type: crate::cards::TracerType) -> usize {
+        match tracer_type {
+            crate::cards::TracerType::Call => 2,      // withLogs, onlyTopCall
+            crate::cards::TracerType::Prestate => 1,  // diffMode
+            crate::cards::TracerType::Execution => 3, // enableMemory, disableStack, disableStorage
+        }
+    }
+
+    fn toggle_tracer_field(config: &mut crate::cards::TracerConfig, index: usize) {
+        match config.tracer_type {
+            crate::cards::TracerType::Call => match index {
+                0 => config.with_logs = !config.with_logs,
+                1 => config.only_top_call = !config.only_top_call,
+                _ => {}
+            },
+            crate::cards::TracerType::Prestate => match index {
+                0 => config.diff_mode = !config.diff_mode,
+                _ => {}
+            },
+            crate::cards::TracerType::Execution => match index {
+                0 => config.enable_memory = !config.enable_memory,
+                1 => config.disable_stack = !config.disable_stack,
+                2 => config.disable_storage = !config.disable_storage,
+                _ => {}
+            },
+        }
+    }
+
     async fn handle_card_action(&mut self, card_index: usize, action: crate::cards::CardAction) -> Result<()> {
+        log::info!("[CARD_ACTION] handle_card_action: {:?} on card_index={}", action, card_index);
         if card_index >= self.state.cards.cards.len() {
             return Ok(());
         }
@@ -1694,6 +2073,20 @@ impl<P: Provider + Clone> App<P> {
         let card = &self.state.cards.cards[card_index];
 
         match action {
+            crate::cards::CardAction::Copy => {
+                let options = crate::cards::get_copy_options(card);
+                if options.len() == 1 {
+                    // Only one option (hash), copy directly
+                    self.execute_copy(card_index, options[0]);
+                } else if options.len() > 1 {
+                    // Multiple options, show menu
+                    self.state.popup = PopupState::CopyMenu {
+                        card_index,
+                        options,
+                        selected: 0,
+                    };
+                }
+            }
             crate::cards::CardAction::ViewReceipt => {
                 if let crate::cards::Card::Transaction { hash, .. } = card {
                     self.execute_view_receipt(*hash).await?;
@@ -1741,6 +2134,108 @@ impl<P: Provider + Clone> App<P> {
         Ok(())
     }
 
+    fn execute_copy(&mut self, card_index: usize, option: crate::cards::CopyOption) {
+        if card_index >= self.state.cards.cards.len() {
+            return;
+        }
+
+        let card = &self.state.cards.cards[card_index];
+
+        if let crate::cards::Card::Transaction { hash, contract_address, .. } = card {
+            let text = match option {
+                crate::cards::CopyOption::Hash => format!("{hash:?}"),
+                crate::cards::CopyOption::Address => {
+                    if let Some(addr) = contract_address {
+                        format!("{addr:?}")
+                    } else {
+                        self.state.output.push_error("No contract address available");
+                        return;
+                    }
+                }
+            };
+
+            match copy_to_clipboard(&text) {
+                Ok(_) => {
+                    log::info!("Copied to clipboard: {text}");
+                    self.state.output.push_success(format!("Copied: {text}"));
+                }
+                Err(e) => {
+                    log::error!("Clipboard error: {e}");
+                    self.state.output.push_error(format!("Failed to copy: {e}"));
+                }
+            }
+            self.state.output.scroll_to_bottom();
+        }
+    }
+
+    async fn handle_copy_menu_key(&mut self, key: KeyEvent) -> Result<()> {
+        match key.code {
+            KeyCode::Esc => {
+                self.state.popup = PopupState::None;
+                self.state.focus = Focus::Output;
+            }
+            KeyCode::Up | KeyCode::Char('k') => {
+                if let PopupState::CopyMenu { selected, options, .. } = &mut self.state.popup {
+                    if *selected > 0 {
+                        *selected -= 1;
+                    } else {
+                        *selected = options.len() - 1;
+                    }
+                }
+            }
+            KeyCode::Down | KeyCode::Char('j') => {
+                if let PopupState::CopyMenu { selected, options, .. } = &mut self.state.popup {
+                    *selected = (*selected + 1) % options.len();
+                }
+            }
+            KeyCode::Enter => {
+                if let PopupState::CopyMenu { card_index, options, selected } = self.state.popup.clone() {
+                    let option = options[selected];
+                    self.state.popup = PopupState::None;
+                    self.execute_copy(card_index, option);
+                }
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+
+    fn render_copy_menu(&self, frame: &mut Frame, options: &[crate::cards::CopyOption], selected: usize) {
+        use crate::tui::layout::centered_popup;
+        use ratatui::widgets::{Block, Borders, Clear};
+        use ratatui::style::{Color, Style, Modifier};
+        use ratatui::text::{Line, Span};
+
+        let popup_area = centered_popup(frame.area(), 30, 20);
+        frame.render_widget(Clear, popup_area);
+
+        let block = Block::default()
+            .borders(Borders::ALL)
+            .border_style(Style::default().fg(Color::Cyan))
+            .title(" Copy ");
+        let inner = block.inner(popup_area);
+        frame.render_widget(block, popup_area);
+
+        let lines: Vec<Line> = options
+            .iter()
+            .enumerate()
+            .map(|(i, option)| {
+                let style = if i == selected {
+                    Style::default()
+                        .fg(Color::Black)
+                        .bg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default().fg(Color::White)
+                };
+                Line::from(Span::styled(format!("  {option}  "), style))
+            })
+            .collect();
+
+        let paragraph = ratatui::widgets::Paragraph::new(lines);
+        frame.render_widget(paragraph, inner);
+    }
+
     async fn execute_debug_call(&mut self, card_index: usize) -> Result<()> {
         if card_index >= self.state.cards.cards.len() {
             return Ok(());
@@ -1755,7 +2250,7 @@ impl<P: Provider + Clone> App<P> {
         } = card
         {
             self.state.output.push(
-                format!("Executing debug trace for call: {} @ {}...", function_signature, to),
+                format!("Executing debug trace for call: {function_signature} @ {to}..."),
                 OutputStyle::Waiting,
             );
             self.state.output.scroll_to_bottom();
@@ -1770,8 +2265,7 @@ impl<P: Provider + Clone> App<P> {
                 }
                 Err(e) => {
                     self.state.output.push_error(format!(
-                        "Debug trace failed: {}. Your RPC provider may not support the debug API.",
-                        e
+                        "Debug trace failed: {e}. Your RPC provider may not support the debug API."
                     ));
                 }
             }
@@ -1807,8 +2301,7 @@ impl<P: Provider + Clone> App<P> {
                 }
                 Err(e) => {
                     self.state.output.push_error(format!(
-                        "Debug trace failed: {}. Ensure your RPC provider supports the debug API (Geth, etc.)",
-                        e
+                        "Debug trace failed: {e}. Ensure your RPC provider supports the debug API (Geth, etc.)"
                     ));
                 }
             }
@@ -1823,6 +2316,12 @@ impl<P: Provider + Clone> App<P> {
     }
 
     fn display_in_editor(&mut self, content: &str) -> Result<()> {
+        // Set the content to be displayed; the main loop will handle terminal restore/setup
+        self.pending_editor_content = Some(content.to_string());
+        Ok(())
+    }
+
+    fn display_in_editor_impl(&self, content: &str) -> Result<()> {
         use std::fs;
         use std::io::Write;
         use std::process::Command;
@@ -1834,7 +2333,7 @@ impl<P: Provider + Clone> App<P> {
         let temp_path = format!("/tmp/evm-cli-{}.json", chrono::Local::now().timestamp_millis());
 
         let mut file = fs::File::create(&temp_path)
-            .with_context(|| format!("Failed to create temp file: {}", temp_path))?;
+            .with_context(|| format!("Failed to create temp file: {temp_path}"))?;
 
         file.write_all(content.as_bytes())?;
         file.flush()?;
@@ -1843,7 +2342,7 @@ impl<P: Provider + Clone> App<P> {
         let status = Command::new(&editor)
             .arg(&temp_path)
             .status()
-            .with_context(|| format!("Failed to open editor: {}", editor))?;
+            .with_context(|| format!("Failed to open editor: {editor}"))?;
 
         // Clean up the temporary file
         let _ = fs::remove_file(&temp_path);
@@ -1854,43 +2353,6 @@ impl<P: Provider + Clone> App<P> {
         }
 
         Ok(())
-    }
-
-    fn render_card_menu(&self, frame: &mut Frame, actions: &[crate::cards::CardAction], selected: usize) {
-        use crate::tui::layout::centered_popup;
-        use ratatui::widgets::{Block, Borders, Clear};
-        use ratatui::style::{Color, Style, Modifier};
-        use ratatui::text::{Line, Span};
-
-        let popup_area = centered_popup(frame.area(), 40, 30);
-        frame.render_widget(Clear, popup_area);
-
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan))
-            .title(" Card Actions ");
-        let inner = block.inner(popup_area);
-        frame.render_widget(block, popup_area);
-
-        let lines: Vec<Line> = actions
-            .iter()
-            .enumerate()
-            .map(|(i, action)| {
-                let prefix = if i == selected { "> " } else { "  " };
-                let style = if i == selected {
-                    Style::default()
-                        .bg(Color::DarkGray)
-                        .fg(Color::White)
-                        .add_modifier(Modifier::BOLD)
-                } else {
-                    Style::default().fg(Color::Yellow)
-                };
-                Line::from(Span::styled(format!("{}{}", prefix, action), style))
-            })
-            .collect();
-
-        let paragraph = ratatui::widgets::Paragraph::new(lines);
-        paragraph.render(inner, frame.buffer_mut());
     }
 
     fn render_tracer_menu(&self, frame: &mut Frame, tracers: &[crate::cards::TracerType], selected: usize) {
@@ -1922,7 +2384,7 @@ impl<P: Provider + Clone> App<P> {
                 } else {
                     Style::default().fg(Color::Cyan)
                 };
-                Line::from(Span::styled(format!("{}{}", prefix, tracer), style))
+                Line::from(Span::styled(format!("{prefix}{tracer}"), style))
             })
             .collect();
 
@@ -1930,7 +2392,7 @@ impl<P: Provider + Clone> App<P> {
         paragraph.render(inner, frame.buffer_mut());
     }
 
-    fn render_tracer_config(&self, frame: &mut Frame, config: &crate::cards::TracerConfig) {
+    fn render_tracer_config(&self, frame: &mut Frame, config: &crate::cards::TracerConfig, current: usize) {
         use crate::tui::layout::centered_popup;
         use ratatui::widgets::{Block, Borders, Clear};
         use ratatui::style::{Color, Style, Modifier};
@@ -1939,47 +2401,75 @@ impl<P: Provider + Clone> App<P> {
         let popup_area = centered_popup(frame.area(), 50, 40);
         frame.render_widget(Clear, popup_area);
 
+        let title = format!(" {} Config ", config.tracer_type);
         let block = Block::default()
             .borders(Borders::ALL)
             .border_style(Style::default().fg(Color::Cyan))
-            .title(" Tracer Config ");
+            .title(title);
         let inner = block.inner(popup_area);
         frame.render_widget(block, popup_area);
 
-        let mut lines = vec![
-            Line::from(Span::styled(
-                format!("Tracer: {}", config.tracer_type),
-                Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD),
-            )),
-            Line::from(""),
-        ];
+        let y = inner.y + 1;
 
+        // Helper to render a toggle field
+        let render_toggle = |buf: &mut ratatui::buffer::Buffer, y: u16, label: &str, value: bool, is_focused: bool| {
+            let label_style = if is_focused {
+                Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+            } else {
+                Style::default().fg(Color::White)
+            };
+
+            let on_style = if value {
+                Style::default().fg(Color::Black).bg(Color::Cyan)
+            } else {
+                Style::default().fg(Color::DarkGray)
+            };
+
+            let off_style = if !value {
+                Style::default().fg(Color::Black).bg(Color::Cyan)
+            } else {
+                Style::default().fg(Color::DarkGray)
+            };
+
+            let line = Line::from(vec![
+                Span::styled(format!("{label}: "), label_style),
+                Span::styled(" ON ", on_style),
+                Span::raw("  "),
+                Span::styled(" OFF ", off_style),
+            ]);
+            buf.set_line(inner.x + 1, y, &line, inner.width.saturating_sub(2));
+        };
+
+        // Render fields based on tracer type
         match config.tracer_type {
             crate::cards::TracerType::Call => {
-                lines.push(Line::from(Span::raw(format!(
-                    "onlyTopCall: {} (press 't' to toggle)",
-                    config.only_top_call
-                ))));
+                render_toggle(frame.buffer_mut(), y, "withLogs", config.with_logs, current == 0);
+                render_toggle(frame.buffer_mut(), y + 2, "onlyTopCall", config.only_top_call, current == 1);
             }
             crate::cards::TracerType::Prestate => {
-                lines.push(Line::from(Span::raw(format!(
-                    "diffMode: {} (press 'd' to toggle)",
-                    config.diff_mode
-                ))));
+                render_toggle(frame.buffer_mut(), y, "diffMode", config.diff_mode, current == 0);
             }
-            crate::cards::TracerType::Oplog => {
-                lines.push(Line::from(Span::raw("No configuration options")));
+            crate::cards::TracerType::Execution => {
+                render_toggle(frame.buffer_mut(), y, "enableMemory", config.enable_memory, current == 0);
+                render_toggle(frame.buffer_mut(), y + 2, "disableStack", config.disable_stack, current == 1);
+                render_toggle(frame.buffer_mut(), y + 4, "disableStorage", config.disable_storage, current == 2);
             }
         }
 
-        lines.push(Line::from(""));
-        lines.push(Line::from(Span::styled(
-            "Press ENTER to execute, ESC to cancel",
-            Style::default().fg(Color::DarkGray).add_modifier(Modifier::ITALIC),
-        )));
-
-        let paragraph = ratatui::widgets::Paragraph::new(lines);
-        paragraph.render(inner, frame.buffer_mut());
+        // Render footer with hints
+        let footer_y = inner.y + inner.height.saturating_sub(1);
+        let hint_style = Style::default().fg(Color::DarkGray);
+        let footer = Line::from(vec![
+            Span::styled("↑↓", Style::default().fg(Color::Yellow)),
+            Span::styled(": navigate  ", hint_style),
+            Span::styled("Space", Style::default().fg(Color::Yellow)),
+            Span::styled(": toggle  ", hint_style),
+            Span::styled("Enter", Style::default().fg(Color::Yellow)),
+            Span::styled(": execute  ", hint_style),
+            Span::styled("Esc", Style::default().fg(Color::Yellow)),
+            Span::styled(": cancel", hint_style),
+        ]);
+        frame.buffer_mut().set_line(inner.x + 1, footer_y, &footer, inner.width.saturating_sub(2));
     }
 
     async fn execute_rpc_debug_trace(
@@ -1987,7 +2477,7 @@ impl<P: Provider + Clone> App<P> {
         tx_hash: alloy::primitives::TxHash,
         config: &crate::cards::TracerConfig,
     ) -> Result<serde_json::Value> {
-        // Build the tracer config JSON
+        // Build the tracer config JSON matching Polkadot SDK format
         let tracer_config = config.to_json();
 
         // Get RPC URL from store config
@@ -1998,35 +2488,27 @@ impl<P: Provider + Clone> App<P> {
             "jsonrpc": "2.0",
             "method": "debug_traceTransaction",
             "params": [
-                format!("{:?}", tx_hash),
-                {
-                    "tracer": config.tracer_name(),
-                    "tracerConfig": tracer_config,
-                }
+                format!("{tx_hash:?}"),
+                tracer_config,  // Pass the full tracer config as second param
             ],
             "id": 1,
         });
 
-        // Try to make the actual RPC call if possible
-        // Note: This requires a Geth-compatible RPC endpoint with debug API enabled
+        // Log the RPC request for debugging
+        log::info!("🔍 Debug RPC Request: {}", serde_json::to_string_pretty(&request_payload).unwrap_or_default());
+
+        // Try to make the actual RPC call
         let trace_result = match self.try_raw_rpc_call(rpc_url, &request_payload).await {
-            Ok(result) => result,
-            Err(_) => {
+            Ok(result) => {
+                log::info!("✓ Debug RPC Response received");
+                result
+            },
+            Err(e) => {
+                log::error!("✗ Debug RPC Error: {e}");
                 // Fallback: Return informative placeholder with request details
                 serde_json::json!({
-                    "type": "debug_traceTransaction",
-                    "transaction_hash": format!("{:?}", tx_hash),
-                    "tracer": config.tracer_name(),
-                    "tracer_config": tracer_config,
-                    "rpc_url": rpc_url,
-                    "status": "debug_traceTransaction requires Geth-compatible RPC with debug API enabled",
-                    "instructions": [
-                        "Ensure your RPC provider supports debug API (Geth, Erigon, Hardhat, etc.)",
-                        format!("RPC URL being used: {}", rpc_url),
-                        "Example: Local Geth: geth --http --http.api eth,debug",
-                        "Or use a service like Alchemy that supports debug APIs"
-                    ],
-                    "request_that_was_sent": request_payload,
+                    "error": format!("{e}"),
+                    "request_sent": request_payload,
                 })
             }
         };
@@ -2045,14 +2527,14 @@ impl<P: Provider + Clone> App<P> {
         // This is informational since we don't have the call data in the Card
         let trace_result = serde_json::json!({
             "type": "debug_traceCall",
-            "contract_address": format!("{:?}", contract_address),
+            "contract_address": format!("{contract_address:?}"),
             "tracer": "callTracer",
             "rpc_url": rpc_url,
             "status": "debug_traceCall requires Geth-compatible RPC with debug API enabled",
             "instructions": [
                 "This would execute debug_traceCall for the contract",
                 "Full implementation requires storing call data with call cards",
-                format!("RPC URL being used: {}", rpc_url),
+                format!("RPC URL being used: {rpc_url}"),
                 "Ensure your RPC provider supports debug API"
             ],
         });
@@ -2060,63 +2542,134 @@ impl<P: Provider + Clone> App<P> {
         Ok(trace_result)
     }
 
-    /// Attempt to make a raw JSON-RPC call to the configured RPC endpoint
+    /// Attempt to make a raw JSON-RPC call to the configured RPC endpoint using Alloy's client
     async fn try_raw_rpc_call(
         &self,
-        rpc_url: &str,
+        _rpc_url: &str,
         payload: &serde_json::Value,
     ) -> Result<serde_json::Value> {
-        // This is a best-effort implementation
-        // In a production system, you would want to use a proper HTTP client like reqwest
-        // For now, we provide a structured response that documents what would be sent
+        // Extract method and params from payload
+        let method = payload.get("method")
+            .and_then(|v| v.as_str())
+            .ok_or_else(|| anyhow::anyhow!("No method in payload"))?;
 
-        // Create a comprehensive response showing what the RPC call would do
-        let mock_response = serde_json::json!({
-            "jsonrpc": "2.0",
-            "id": 1,
-            "method": payload.get("method").and_then(|v| v.as_str()).unwrap_or("unknown"),
-            "rpc_endpoint": rpc_url,
-            "note": "Full debug trace support requires HTTP client to make raw RPC calls",
-            "payload_sent": payload,
-            "result": "Awaiting Geth RPC response...",
-        });
+        let params = payload.get("params")
+            .ok_or_else(|| anyhow::anyhow!("No params in payload"))?;
 
-        Ok(mock_response)
+        // Use Alloy's client to make the raw RPC call
+        // Match on method to use 'static str literals
+        let result: serde_json::Value = match method {
+            "debug_traceTransaction" => {
+                self.provider
+                    .raw_request::<_, serde_json::Value>("debug_traceTransaction".into(), params.clone())
+                    .await
+                    .with_context(|| "Failed to execute debug_traceTransaction")?
+            }
+            "debug_traceCall" => {
+                self.provider
+                    .raw_request::<_, serde_json::Value>("debug_traceCall".into(), params.clone())
+                    .await
+                    .with_context(|| "Failed to execute debug_traceCall")?
+            }
+            _ => {
+                anyhow::bail!("Unsupported debug method: {method}");
+            }
+        };
+
+        Ok(result)
     }
 
-    fn add_transaction_card(&mut self, hash: alloy::primitives::TxHash, status: crate::cards::TransactionStatus, function: String, gas: Option<String>) {
+    fn add_transaction_card(
+        &mut self,
+        hash: alloy::primitives::TxHash,
+        status: crate::cards::TransactionStatus,
+        function: String,
+        gas: Option<String>,
+        contract_name: String,
+        contract_address: Option<Address>,
+        error_message: Option<String>,
+    ) {
         let card = crate::cards::Card::Transaction {
             hash,
             status,
             function_name: function,
             gas_used: gas,
+            contract_name,
+            contract_address,
+            error_message,
         };
         self.state.cards.cards.push(card);
         self.state.cards.selected_index = self.state.cards.cards.len() - 1;
+        // Auto-scroll to show new card
+        let viewport_height = self.state.output_area_height as usize;
+        self.state.cards.scroll_offset = self.state.cards.calculate_scroll_offset(viewport_height);
     }
 
-    fn add_call_card(&mut self, from: Address, to: Address, function: String, value: String) {
+    fn add_call_card(&mut self, from: Address, to: Address, function: String, result: String) {
         let card = crate::cards::Card::Call {
             from,
             to,
             function_signature: function,
-            value,
+            result,
         };
         self.state.cards.cards.push(card);
         self.state.cards.selected_index = self.state.cards.cards.len() - 1;
+        // Auto-scroll to show new card
+        let viewport_height = self.state.output_area_height as usize;
+        self.state.cards.scroll_offset = self.state.cards.calculate_scroll_offset(viewport_height);
     }
 
-    fn add_log_card(&mut self, message: String) {
+    pub fn add_log_card(&mut self, message: String) {
         let card = crate::cards::Card::Log { message };
         self.state.cards.cards.push(card);
         self.state.cards.selected_index = self.state.cards.cards.len() - 1;
+        // Auto-scroll to show new card
+        let viewport_height = self.state.output_area_height as usize;
+        self.state.cards.scroll_offset = self.state.cards.calculate_scroll_offset(viewport_height);
     }
+}
+
+/// Copy text to clipboard using system commands on Linux for reliability
+fn copy_to_clipboard(text: &str) -> std::result::Result<(), String> {
+    use std::process::{Command, Stdio};
+    use std::io::Write;
+
+    // Try wl-copy (Wayland) first, then xclip, then xsel, finally fall back to arboard
+    let clipboard_commands = [
+        ("wl-copy", vec![]),
+        ("xclip", vec!["-selection", "clipboard"]),
+        ("xsel", vec!["--clipboard", "--input"]),
+    ];
+
+    for (cmd, args) in &clipboard_commands {
+        if let Ok(mut child) = Command::new(cmd)
+            .args(args)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::null())
+            .stderr(Stdio::null())
+            .spawn()
+        {
+            if let Some(mut stdin) = child.stdin.take() {
+                if stdin.write_all(text.as_bytes()).is_ok() {
+                    drop(stdin);
+                    if child.wait().map(|s| s.success()).unwrap_or(false) {
+                        return Ok(());
+                    }
+                }
+            }
+        }
+    }
+
+    // Fall back to arboard if no system command works
+    arboard::Clipboard::new()
+        .and_then(|mut cb| cb.set_text(text))
+        .map_err(|e| e.to_string())
 }
 
 fn parse_value(input: &str, type_str: &str) -> std::result::Result<DynSolValue, String> {
     let sol_type: DynSolType = type_str
         .parse()
-        .map_err(|_| format!("Unsupported type: {}", type_str))?;
+        .map_err(|_| format!("Unsupported type: {type_str}"))?;
 
     match sol_type {
         DynSolType::Address => {
@@ -2153,7 +2706,7 @@ fn parse_value(input: &str, type_str: &str) -> std::result::Result<DynSolValue, 
             let input = input.strip_prefix("0x").unwrap_or(input);
             let bytes = hex::decode(input).map_err(|_| "Invalid hex string")?;
             if bytes.len() != size {
-                return Err(format!("Expected {} bytes", size));
+                return Err(format!("Expected {size} bytes"));
             }
             Ok(DynSolValue::FixedBytes(
                 alloy::primitives::FixedBytes::from_slice(&bytes),
@@ -2161,6 +2714,60 @@ fn parse_value(input: &str, type_str: &str) -> std::result::Result<DynSolValue, 
             ))
         }
         DynSolType::String => Ok(DynSolValue::String(input.to_string())),
-        _ => Err(format!("Unsupported type: {}", type_str)),
+        _ => Err(format!("Unsupported type: {type_str}")),
     }
+}
+
+fn format_ether(wei: U256) -> String {
+    const DECIMALS: usize = 18;
+    const DISPLAY_DECIMALS: usize = 6;
+
+    let wei_str = wei.to_string();
+    let len = wei_str.len();
+
+    let (int_part, frac_part) = if len <= DECIMALS {
+        let padded = format!("{wei_str:0>DECIMALS$}");
+        ("0".to_string(), padded)
+    } else {
+        let split = len - DECIMALS;
+        (wei_str[..split].to_string(), wei_str[split..].to_string())
+    };
+
+    let frac_display = &frac_part[..DISPLAY_DECIMALS.min(frac_part.len())];
+    format!("{int_part}.{frac_display}")
+}
+
+/// Format a key event for logging
+fn format_key_event(key: &KeyEvent) -> String {
+    let mut parts = Vec::new();
+    if key.modifiers.contains(KeyModifiers::CONTROL) {
+        parts.push("Ctrl");
+    }
+    if key.modifiers.contains(KeyModifiers::ALT) {
+        parts.push("Alt");
+    }
+    if key.modifiers.contains(KeyModifiers::SHIFT) {
+        parts.push("Shift");
+    }
+    let key_str = match key.code {
+        KeyCode::Char(c) => format!("'{c}'"),
+        KeyCode::Enter => "Enter".to_string(),
+        KeyCode::Tab => "Tab".to_string(),
+        KeyCode::BackTab => "BackTab".to_string(),
+        KeyCode::Backspace => "Backspace".to_string(),
+        KeyCode::Esc => "Esc".to_string(),
+        KeyCode::Up => "Up".to_string(),
+        KeyCode::Down => "Down".to_string(),
+        KeyCode::Left => "Left".to_string(),
+        KeyCode::Right => "Right".to_string(),
+        KeyCode::Delete => "Delete".to_string(),
+        KeyCode::Home => "Home".to_string(),
+        KeyCode::End => "End".to_string(),
+        KeyCode::PageUp => "PageUp".to_string(),
+        KeyCode::PageDown => "PageDown".to_string(),
+        KeyCode::F(n) => format!("F{n}"),
+        _ => format!("{:?}", key.code),
+    };
+    parts.push(&key_str);
+    parts.join("+")
 }

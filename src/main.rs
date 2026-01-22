@@ -9,60 +9,42 @@ mod store;
 mod tui;
 
 use anyhow::Result;
+use clap::Parser;
+use std::path::PathBuf;
+
+/// An interactive CLI for deploying and interacting with Solidity contracts
+#[derive(Parser, Debug)]
+#[command(name = "evm-cli", version, about)]
+struct Args {
+    /// Path to config file (default: ~/.evm-cli/config.json)
+    #[arg(short, long)]
+    config: Option<PathBuf>,
+}
 
 #[tokio::main]
 async fn main() -> Result<()> {
-    // Load .env file if present (ignore if missing)
-    let _ = dotenvy::dotenv();
+    let args = Args::parse();
 
     // Initialize logger to write to ~/.evm-cli/output.log
     logger::init()?;
 
-    // Load store first (for config)
-    let store = store::DeploymentStore::load()?;
+    // Load store from specified path or default (~/.evm-cli/config.json)
+    let store = store::DeploymentStore::load_from(args.config)?;
 
-    // Create provider (uses config for RPC URL fallback)
-    let (provider, signer) = provider::create_provider(&store.config).await?;
-
+    // Create provider (no connection test - will be done asynchronously)
+    let (provider, signer) = provider::create_provider(&store.config)?;
     let signer_address = signer.address();
 
-    // Get balance
-    let balance = provider::get_balance(&provider, signer_address).await?;
+    // Create app with the already-loaded store and signer address
+    let mut app = app::App::new(provider, store, signer_address);
 
-    // Create app with the already-loaded store
-    let mut app = app::App::new(provider, store);
-    app.initialize().await?;
-    app.set_account_info(signer_address, format_ether(balance));
+    // Try initial connection (non-blocking failure)
+    app.try_connect().await;
 
-    // Push initial info to output
-    app.state.output.push_success(format!("Connected with account: {:?}", signer_address));
-    app.state.output.push_info(format!("Balance: {} ETH", format_ether(balance)));
-    if let Some(home) = std::env::var_os("HOME") {
-        let log_path = std::path::PathBuf::from(home).join(".evm-cli/output.log");
-        app.state.output.push_info(format!("Logs: {}", log_path.display()));
-    }
-    app.state.output.push_separator();
+    // Create connection card (will be updated by polling if disconnected)
+    app.add_connection_card();
 
     app.run_interactive().await?;
 
     Ok(())
-}
-
-fn format_ether(wei: alloy::primitives::U256) -> String {
-    const DECIMALS: usize = 18;
-    const DISPLAY_DECIMALS: usize = 6;
-
-    let wei_str = wei.to_string();
-    let len = wei_str.len();
-
-    let (int_part, frac_part) = if len <= DECIMALS {
-        let padded = format!("{:0>width$}", wei_str, width = DECIMALS);
-        ("0".to_string(), padded)
-    } else {
-        let split = len - DECIMALS;
-        (wei_str[..split].to_string(), wei_str[split..].to_string())
-    };
-
-    let frac_display = &frac_part[..DISPLAY_DECIMALS.min(frac_part.len())];
-    format!("{}.{}", int_part, frac_display)
 }

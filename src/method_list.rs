@@ -25,7 +25,7 @@ pub fn list_methods(abi: &JsonAbi, include_constructor: bool) -> Vec<MethodDispl
     if include_constructor {
         let label = if let Some(ctor) = &abi.constructor {
             let params = format_params(&ctor.inputs);
-            format!("constructor({})", params)
+            format!("constructor({params})")
         } else {
             "constructor()".to_string()
         };
@@ -65,7 +65,7 @@ pub fn list_methods(abi: &JsonAbi, include_constructor: bool) -> Vec<MethodDispl
         let label = if returns.is_empty() {
             format!("{}({})", func.name, params)
         } else {
-            format!("{}({}) -> {}", func.name, params, returns)
+            format!("{}({params}) -> {returns}", func.name)
         };
 
         let tag = match func.state_mutability {

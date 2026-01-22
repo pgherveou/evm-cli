@@ -1,5 +1,5 @@
-use crate::tui::state::{OutputState, OutputStyle, CardState};
 use crate::cards::Card;
+use crate::tui::state::{CardState, OutputState, OutputStyle};
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -54,20 +54,33 @@ impl Widget for OutputArea<'_> {
         };
 
         // If there are cards, display them; otherwise display text lines
-        let lines: Vec<Line> = if !self.card_state.cards.is_empty() {
-            // Display cards
-            self.card_state.cards
-                .iter()
-                .enumerate()
-                .flat_map(|(i, card)| {
-                    let is_selected = i == self.card_state.selected_index;
-                    let card_lines = self.format_card(card, is_selected);
-                    card_lines
-                })
-                .collect()
+        if !self.card_state.cards.is_empty() {
+            // Calculate all card lines with tracking
+            let mut all_lines = Vec::new();
+            let mut card_line_positions = Vec::new(); // (start_line, end_line) for each card
+
+            for (i, card) in self.card_state.cards.iter().enumerate() {
+                let is_selected = i == self.card_state.selected_index;
+                let start_line = all_lines.len();
+                let card_lines = self.format_card(card, is_selected);
+                all_lines.extend(card_lines);
+                let end_line = all_lines.len();
+                card_line_positions.push((start_line, end_line));
+            }
+
+            // Apply scroll offset
+            let visible_lines: Vec<Line> = all_lines
+                .into_iter()
+                .skip(self.card_state.scroll_offset)
+                .take(padded_area.height as usize)
+                .collect();
+
+            let paragraph = Paragraph::new(visible_lines).wrap(Wrap { trim: false });
+            paragraph.render(padded_area, buf);
         } else {
             // Display text lines (no cards yet)
-            self.output_state
+            let lines: Vec<Line> = self
+                .output_state
                 .lines
                 .iter()
                 .skip(self.output_state.scroll_offset)
@@ -77,9 +90,9 @@ impl Widget for OutputArea<'_> {
                         OutputStyle::Success => Style::default()
                             .fg(Color::Green)
                             .add_modifier(Modifier::BOLD),
-                        OutputStyle::Error => Style::default()
-                            .fg(Color::Red)
-                            .add_modifier(Modifier::BOLD),
+                        OutputStyle::Error => {
+                            Style::default().fg(Color::Red).add_modifier(Modifier::BOLD)
+                        }
                         OutputStyle::Info => Style::default().fg(Color::DarkGray),
                         OutputStyle::Waiting => Style::default().fg(Color::Yellow),
                         OutputStyle::Highlight => Style::default()
@@ -89,12 +102,11 @@ impl Widget for OutputArea<'_> {
                     };
                     Line::from(Span::styled(&line.text, style))
                 })
-                .collect()
-        };
+                .collect();
 
-        let paragraph = Paragraph::new(lines).wrap(Wrap { trim: false });
-
-        paragraph.render(padded_area, buf);
+            let paragraph = Paragraph::new(lines).wrap(Wrap { trim: false });
+            paragraph.render(padded_area, buf);
+        }
     }
 }
 
@@ -103,79 +115,156 @@ impl OutputArea<'_> {
         let mut lines = Vec::new();
 
         // Select style based on selection and card type
-        let (header_style, text_style) = if is_selected {
+        // Active: bright colors for selected cards
+        // Muted: dim colors for unselected cards
+        let (header_style, text_style, border_style) = if is_selected {
+            // Active state: bright, bold text
             (
                 Style::default()
-                    .bg(Color::DarkGray)
                     .fg(Color::White)
                     .add_modifier(Modifier::BOLD),
-                Style::default()
-                    .bg(Color::DarkGray)
-                    .fg(Color::White)
+                Style::default().fg(Color::White),
+                Style::default().fg(Color::Cyan),
             )
         } else {
-            let base_style = match card {
-                Card::Transaction { .. } => Style::default().fg(Color::Yellow),
-                Card::Call { .. } => Style::default().fg(Color::Cyan),
-                Card::Log { .. } => Style::default().fg(Color::Green),
-            };
-            (base_style, base_style)
+            // Muted state: darker colors
+            (
+                Style::default().fg(Color::DarkGray),
+                Style::default().fg(Color::DarkGray),
+                Style::default().fg(Color::DarkGray),
+            )
         };
 
-        // Top border
-        let border = format!("┌{}┐", "─".repeat(70));
-        lines.push(Line::from(Span::styled(border, text_style)));
-
-        // Card type header
+        // Card type header with left border
         let card_type = match card {
             Card::Transaction { .. } => "Transaction",
             Card::Call { .. } => "Call",
             Card::Log { .. } => "Log",
+            Card::Connection { .. } => "Connection",
         };
-        lines.push(Line::from(Span::styled(
-            format!("│ {} │", card_type),
-            header_style,
-        )));
+
+        // Create left border and header
+        let left_border = Span::styled("┃ ", border_style);
+        let card_header = Span::styled(card_type, header_style);
+        lines.push(Line::from(vec![left_border, card_header]));
 
         // Card content
         let content = match card {
-            Card::Transaction { hash, status, function_name, gas_used } => {
-                let hash_str = format!("{:?}", hash);
+            Card::Transaction {
+                hash,
+                status,
+                function_name,
+                gas_used,
+                contract_name,
+                contract_address,
+                error_message,
+            } => {
                 let mut content = vec![
-                    format!("│ Hash: {}... │", &hash_str[..10.min(hash_str.len())]),
-                    format!("│ Status: {} │", status),
-                    format!("│ Function: {} │", function_name),
+                    format!("  Hash: {hash:?}"),
+                    format!("  Status: {status}"),
+                    format!("  Function: {function_name}"),
+                    format!("  Contract: {contract_name}"),
                 ];
+                if let Some(addr) = contract_address {
+                    content.push(format!("  Address: {addr:?}"));
+                }
                 if let Some(gas) = gas_used {
-                    content.push(format!("│ Gas: {} │", gas));
+                    content.push(format!("  Gas: {gas}"));
+                }
+                if let Some(error) = error_message {
+                    content.push(format!("  Error: {error}"));
                 }
                 content
             }
-            Card::Call { from, to, function_signature, value } => {
-                let from_str = format!("{:?}", from);
-                let to_str = format!("{:?}", to);
+            Card::Call {
+                from,
+                to,
+                function_signature,
+                result,
+            } => {
                 vec![
-                    format!("│ Function: {} │", function_signature),
-                    format!("│ From: {}... │", &from_str[..8.min(from_str.len())]),
-                    format!("│ To: {}... │", &to_str[..8.min(to_str.len())]),
-                    format!("│ Value: {} │", value),
+                    format!("  Function: {function_signature}"),
+                    format!("  To: {to:?}"),
+                    format!("  From: {from:?}"),
+                    format!(""),
+                    format!("  Result: {result}"),
                 ]
             }
             Card::Log { message } => {
-                vec![format!("│ {} │", message)]
+                // Split message by newlines to support multiline log cards
+                message.lines().map(|line| format!("  {line}")).collect()
+            }
+            Card::Connection {
+                connected,
+                account,
+                balance,
+                chain_id,
+                error,
+            } => {
+                let mut content = vec![];
+
+                if *connected {
+                    content.push("  Connected".to_string());
+                } else {
+                    content.push("  Disconnected".to_string());
+                }
+
+                content.push(format!("  Account: {account:?}"));
+
+                if let Some(bal) = balance {
+                    content.push(format!("  Balance: {bal} ETH"));
+                }
+
+                if let Some(chain) = chain_id {
+                    content.push(format!("  Chain ID: {chain}"));
+                }
+
+                if let Some(err) = error {
+                    content.push(format!("  Error: {err}"));
+                }
+
+                content
             }
         };
 
         for content_line in content {
-            lines.push(Line::from(Span::styled(content_line, text_style)));
+            let border = Span::styled("┃ ", border_style);
+            let text = Span::styled(content_line, text_style);
+            lines.push(Line::from(vec![border, text]));
         }
 
-        // Bottom border
-        let border = format!("└{}┘", "─".repeat(70));
-        lines.push(Line::from(Span::styled(border, text_style)));
+        // Add action buttons for selected interactive cards
+        if is_selected && card.is_interactive() {
+            let actions = crate::cards::get_card_actions(card);
+            if !actions.is_empty() {
+                // Add empty line before actions
+                lines.push(Line::from(Span::styled("┃", border_style)));
 
-        // Spacing between cards
-        lines.push(Line::from(""));
+                // Build action line with ◇ diamond symbols
+                let border = Span::styled("┃ ", border_style);
+                let mut action_spans = vec![border];
+
+                for (i, action) in actions.iter().enumerate() {
+                    if i > 0 {
+                        action_spans.push(Span::styled("   ", text_style));
+                    }
+                    action_spans.push(Span::styled("◇ ", Style::default().fg(Color::Cyan)));
+                    let action_text = match action {
+                        crate::cards::CardAction::Copy => "Copy (c)",
+                        crate::cards::CardAction::ViewReceipt => "View Receipt (r)",
+                        crate::cards::CardAction::DebugTrace => "Debug Trace (d)",
+                        crate::cards::CardAction::DebugCall => "Debug Call (d)",
+                    };
+                    action_spans.push(Span::styled(action_text, text_style));
+                }
+
+                lines.push(Line::from(action_spans));
+            }
+        }
+
+        // Spacing between cards - border line + blank line
+        lines.push(Line::from(Span::styled("┃", border_style)));
+        lines.push(Line::from("")); // Actual blank line for spacing
 
         lines
     }

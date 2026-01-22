@@ -46,7 +46,8 @@ impl Widget for ParameterPopup<'_> {
         // Calculate popup height based on number of fields (2 lines per field + header + footer)
         // Add extra space if bytecode target selector is shown
         let extra_height = if self.bytecode_target.is_some() { 2 } else { 0 };
-        let height_percent = ((self.fields.len() * 3 + 6 + extra_height) as u16 * 100 / area.height).min(80);
+        let height_percent =
+            ((self.fields.len() * 3 + 6 + extra_height) as u16 * 100 / area.height).min(80);
         let popup_area = centered_popup(area, 70, height_percent.max(30));
 
         // Clear the popup area
@@ -136,7 +137,12 @@ impl Widget for ParameterPopup<'_> {
         }
 
         let footer = Line::from(footer_spans);
-        buf.set_line(inner.x + 1, footer_y, &footer, inner.width.saturating_sub(2));
+        buf.set_line(
+            inner.x + 1,
+            footer_y,
+            &footer,
+            inner.width.saturating_sub(2),
+        );
     }
 }
 

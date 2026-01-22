@@ -50,7 +50,7 @@ When reviewing components, evaluate:
 ## Workflow
 
 1. Review existing design system documentation in spec/design-system/
-2. Analyze component design (from specs in spec/[component-name]/spec.md)
+2. Analyze component design (from specs in specs/[component-name].md)
 3. Identify design patterns and document them
 4. Check component alignment with design system
 5. Flag inconsistencies and suggest improvements

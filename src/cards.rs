@@ -9,15 +9,25 @@ pub enum Card {
         status: TransactionStatus,
         function_name: String,
         gas_used: Option<String>,
+        contract_name: String,
+        contract_address: Option<Address>,
+        error_message: Option<String>,
     },
     Call {
         from: Address,
         to: Address,
         function_signature: String,
-        value: String,
+        result: String,
     },
     Log {
         message: String,
+    },
+    Connection {
+        connected: bool,
+        account: Address,
+        balance: Option<String>,
+        chain_id: Option<u64>,
+        error: Option<String>,
     },
 }
 
@@ -37,62 +47,9 @@ impl fmt::Display for TransactionStatus {
 }
 
 impl Card {
-    /// Get a one-line display representation of the card
-    #[allow(dead_code)]
-    pub fn display_line(&self) -> String {
-        match self {
-            Card::Transaction {
-                hash,
-                status,
-                function_name,
-                gas_used,
-            } => {
-                let hash_str = format!("{:?}", hash).chars().take(10).collect::<String>();
-                let status_str = match status {
-                    TransactionStatus::Success => "✓ Success",
-                    TransactionStatus::Failed => "✗ Failed",
-                };
-                let gas_str = gas_used
-                    .as_ref()
-                    .map(|g| format!(" | Gas: {}", g))
-                    .unwrap_or_default();
-                format!(
-                    "TX: {} | {} | {} {}",
-                    hash_str, status_str, function_name, gas_str
-                )
-            }
-            Card::Call {
-                from,
-                to,
-                function_signature,
-                value,
-            } => {
-                let from_str = format!("{:?}", from).chars().take(8).collect::<String>();
-                let to_str = format!("{:?}", to).chars().take(8).collect::<String>();
-                format!(
-                    "CALL: {}→{} | {} | Value: {}",
-                    from_str, to_str, function_signature, value
-                )
-            }
-            Card::Log { message } => {
-                format!("✓ {}", message)
-            }
-        }
-    }
-
     /// Determine if this card is interactive (has a menu)
     pub fn is_interactive(&self) -> bool {
         matches!(self, Card::Transaction { .. } | Card::Call { .. })
-    }
-
-    /// Get the type name for styling purposes
-    #[allow(dead_code)]
-    pub fn type_name(&self) -> &'static str {
-        match self {
-            Card::Transaction { .. } => "Transaction",
-            Card::Call { .. } => "Call",
-            Card::Log { .. } => "Log",
-        }
     }
 }
 
@@ -102,6 +59,7 @@ pub enum CardAction {
     ViewReceipt,
     DebugTrace,
     DebugCall,
+    Copy,
 }
 
 impl fmt::Display for CardAction {
@@ -110,6 +68,7 @@ impl fmt::Display for CardAction {
             CardAction::ViewReceipt => write!(f, "View Receipt"),
             CardAction::DebugTrace => write!(f, "Debug Trace"),
             CardAction::DebugCall => write!(f, "Debug Call"),
+            CardAction::Copy => write!(f, "Copy"),
         }
     }
 }
@@ -117,9 +76,49 @@ impl fmt::Display for CardAction {
 /// Get available actions for a card type
 pub fn get_card_actions(card: &Card) -> Vec<CardAction> {
     match card {
-        Card::Transaction { .. } => vec![CardAction::ViewReceipt, CardAction::DebugTrace],
+        Card::Transaction { .. } => vec![
+            CardAction::Copy,
+            CardAction::ViewReceipt,
+            CardAction::DebugTrace,
+        ],
         Card::Call { .. } => vec![CardAction::DebugCall],
         Card::Log { .. } => vec![],
+        Card::Connection { .. } => vec![],
+    }
+}
+
+/// Copy options for transaction cards
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum CopyOption {
+    Hash,
+    Address,
+}
+
+impl fmt::Display for CopyOption {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            CopyOption::Hash => write!(f, "Transaction Hash"),
+            CopyOption::Address => write!(f, "Contract Address"),
+        }
+    }
+}
+
+/// Get copy options for a transaction card
+pub fn get_copy_options(card: &Card) -> Vec<CopyOption> {
+    match card {
+        Card::Transaction {
+            contract_address,
+            function_name,
+            ..
+        } => {
+            // If it's a deployment (has contract_address and function starts with "Deploy")
+            if contract_address.is_some() && function_name.starts_with("Deploy") {
+                vec![CopyOption::Hash, CopyOption::Address]
+            } else {
+                vec![CopyOption::Hash]
+            }
+        }
+        _ => vec![],
     }
 }
 
@@ -128,7 +127,7 @@ pub fn get_card_actions(card: &Card) -> Vec<CardAction> {
 pub enum TracerType {
     Call,
     Prestate,
-    Oplog,
+    Execution,
 }
 
 impl fmt::Display for TracerType {
@@ -136,57 +135,87 @@ impl fmt::Display for TracerType {
         match self {
             TracerType::Call => write!(f, "Call Tracer"),
             TracerType::Prestate => write!(f, "Prestate Tracer"),
-            TracerType::Oplog => write!(f, "Oplog Tracer"),
+            TracerType::Execution => write!(f, "Execution Tracer"),
         }
     }
 }
 
 pub fn get_tracer_types() -> Vec<TracerType> {
-    vec![TracerType::Call, TracerType::Prestate, TracerType::Oplog]
+    vec![
+        TracerType::Call,
+        TracerType::Prestate,
+        TracerType::Execution,
+    ]
 }
 
-/// Configuration options for tracers (subset of Geth tracer config)
+/// Configuration options for tracers
 #[derive(Clone, Debug)]
 pub struct TracerConfig {
     pub tracer_type: TracerType,
+    // Call tracer options
+    pub with_logs: bool,
     pub only_top_call: bool,
+    // Prestate tracer options
     pub diff_mode: bool,
+    // Execution tracer options
+    pub enable_memory: bool,
+    pub disable_stack: bool,
+    pub disable_storage: bool,
 }
 
 impl Default for TracerConfig {
     fn default() -> Self {
         Self {
             tracer_type: TracerType::Call,
+            with_logs: true,
             only_top_call: false,
             diff_mode: false,
+            enable_memory: false,
+            disable_stack: false,
+            disable_storage: false,
         }
     }
 }
 
 impl TracerConfig {
+    /// Convert to JSON-RPC TracerConfig format matching Polkadot SDK API
+    /// - For callTracer and prestateTracer: {"tracer": "...", "tracerConfig": {...}}
+    /// - For executionTracer: config is inlined without "tracer" field (it's the default)
     pub fn to_json(&self) -> serde_json::Value {
-        let mut config = serde_json::json!({});
-
         match self.tracer_type {
             TracerType::Call => {
-                config["onlyTopCall"] = serde_json::json!(self.only_top_call);
+                serde_json::json!({
+                    "tracer": "callTracer",
+                    "tracerConfig": {
+                        "withLogs": self.with_logs,
+                        "onlyTopCall": self.only_top_call
+                    }
+                })
             }
             TracerType::Prestate => {
-                config["diffMode"] = serde_json::json!(self.diff_mode);
+                serde_json::json!({
+                    "tracer": "prestateTracer",
+                    "tracerConfig": {
+                        "diffMode": self.diff_mode
+                    }
+                })
             }
-            TracerType::Oplog => {
-                // Oplog doesn't have standard config options
+            TracerType::Execution => {
+                // ExecutionTracer is the default - config is inlined without "tracer" field
+                serde_json::json!({
+                    "enableMemory": self.enable_memory,
+                    "disableStack": self.disable_stack,
+                    "disableStorage": self.disable_storage
+                })
             }
         }
-
-        config
     }
 
     pub fn tracer_name(&self) -> &'static str {
         match self.tracer_type {
             TracerType::Call => "callTracer",
             TracerType::Prestate => "prestateTracer",
-            TracerType::Oplog => "oplogTracer",
+            TracerType::Execution => "executionTracer",
         }
     }
 }

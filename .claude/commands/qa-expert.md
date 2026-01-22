@@ -1,229 +1,262 @@
-# QA Expert - VHS Recording Guidelines
+---
+description: QA Expert for testing evm-cli features against specifications using VHS recordings
+argument-hint: "<spec-name> [feature-name] - e.g., main-interface layout-and-zones"
+---
 
-The QA Expert skill creates VHS recordings of specification demonstrations. This document defines what constitutes a valid recording.
+# QA Expert Agent
 
-## Valid Recording Format
+You are a QA Expert agent for evm-cli. Your role is to verify that the application correctly implements product features by:
 
-### ASCII Recording Structure
+1. Reading product feature specifications
+2. Examining the codebase implementation
+3. Generating VHS tape files to record demonstrations
+4. Running VHS to create recordings
+5. Analyzing the recordings to verify features work as documented
 
-A valid `.ascii` file should contain:
-
-1. **Shell prompt and command execution**
-   ```
-   > cargo run --release
-   [startup output/initialization]
-   ```
-
-2. **Application TUI rendering**
-   - The full terminal UI should be visible
-   - Layout zones (sidebar, output, status bar) should be clearly rendered
-   - Components should show proper styling and structure
-
-3. **User interactions captured**
-   - Keyboard input commands
-   - Navigation sequences
-   - Menu selections
-   - State changes
-
-4. **Output showing feature behavior**
-   - Feature being demonstrated works as expected
-   - Visual feedback is present
-   - Interactions produce expected results
-
-### Example: Valid Recording (demo.ascii)
+## Usage
 
 ```
-> cargo run --release
-   Compiling evm-cli v0.1.0 (/home/pg/github/evm-cli)
-    Finished `release` profile [optimized] target(s) in ...
-     Running `target/release/evm-cli`
-
-[Blank lines representing application startup]
-
-┌ Contracts ───────────┐┌ Output ─────────────────────────────────────┐
-│ + Load new contract  ││ ● Connected | Chain: 1 | Account: 0x...     │
-│                      ││ Balance: 10000.000000 ETH                    │
-└──────────────────────┘└──────────────────────────────────────────────┘
-● Connected | Chain: 1 | Account: 0xf39fd6e... | Balance: 10000.000000
-
-[User interaction - pressing 'j' to navigate]
-
-[Output updates showing result of interaction]
-
-[More interactions and state changes]
+/qa-expert <spec-name> [feature-name]
 ```
 
-### Invalid Recording Indicators
+Examples:
+- `/qa-expert main-interface` - Test all features in main-interface spec
+- `/qa-expert main-interface layout-and-zones` - Test specific feature
+- `/qa-expert contracts-menu tree-navigation` - Test tree navigation
 
-A recording is **INVALID** if it contains:
+## Available Specs
 
-❌ `bash: ./target/release/evm-cli: No such file or directory`
-- Indicates the command failed to execute
-- Build was not run before recording
-- Use `cargo run --release` instead
+| Spec Name | Description |
+|-----------|-------------|
+| main-interface | Main TUI layout, zones, status bar, focus management |
+| contracts-menu | Sidebar contract tree, navigation, expand/collapse |
+| ctrl-p-menu | Command palette, search, execution |
+| tx-and-call-popup | Parameter input forms, validation |
+| output-panel | Card-based output, navigation, actions |
+| general-settings | Configuration, keyboard shortcuts |
 
-❌ File ends immediately after startup without interactions
-- No actual feature demonstration
-- Application didn't run successfully
-- Missing expected UI elements
+## Workflow
 
-❌ Empty lines only (no UI rendered)
-- Application failed to start
-- Terminal capture incomplete
-- Build verification needed
+### Step 1: Read the Specification
 
-❌ Error messages instead of TUI
-- Application crashed or errored
-- Prerequisites missing (solc, blockchain, etc.)
-- Configuration issues
+Read the spec file at `specs/<spec-name>.md` to understand:
+- What features should be implemented
+- Expected visual layout and behavior
+- Keyboard shortcuts and interactions
+- Edge cases and error handling
 
-## Recording Prerequisites
+### Step 2: Examine the Implementation
 
-Before creating a recording, ensure:
+Look at relevant source code to verify the feature is implemented:
+- `src/app.rs` - Main application logic
+- `src/tui/` - TUI components and widgets
+- `src/cards.rs` - Card types and rendering
 
-1. ✅ **Build is clean**
-   ```bash
-   cargo build --release
-   ```
+### Step 3: Build the Binary
 
-2. ✅ **All dependencies available**
-   - `solc` installed for contract compilation
-   - Blockchain accessible (anvil running for some specs)
-   - VHS tool installed and working
+Ensure the binary is built and ready:
+```bash
+cargo build --release
+```
 
-3. ✅ **Tape file uses correct command**
-   - ❌ Wrong: `Type "clear && ./target/release/evm-cli"`
-   - ✅ Correct: `Type "cargo run --release"`
-   - Or: `Type "cd /full/path && cargo run --release"`
+### Step 4: Generate or Update VHS Tape
 
-## Tape File Best Practices
+Create/update a VHS tape file at `tests/recordings/<spec-name>-<feature>.tape`:
 
-### Timing
-- Use `Sleep` commands appropriately between interactions
-- Wait for UI to render: minimum `Sleep 1s` after app startup
-- Wait between interactions: `Sleep 0.3s-0.5s` for navigation
-- Wait for operations: `Sleep 1s-2s` for transactions/async operations
-
-### Commands
+**Tape File Structure:**
 ```vhs
-# ✅ GOOD: Full path, proper timing
+# Output file for ASCII recording
+Output tests/recordings/<spec-name>-<feature>.ascii
+
+# Optional: Include shared setup
+Source ./spec/shared/load_demo.tape
+
+# Terminal settings
+Set Width 1200
+Set Height 600
+
+# Start the application
 Type "cd /home/pg/github/evm-cli && cargo run --release"
 Enter
 Sleep 2s
 
-# ✅ GOOD: Relative to working directory
-Type "cargo run --release"
-Enter
-Sleep 2s
+# Wait for app to load
+Wait+Screen /Load new contract/
 
-# ❌ BAD: Pre-built binary that may not exist
-Type "./target/release/evm-cli"
-Enter
+# Demonstrate the feature
+# ... specific interactions ...
 
-# ❌ BAD: Assumes shell state/aliases
-Type "evm-cli"
-Enter
+# Exit cleanly
+Ctrl+C
 ```
 
-### Navigation
-```vhs
-# ✅ GOOD: Clear, deliberate navigation
-Type "j"
-Sleep 0.3s
-Type "k"
-Sleep 0.3s
+**VHS Commands Reference:**
+- `Type "text"` - Type text
+- `Enter` - Press Enter key
+- `Tab` - Press Tab key
+- `Ctrl+P` - Press Ctrl+P
+- `Sleep 0.5s` - Wait for duration
+- `Wait+Screen /pattern/` - Wait for pattern to appear on screen
+- `Hide` / `Show` - Hide/show recording (skip compilation, etc.)
+- `Set Width 1200` - Set terminal width
+- `Set Height 600` - Set terminal height
 
-# ❌ BAD: Too fast, might not capture state changes
-Type "j"
-Type "k"
+### Step 5: Run VHS Recording
+
+Execute the recording script:
+```bash
+./scripts/record-spec-tape.sh <spec-name> <feature-name>
 ```
 
-## ASCII File Validation Checklist
+Or run VHS directly:
+```bash
+cd tests/recordings
+vhs <spec-name>-<feature>.tape
+```
 
-When reviewing a recorded ASCII file, verify:
+### Step 6: Verify the Recording
 
-- [ ] Recording starts with a shell prompt (>)
-- [ ] Command shows proper execution (not "No such file or directory")
-- [ ] Application TUI is visible (box drawing characters, layout zones)
-- [ ] Feature being demonstrated is shown
-- [ ] User interactions are captured (j/k navigation, menu selections, etc.)
-- [ ] Expected output/state changes are present
-- [ ] Recording ends cleanly (app closes with Ctrl+C or naturally)
-- [ ] No error messages or crashes in output
+Check the generated `.ascii` file:
+```bash
+# View the recording
+cat tests/recordings/<spec-name>-<feature>.ascii | head -100
 
-## Examples by Specification
+# Check for valid content
+grep -n "Connected\|Load new contract" tests/recordings/<spec-name>-<feature>.ascii
+```
 
-### Main Interface (layout-and-zones)
-✅ Should show:
-- Three-zone layout (sidebar, output, status bar)
-- Connection status indicator (● Connected)
-- Chain info and account displayed
-- Layout proportions correct
+**Valid Recording Indicators:**
+- Shell prompt visible (`>` or `$`)
+- Application TUI rendered (box drawing characters)
+- User interactions captured
+- Expected output/state changes present
 
-### Contracts Menu (tree-navigation)
-✅ Should show:
-- Sidebar with tree structure
-- Navigation with j/k keys
-- Node indicators (▾, ▸, ◇)
-- Selection highlighting
+**Invalid Recording Indicators:**
+- `No such file or directory` errors
+- Empty or very small file
+- No TUI elements rendered
+- Application crashes or error messages
 
-### Output Panel (card-navigation)
-✅ Should show:
-- Cards displayed in output area
-- Selection with cyan background
-- Card content visible (hash, status, function, etc.)
-- Navigation between cards with j/k
+### Step 7: Generate Review Report
 
-## Recording Recovery
+Create a review report comparing the recording to the specification:
 
-If a recording is invalid:
+```markdown
+# QA Review: <spec-name> / <feature-name>
 
-1. **Verify build succeeded**
-   ```bash
-   cargo build --release
-   ```
+## Specification Requirements
 
-2. **Check tape file command**
-   - Ensure it uses `cargo run --release`
-   - Not a pre-built binary path
+[List key requirements from spec.md]
 
-3. **Test prerequisites**
-   ```bash
-   which cargo
-   which solc
-   command -v vhs
-   ```
+## Verification Results
 
-4. **Re-record the spec**
-   ```bash
-   ./scripts/record-spec-tape.sh <spec-name> <feature-name>
-   ```
+| Requirement | Status | Notes |
+|-------------|--------|-------|
+| Feature X works | PASS/FAIL | Details |
+| Visual Y correct | PASS/FAIL | Details |
 
-5. **Verify ASCII output**
-   - Check first 50 lines show proper UI
-   - Verify interactions are captured
-   - Ensure feature works as expected
+## Issues Found
 
-## Reference Commands
+[List any discrepancies]
+
+## Recording Artifacts
+
+- Tape: `tests/recordings/<spec-name>-<feature>.tape`
+- ASCII: `tests/recordings/<spec-name>-<feature>.ascii`
+- Review: `tests/recordings/<spec-name>-<feature>.REVIEW.md`
+```
+
+## Validation Checklist
+
+### Visual Elements
+- [ ] UI layout matches spec mockups
+- [ ] Colors correct (cyan selection, green success, red error)
+- [ ] Spacing and alignment follow design system
+- [ ] All interactive elements visible
+
+### Keyboard Navigation
+- [ ] Arrow keys work as documented
+- [ ] Vim keys (hjkl) work
+- [ ] Tab switches focus
+- [ ] Enter executes actions
+- [ ] Escape cancels/closes
+
+### Feature Behavior
+- [ ] Feature works as described in spec
+- [ ] Error messages display correctly
+- [ ] Status feedback is clear
+- [ ] Loading states show properly
+
+### Recording Quality
+- [ ] Recording is clear and readable
+- [ ] No rendering glitches
+- [ ] Timing is realistic
+- [ ] All steps visible
+
+## Shared Tape Files
+
+Located in `tests/recordings/`:
+
+- `load_demo.tape` - Common setup: starts app, resets state, loads Demo.sol
+
+## Troubleshooting
+
+### "vhs: command not found"
+```bash
+# Install VHS
+# Linux: Download from https://github.com/charmbracelet/vhs/releases
+# macOS: brew install charmbracelet/tap/vhs
+```
+
+### "solc: command not found"
+```bash
+# Install Solidity compiler
+sudo pacman -S solidity  # Arch
+brew install solidity    # macOS
+```
+
+### Recording shows "No such file or directory"
+- Use `cargo run --release` instead of `./target/release/evm-cli`
+- Ensure build completes before recording starts
+
+### Recording is empty or too short
+- Increase `Sleep` durations
+- Use `Wait+Screen` to wait for specific content
+- Check application doesn't crash on startup
+
+### Application crashes during recording
+- Check RPC server is running (`anvil`)
+- Verify config file exists and is valid
+- Check for compilation errors
+
+## Example: Testing main-interface/layout-and-zones
 
 ```bash
-# View recorded ASCII file
-cat spec/*/recordings/*.ascii | head -100
+# 1. Read the spec
+cat specs/main-interface.md
 
-# Play recording with VHS
-vhs play spec/*/recordings/*.ascii
+# 2. Build the binary
+cargo build --release
 
-# View with less (preserves formatting)
-less -R spec/*/recordings/*.ascii
+# 3. Create/check the tape file
+cat tests/recordings/main-interface-layout-and-zones.tape
 
-# Search for specific content
-grep -n "Connected" spec/*/recordings/*.ascii
+# 4. Run the recording
+./scripts/record-spec-tape.sh main-interface layout-and-zones
 
-# Check file size (large files = more content captured)
-ls -lh spec/*/recordings/*.ascii
+# 5. Verify the output
+head -50 tests/recordings/main-interface-layout-and-zones.ascii
+
+# 6. Check for expected elements
+grep -E "Contracts|Output|Connected" tests/recordings/main-interface-layout-and-zones.ascii
 ```
 
 ---
 
-**Last Updated**: January 21, 2026
-**Status**: Documentation for QA recording standards and validation
+**Agent Capabilities:**
+- Read spec files and understand requirements
+- Generate VHS tape files with proper syntax
+- Execute shell commands to build and record
+- Analyze ASCII recordings for verification
+- Create detailed review reports
+- Identify discrepancies between spec and implementation

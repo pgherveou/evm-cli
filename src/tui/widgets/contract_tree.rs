@@ -1,7 +1,6 @@
 use crate::tui::state::SidebarState;
 use alloy::json_abi::{Function, JsonAbi};
 use alloy::primitives::Address;
-use std::sync::Arc;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
@@ -10,6 +9,7 @@ use ratatui::{
     widgets::{Block, Borders, Widget},
 };
 use std::path::PathBuf;
+use std::sync::Arc;
 
 /// Tree node types for the sidebar
 /// Each node is self-contained with all the data it needs to execute
@@ -32,6 +32,7 @@ pub enum TreeNode {
     },
     DeployedInstance {
         address: Address,
+        contract_name: String,
         contract_path: PathBuf,
     },
     Method {
@@ -49,7 +50,7 @@ impl TreeNode {
             TreeNode::Constructor { .. } => "Deploy new instance".to_string(),
             TreeNode::LoadExistingInstance { .. } => "Load existing instance...".to_string(),
             TreeNode::DeployedInstance { address, .. } => {
-                format!("{:?}", address)
+                format!("{address:?}")
             }
             TreeNode::Method { function, tag, .. } => {
                 let params: Vec<_> = function
@@ -138,7 +139,13 @@ impl Widget for ContractTree<'_> {
         let scroll = self.state.scroll_offset;
         let end = (scroll + visible_height).min(total_nodes);
 
-        for (i, node) in self.nodes.iter().enumerate().skip(scroll).take(end - scroll) {
+        for (i, node) in self
+            .nodes
+            .iter()
+            .enumerate()
+            .skip(scroll)
+            .take(end - scroll)
+        {
             let y = padded_area.y + (i - scroll) as u16;
             if y >= padded_area.y + padded_area.height {
                 break;
@@ -150,8 +157,12 @@ impl Widget for ContractTree<'_> {
 
             // Determine prefix based on node type
             let prefix = match node {
-                TreeNode::Contract { path, .. } => {
-                    if self.state.expanded_contracts.contains(path) {
+                TreeNode::Contract { path, name } => {
+                    if self
+                        .state
+                        .expanded_contracts
+                        .contains(&(path.clone(), name.clone()))
+                    {
                         "▾ "
                     } else {
                         "▸ "
@@ -198,7 +209,7 @@ impl Widget for ContractTree<'_> {
             };
 
             let line = Line::from(vec![Span::styled(
-                format!("{}{}{}", indent, prefix, label),
+                format!("{indent}{prefix}{label}"),
                 style,
             )]);
 

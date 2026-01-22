@@ -34,7 +34,7 @@ When reviewing a spec, evaluate:
 
 ## Workflow
 
-1. List all specs in the spec/ folder (each spec is in spec/[spec-name]/spec.md)
+1. List all specs in the specs/ folder (each spec is in specs/[spec-name].md)
 2. Allow user to select one or review all specs
 3. For each spec, provide:
    - **Current State**: Summary of what's documented
@@ -45,15 +45,16 @@ When reviewing a spec, evaluate:
 
 ## Spec File Structure
 
-Each spec is organized in its own folder:
+Specs are organized with a flat structure:
 ```
-spec/
-├── [spec-name]/
-│   ├── spec.md          # The specification document
-│   └── recordings/      # VHS recordings demonstrating the feature
+specs/
+├── [spec-name].md      # Specification documents
+tests/
+└── recordings/         # VHS recordings demonstrating features
+    └── [spec-name]-[feature].tape
 ```
 
-When reviewing specs, read from `spec/[spec-name]/spec.md` files.
+When reviewing specs, read from `specs/[spec-name].md` files.
 
 ## Output Format
 

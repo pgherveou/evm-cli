@@ -32,8 +32,11 @@ impl Command {
 pub fn default_commands() -> Vec<Command> {
     vec![
         Command::new("Edit config", "Open config file in $EDITOR"),
-        Command::new("Reset", "Clear all saved state"),
         Command::new("Clear output", "Clear the output area"),
+        Command::new("Open Logs", "Open application log file"),
+        Command::new("Clear Logs", "Delete the application log file"),
+        Command::new("Reconnect", "Retry connection to RPC server"),
+        Command::new("Reset", "Clear all saved state"),
         Command::new("Quit", "Exit the application").with_shortcut("Ctrl+C"),
     ]
 }
@@ -121,10 +124,7 @@ impl Widget for CommandPalette<'_> {
             };
 
             let mut spans = vec![
-                Span::styled(
-                    if is_selected { "> " } else { "  " },
-                    style,
-                ),
+                Span::styled(if is_selected { "> " } else { "  " }, style),
                 Span::styled(&cmd.name, style),
             ];
 
@@ -143,7 +143,7 @@ impl Widget for CommandPalette<'_> {
                 } else {
                     Style::default().fg(Color::Yellow)
                 };
-                spans.push(Span::styled(format!(" [{}]", shortcut), shortcut_style));
+                spans.push(Span::styled(format!(" [{shortcut}]"), shortcut_style));
             }
 
             let line = Line::from(spans);
