@@ -2,7 +2,7 @@
 
 Interactive terminal UI for Solidity smart contracts on EVM chains.
 
-[![asciicast](https://asciinema.org/a/uL5P6PpMVWVdGLKF.svg)](https://asciinema.org/a/uL5P6PpMVWVdGLKF)
+![evm-cli demo](demo/demo.gif)
 
 ## Install
 
@@ -23,16 +23,17 @@ evm-cli
 |-----|--------|
 | `Enter` | Load contract / Deploy / Execute |
 | `j/k` | Navigate up/down |
-| `h/l` | Collapse/Expand |
+| `h/l` | Collapse/Expand tree nodes |
 | `Tab` | Switch panels |
 | `Ctrl+P` | Command palette |
-| `Backspace` | Delete item |
+| `Del/Backspace` | Delete selected item |
+| `Ctrl+C` | Quit |
 
 ## Features
 
-- **Load** `.sol` files with auto-compilation
+- **Load** `.sol` files with auto-compilation via Foundry
 - **Deploy** to EVM or PVM targets
-- **Call** view and state-changing methods
+- **Call** view functions and send transactions
 - **Inspect** transactions with debug traces
 - **Vim-style** keyboard navigation
 
@@ -41,4 +42,5 @@ evm-cli
 ```bash
 cargo build --release
 cargo test
+cargo clippy
 ```

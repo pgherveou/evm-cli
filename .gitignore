@@ -1,6 +1,8 @@
 cache
 /examples/out-pvm/
 /examples/out-evm/
+/demo/out-pvm/
+/demo/out-evm/
 /target
 Cargo.lock
 .evm-cli
@@ -13,5 +15,4 @@ Cargo.lock
 .DS_Store
 Thumbs.db
 
-# Include .claude directory (override global gitignore)
 !/.claude
