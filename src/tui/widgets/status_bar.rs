@@ -21,19 +21,16 @@ impl<'a> StatusBarWidget<'a> {
         let mut hints = vec![];
 
         // Context-specific hints (shown first on the right)
-        match self.state.focus {
-            Focus::Sidebar => {
-                // Show delete hint when sidebar is focused
-                if available_width > 60 {
-                    hints.push(Span::styled(
-                        "Del: remove  ",
-                        Style::default().fg(Color::DarkGray),
-                    ));
-                } else if available_width > 40 {
-                    hints.push(Span::styled("Del  ", Style::default().fg(Color::DarkGray)));
-                }
+        if self.state.focus == Focus::Sidebar {
+            // Show delete hint when sidebar is focused
+            if available_width > 60 {
+                hints.push(Span::styled(
+                    "Del: remove  ",
+                    Style::default().fg(Color::DarkGray),
+                ));
+            } else if available_width > 40 {
+                hints.push(Span::styled("Del  ", Style::default().fg(Color::DarkGray)));
             }
-            _ => {}
         }
 
         // Global hints (always shown after context hints)

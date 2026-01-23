@@ -11,7 +11,7 @@ use ratatui::widgets::Widget;
 use separator::Separatable;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 use crate::compile::{BytecodeTarget, CompiledContract};
@@ -66,9 +66,11 @@ pub struct App<P> {
 
 impl<P: Provider + Clone> App<P> {
     pub fn new(provider: P, store: DeploymentStore, signer_address: Address) -> Self {
-        let mut state = AppState::default();
-        state.account = Some(signer_address);
-        
+        let state = AppState {
+            account: Some(signer_address),
+            ..Default::default()
+        };
+
         Self {
             provider,
             store,
@@ -163,8 +165,8 @@ impl<P: Provider + Clone> App<P> {
 
     /// Find and select a contract by path and name in the sidebar.
     /// For files with multiple contracts, we must match both path AND name.
-    fn select_contract_in_sidebar(&mut self, path: &PathBuf, contract_name: &str) {
-        let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
+    fn select_contract_in_sidebar(&mut self, path: &Path, contract_name: &str) {
+        let canonical_path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
         let nodes = self.build_tree_nodes();
         for (i, node) in nodes.iter().enumerate() {
             if let TreeNode::Contract { path: node_path, name: node_name } = node {
@@ -379,11 +381,11 @@ impl<P: Provider + Clone> App<P> {
 
         while self.running {
             // Poll for reconnection if disconnected
-            if matches!(self.state.connection, ConnectionStatus::Disconnected) {
-                if last_reconnect_attempt.elapsed() >= reconnect_interval {
-                    last_reconnect_attempt = std::time::Instant::now();
-                    self.try_connect().await;
-                }
+            if matches!(self.state.connection, ConnectionStatus::Disconnected)
+                && last_reconnect_attempt.elapsed() >= reconnect_interval
+            {
+                last_reconnect_attempt = std::time::Instant::now();
+                self.try_connect().await;
             }
             // Check if we need to display content in editor
             if let Some(content) = self.pending_editor_content.take() {
@@ -512,7 +514,7 @@ impl<P: Provider + Clone> App<P> {
             .unwrap_or_else(|_| "vi".to_string());
 
         Command::new(&editor)
-            .arg(&config_path)
+            .arg(config_path)
             .status()
             .with_context(|| format!("Failed to open {} with {editor}", config_path.display()))?;
 
@@ -2012,10 +2014,11 @@ impl<P: Provider + Clone> App<P> {
                 1 => config.only_top_call = !config.only_top_call,
                 _ => {}
             },
-            crate::cards::TracerType::Prestate => match index {
-                0 => config.diff_mode = !config.diff_mode,
-                _ => {}
-            },
+            crate::cards::TracerType::Prestate => {
+                if index == 0 {
+                    config.diff_mode = !config.diff_mode;
+                }
+            }
             crate::cards::TracerType::Execution => match index {
                 0 => config.enable_memory = !config.enable_memory,
                 1 => config.disable_stack = !config.disable_stack,
@@ -2504,6 +2507,7 @@ impl<P: Provider + Clone> App<P> {
         Ok(result)
     }
 
+    #[allow(clippy::too_many_arguments)]
     fn add_transaction_card(
         &mut self,
         hash: alloy::primitives::TxHash,

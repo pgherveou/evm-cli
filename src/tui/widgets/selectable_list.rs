@@ -7,10 +7,12 @@ use ratatui::{
     widgets::Widget,
 };
 
+type RenderItemFn<'a, T> = Box<dyn Fn(&T, bool) -> Vec<Span<'static>> + 'a>;
+
 pub struct SelectableList<'a, T> {
     items: &'a [T],
     selected: usize,
-    render_item: Box<dyn Fn(&T, bool) -> Vec<Span<'static>> + 'a>,
+    render_item: RenderItemFn<'a, T>,
 }
 
 impl<'a, T> SelectableList<'a, T> {
