@@ -219,7 +219,7 @@ For detailed keyboard controls and navigation behavior, see [UI Navigation & Key
 4. Selection moves to next item
 
 **Confirmation:**
-- Optional confirmation prompt before deletion
+- No confirmation prompt (immediate deletion)
 - Message shown in output panel confirming removal
 
 ### ABI Parsing Errors
@@ -300,3 +300,43 @@ If contract compilation succeeds but ABI parsing fails:
 - Color + symbol indicators (not color alone)
 - Status messages in output panel for all actions
 - Tab navigation to other UI areas
+
+---
+
+## Acceptance Criteria
+
+### Tree Structure
+- **AC-CM-1**: "Load new contract" appears at top of sidebar
+- **AC-CM-2**: Contracts display with ▾/▸ expansion indicators
+- **AC-CM-3**: Methods show type tags [view] or [send]
+- **AC-CM-4**: Methods display parameter names and types inline
+
+### Navigation
+- **AC-CM-5**: j/k or arrow keys navigate items
+- **AC-CM-6**: h/l or arrow keys collapse/expand nodes
+- **AC-CM-7**: Enter executes the selected action
+- **AC-CM-8**: Navigation does NOT wrap at boundaries
+
+### Auto-Expansion
+- **AC-CM-9**: Contract auto-expands when loaded
+- **AC-CM-10**: Instance auto-expands when deployed
+- **AC-CM-11**: Instance auto-expands when loaded by address
+
+### Load Contract
+- **AC-CM-12**: Enter on "Load new contract" opens file picker
+- **AC-CM-13**: File picker filters for .sol files
+- **AC-CM-14**: Tab autocompletes path in file picker
+
+### Deploy Instance
+- **AC-CM-15**: Enter on "Deploy new instance" shows parameter popup
+- **AC-CM-16**: Parameter popup includes EVM/PVM target selection
+- **AC-CM-17**: Deployed instance address appears in tree after deployment
+
+### Load Existing
+- **AC-CM-18**: Enter on "Load existing..." prompts for address
+- **AC-CM-19**: Valid address adds instance to tree
+
+### Delete
+- **AC-CM-20**: Delete/Backspace removes item immediately (no confirmation)
+- **AC-CM-21**: Deleting contract removes all its instances
+- **AC-CM-22**: Deletion persists to config.json

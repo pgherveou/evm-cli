@@ -1,0 +1,934 @@
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: - │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: - │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Ctrl+'p' │ Action: Open CommandPalette │ Sel: 0 │ Cards: 1 │ Card
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Ctrl+'p' │ Action: Open CommandPalette │ Sel: 0 │ Cards: 1 │ Card
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Ctrl+'p' │ Action: Open CommandPalette │ Sel: 0 │ Cards: 1 │ Card
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Ctrl+'p' │ Action: Open CommandPalette │ Sel: 0 │ Cards: 1 │ Card
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: 't' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> edit█                                                                   │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: 't' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> edit█                                                                   │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: 't' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> edit█                                                                   │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Backspace │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> edi█                                                                    │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Backspace │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> ed█                                                                     │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Backspace │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> e█                                                                      │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Backspace │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: 'g' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> log█                                                                    │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: 'g' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> log█                                                                    │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: 'g' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> log█                                                                    │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Backspace │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> lo█                                                                     │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Backspace │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> l█                                                                      │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Backspace │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Backspace │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Backspace │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Esc │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Esc │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Esc │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Disconnected                                                                     │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Error: error sending request for url (http://localhost:8545/)                    │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 0 ETH               Tab  ^P  ^C
+
+────────────────────────────────────────────────────────────────────────────────
+> cd /home/pg/github/evm-cli && EVM_CLI_DEBUG=1 cargo run --release 2>/dev/null
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────

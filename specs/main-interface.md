@@ -38,12 +38,12 @@ The TUI uses a full-screen terminal layout built with ratatui, featuring a sideb
 ### Sidebar (Left Panel)
 - **Purpose:** Contract navigation and method selection
 - **Width:** ~25-30% of terminal width (configurable based on content)
-- **Content:** [See Contracts Menu specification](../contracts-menu/spec.md)
+- **Content:** [See Contracts Menu specification](./contracts-menu.md)
 
 ### Output Area (Center/Right)
 - **Purpose:** Display command results, transaction history, and interactive output cards
 - **Width:** ~70-75% of terminal width
-- **Content:** [See Output Panel specification](../output-panel/spec.md)
+- **Content:** [See Output Panel specification](./output-panel.md)
 
 ### Status Bar (Bottom)
 - **Purpose:** Display connection status and account information
@@ -236,3 +236,29 @@ The interface has two primary focus areas:
 - Clear visual indicators for focus and selection
 - Status bar always visible for context
 - No color-only status indicators (use text + icon)
+
+---
+
+## Acceptance Criteria
+
+### Layout
+- **AC-MI-1**: Application displays 3-zone layout (sidebar, output, status bar)
+- **AC-MI-2**: Sidebar occupies ~25-30% of terminal width
+- **AC-MI-3**: Output panel occupies ~70-75% of terminal width
+- **AC-MI-4**: Status bar displays at bottom, 1 line height
+
+### Status Bar
+- **AC-MI-5**: Status bar shows connection indicator (● Connected or ○ Disconnected)
+- **AC-MI-6**: Status bar shows chain ID when connected
+- **AC-MI-7**: Status bar shows account address (truncated based on terminal width)
+- **AC-MI-8**: Status bar shows balance when connected
+- **AC-MI-9**: Status bar shows keyboard hints on right side
+
+### Responsiveness
+- **AC-MI-10**: Warning displayed when terminal width < 80 characters
+- **AC-MI-11**: Layout re-renders immediately on terminal resize
+- **AC-MI-12**: Address truncation adapts to terminal width
+
+### Focus
+- **AC-MI-13**: Tab key switches focus between sidebar and output panel
+- **AC-MI-14**: Current focus indicated by cyan highlighting

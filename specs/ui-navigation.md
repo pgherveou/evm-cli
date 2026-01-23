@@ -92,18 +92,20 @@ These shortcuts work regardless of which panel has focus:
 
 | Key | Action | Behavior |
 |-----|--------|----------|
-| `↑` or `k` | Move up | Navigate to previous command |
-| `↓` or `j` | Move down | Navigate to next command |
+| `↑` | Move up | Navigate to previous command |
+| `↓` | Move down | Navigate to next command |
 | `Enter` | Execute | Run selected command |
 | `Escape` | Close | Exit command palette |
 | Type any character | Search | Filter commands in real-time |
 | `Backspace` | Delete char | Remove search character |
-| `Ctrl+U` | Clear search | Clear all search text |
+
+**Note:** Unlike other panels, the command palette only uses arrow keys for navigation.
+Typing `j` or `k` will add those characters to the search filter instead of navigating.
 
 **Selection Behavior:**
-- Fuzzy search filters commands as you type
+- Search filters commands as you type (case-insensitive)
 - First matching item auto-selected
-- Navigation wraps at boundaries
+- Navigation does not wrap at boundaries
 
 ### Parameter Input Popups
 
@@ -234,3 +236,43 @@ The navigation system is designed to work consistently across platforms:
 - **SSH/Remote:** Ensure terminal properly forwards all key combinations
 
 Note: Some terminal emulators may intercept certain key combinations (e.g., Ctrl+C). Users should configure their terminals accordingly.
+
+---
+
+## Acceptance Criteria
+
+### Global Navigation
+- **AC-UN-1**: Tab switches focus between sidebar and output panel
+- **AC-UN-2**: Escape closes any open popup/overlay
+- **AC-UN-3**: Ctrl+P opens command palette from anywhere
+- **AC-UN-4**: Ctrl+C exits application immediately
+
+### Sidebar Navigation
+- **AC-UN-5**: j/↓ moves to next item
+- **AC-UN-6**: k/↑ moves to previous item
+- **AC-UN-7**: h/← collapses expanded node
+- **AC-UN-8**: l/→ expands collapsed node
+- **AC-UN-9**: Enter executes selected action
+- **AC-UN-10**: Delete/Backspace removes selected item
+
+### Output Panel Navigation
+- **AC-UN-11**: j/↓ selects next card
+- **AC-UN-12**: k/↑ selects previous card
+- **AC-UN-13**: Navigation wraps at boundaries
+
+### Card Actions (Global)
+- **AC-UN-14**: r key triggers View Receipt on Transaction cards
+- **AC-UN-15**: d key triggers Debug Trace/Call
+- **AC-UN-16**: c key triggers Copy on Transaction cards
+
+### Command Palette
+- **AC-UN-17**: Typing filters commands in real-time
+- **AC-UN-18**: j/↓ and k/↑ navigate filtered commands
+- **AC-UN-19**: Enter executes selected command
+- **AC-UN-20**: Escape closes palette
+
+### Parameter Popup
+- **AC-UN-21**: Tab moves to next field
+- **AC-UN-22**: Shift+Tab moves to previous field
+- **AC-UN-23**: Enter submits form
+- **AC-UN-24**: ←/→ switches deployment target (EVM/PVM)

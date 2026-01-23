@@ -25,8 +25,8 @@ use crate::tui::state::{
     AppState, ConnectionStatus, FieldState, Focus, OutputStyle, PopupState,
 };
 use crate::tui::widgets::{
-    AutocompleteInput, CommandPalette, ContractTree, OutputArea, ParameterPopup, StatusBarWidget,
-    parse_path_for_autocomplete, scan_path_suggestions,
+    AutocompleteInput, CommandPalette, ContractTree, DebugBarWidget, OutputArea, ParameterPopup,
+    StatusBarWidget, parse_path_for_autocomplete, scan_path_suggestions,
 };
 use crate::tui::widgets::command_palette::default_commands;
 use crate::tui::widgets::contract_tree::TreeNode;
@@ -449,10 +449,8 @@ impl<P: Provider + Clone> App<P> {
             }
 
             terminal.draw(|f| {
-                let layout = AppLayout::new(f.area());
+                let layout = AppLayout::new(f.area(), self.state.debug_mode);
                 output_area = layout.output;
-                // Update output area height for scroll calculation
-                // Subtract borders and padding (2 for borders, 2 for padding)
                 self.state.output_area_height = layout.output.height.saturating_sub(4);
                 self.render(f);
             })?;
@@ -552,21 +550,23 @@ impl<P: Provider + Clone> App<P> {
             return;
         }
 
-        let layout = AppLayout::new(frame.area());
+        let layout = AppLayout::new(frame.area(), self.state.debug_mode);
 
-        // Render sidebar with cached tree building
+        if let Some(debug_area) = layout.debug_bar {
+            let debug = DebugBarWidget::new(&self.state);
+            frame.render_widget(debug, debug_area);
+        }
+
         let nodes = self.build_tree_nodes();
         let tree = ContractTree::new(&self.state.sidebar)
             .focused(matches!(self.state.focus, Focus::Sidebar))
             .with_nodes(nodes);
         frame.render_widget(tree, layout.sidebar);
 
-        // Render output panel (which shows cards when available)
         let output = OutputArea::new(&self.state.output, &self.state.cards)
             .focused(matches!(self.state.focus, Focus::Output));
         frame.render_widget(output, layout.output);
 
-        // Render status bar
         let status = StatusBarWidget::new(&self.state);
         frame.render_widget(status, layout.status_bar);
 
@@ -574,7 +574,7 @@ impl<P: Provider + Clone> App<P> {
         match &self.state.popup {
             PopupState::None => {}
             PopupState::CommandPalette { query, selected } => {
-                let palette = CommandPalette::new(query, *selected);
+                let palette = CommandPalette::new(query, *selected, self.state.debug_mode);
                 frame.render_widget(palette, frame.area());
             }
             PopupState::ParameterPopup {
@@ -610,20 +610,13 @@ impl<P: Provider + Clone> App<P> {
     }
 
     fn render_file_picker(&self, frame: &mut Frame, path: &str, error: Option<&str>) {
-        use crate::tui::layout::centered_popup;
-        use ratatui::widgets::{Block, Borders, Clear};
-        use ratatui::style::{Color, Style, Modifier};
-        use ratatui::text::{Line, Span};
+        use crate::tui::widgets::{KeyboardHints, Popup};
 
-        let popup_area = centered_popup(frame.area(), 60, 40);
-        frame.render_widget(Clear, popup_area);
-
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan))
-            .title(" Load Contract ");
-        let inner = block.inner(popup_area);
-        frame.render_widget(block, popup_area);
+        let area = frame.area();
+        let popup = Popup::new("Load Contract")
+            .width_percent(60)
+            .height_percent(40);
+        let inner = popup.render_frame(area, frame.buffer_mut());
 
         let input = AutocompleteInput::new("Path to .sol file", path)
             .placeholder("./contracts/MyContract.sol")
@@ -640,37 +633,25 @@ impl<P: Provider + Clone> App<P> {
         );
         frame.render_widget(input, field_area);
 
-        // Render keyboard hints at bottom
-        let hints = Line::from(vec![
-            Span::styled("↑/↓", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
-            Span::raw(": navigate | "),
-            Span::styled("Tab", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
-            Span::raw(": complete | "),
-            Span::styled("Enter", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
-            Span::raw(": accept | "),
-            Span::styled("Esc", Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)),
-            Span::raw(": cancel"),
+        let hints = KeyboardHints::new(vec![
+            ("↑/↓", "navigate"),
+            ("Tab", "complete"),
+            ("Enter", "accept"),
+            ("Esc", "cancel"),
         ]);
-
         let hints_y = inner.y + inner.height - 1;
-        frame.buffer_mut().set_line(inner.x + 1, hints_y, &hints, inner.width.saturating_sub(2));
+        let hints_area = ratatui::layout::Rect::new(inner.x + 1, hints_y, inner.width.saturating_sub(2), 1);
+        frame.render_widget(hints, hints_area);
     }
 
     fn render_address_input(&self, frame: &mut Frame, address: &str, error: Option<&str>) {
-        use crate::tui::layout::centered_popup;
-        use crate::tui::widgets::InputField;
-        use ratatui::widgets::{Block, Borders, Clear};
-        use ratatui::style::{Color, Style};
+        use crate::tui::widgets::{InputField, Popup};
 
-        let popup_area = centered_popup(frame.area(), 60, 20);
-        frame.render_widget(Clear, popup_area);
-
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan))
-            .title(" Enter Address ");
-        let inner = block.inner(popup_area);
-        frame.render_widget(block, popup_area);
+        let area = frame.area();
+        let popup = Popup::new("Enter Address")
+            .width_percent(60)
+            .height_percent(20);
+        let inner = popup.render_frame(area, frame.buffer_mut());
 
         let input = InputField::new("Contract address", address)
             .placeholder("0x...")
@@ -687,43 +668,16 @@ impl<P: Provider + Clone> App<P> {
     }
 
     fn render_contract_selector(&self, frame: &mut Frame, contracts: &[String], selected: usize) {
-        use crate::tui::layout::centered_popup;
-        use ratatui::widgets::{Block, Borders, Clear};
-        use ratatui::style::{Color, Modifier, Style};
-        use ratatui::text::{Line, Span};
+        use crate::tui::widgets::{Popup, SelectableList};
 
-        let popup_area = centered_popup(frame.area(), 50, 40);
-        frame.render_widget(Clear, popup_area);
+        let area = frame.area();
+        let popup = Popup::new("Select Contract")
+            .width_percent(50)
+            .height_percent(40);
+        let inner = popup.render_frame(area, frame.buffer_mut());
 
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan))
-            .title(" Select Contract ");
-        let inner = block.inner(popup_area);
-        frame.render_widget(block, popup_area);
-
-        for (i, name) in contracts.iter().enumerate() {
-            let y = inner.y + i as u16;
-            if y >= inner.y + inner.height {
-                break;
-            }
-
-            let is_selected = i == selected;
-            let style = if is_selected {
-                Style::default()
-                    .bg(Color::Cyan)
-                    .fg(Color::Black)
-                    .add_modifier(Modifier::BOLD)
-            } else {
-                Style::default()
-            };
-
-            let line = Line::from(Span::styled(
-                format!("{} {}", if is_selected { ">" } else { " " }, name),
-                style,
-            ));
-            frame.buffer_mut().set_line(inner.x, y, &line, inner.width);
-        }
+        let list = SelectableList::simple(contracts, selected);
+        frame.render_widget(list, inner);
     }
 
     fn update_file_picker_suggestions(&mut self, input: &str) {
@@ -733,8 +687,10 @@ impl<P: Provider + Clone> App<P> {
     }
 
     async fn handle_key(&mut self, key: KeyEvent) -> Result<()> {
-        // Log all key events for debugging (trace level to avoid verbosity)
         let key_str = format_key_event(&key);
+        self.state.last_key = Some(key_str.clone());
+        self.state.last_action = None;
+
         let popup_state = match &self.state.popup {
             PopupState::None => "None",
             PopupState::CommandPalette { .. } => "CommandPalette",
@@ -748,14 +704,15 @@ impl<P: Provider + Clone> App<P> {
         };
         log::trace!("[KEY] {} | focus={:?} popup={}", key_str, self.state.focus, popup_state);
 
-        // Global shortcuts
         if key.modifiers.contains(KeyModifiers::CONTROL) {
             match key.code {
                 KeyCode::Char('c') => {
+                    self.state.last_action = Some("Quit".into());
                     self.running = false;
                     return Ok(());
                 }
                 KeyCode::Char('p') => {
+                    self.state.last_action = Some("Open CommandPalette".into());
                     self.state.focus = Focus::CommandPalette;
                     self.state.popup = PopupState::CommandPalette {
                         query: String::new(),
@@ -839,7 +796,7 @@ impl<P: Provider + Clone> App<P> {
             KeyCode::Up | KeyCode::Char('k') => {
                 if self.state.sidebar.selected > 0 {
                     self.state.sidebar.selected -= 1;
-                    // Adjust scroll
+                    self.state.last_action = Some("Move up".into());
                     if self.state.sidebar.selected < self.state.sidebar.scroll_offset {
                         self.state.sidebar.scroll_offset = self.state.sidebar.selected;
                     }
@@ -848,36 +805,37 @@ impl<P: Provider + Clone> App<P> {
             KeyCode::Down | KeyCode::Char('j') => {
                 if self.state.sidebar.selected + 1 < node_count {
                     self.state.sidebar.selected += 1;
+                    self.state.last_action = Some("Move down".into());
                 }
             }
             KeyCode::Left | KeyCode::Char('h') => {
-                // Collapse current node
                 if let Some(node) = nodes.get(self.state.sidebar.selected) {
                     match node {
                         TreeNode::Contract { path, name } => {
-                            // Use canonicalized path + name for per-contract expansion
                             let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
                             self.state.sidebar.expanded_contracts.remove(&(canonical_path, name.clone()));
+                            self.state.last_action = Some("Collapse contract".into());
                         }
                         TreeNode::DeployedInstance { address, .. } => {
                             self.state.sidebar.expanded_instances.remove(address);
+                            self.state.last_action = Some("Collapse instance".into());
                         }
                         _ => {}
                     }
                 }
             }
             KeyCode::Right | KeyCode::Char('l') => {
-                // Expand current node
                 if let Some(node) = nodes.get(self.state.sidebar.selected) {
                     match node {
                         TreeNode::Contract { path, name } => {
-                            // Just expand this contract (no need to load)
                             let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
                             self.state.sidebar.expanded_contracts.insert((canonical_path, name.clone()));
+                            self.state.last_action = Some("Expand contract".into());
                         }
                         TreeNode::DeployedInstance { address, .. } => {
                             self.state.sidebar.expanded_instances.insert(*address);
                             self.set_address(*address);
+                            self.state.last_action = Some("Expand instance".into());
                         }
                         _ => {}
                     }
@@ -885,6 +843,7 @@ impl<P: Provider + Clone> App<P> {
             }
             KeyCode::Enter => {
                 if let Some(node) = nodes.get(self.state.sidebar.selected) {
+                    self.state.last_action = Some(format!("Execute: {:?}", node));
                     self.execute_tree_node(node.clone()).await?;
                 }
             }
@@ -908,14 +867,17 @@ impl<P: Provider + Clone> App<P> {
                         TreeNode::Contract { path, name, .. } => {
                             let contract_id = ContractId::new(path.clone(), name.clone());
                             if self.store.remove_contract(&contract_id) {
-                                self.state.output.push_info(format!("Removed all deployments for: {name}"));
+                                self.state.output.push_info(format!("Removed contract: {name}"));
                                 // Clear expanded state for this contract
                                 self.state.sidebar.expanded_contracts.remove(&(path.clone(), name.clone()));
-                                // Compare canonicalized paths since tree node path is canonicalized
+                                // Check if this is the currently loaded contract (must match both path AND name)
                                 let is_current = self.contract_path.as_ref().map(|p| {
                                     p.canonicalize().unwrap_or_else(|_| p.clone()) == *path
-                                }).unwrap_or(false);
+                                }).unwrap_or(false) && self.contract.as_ref().map(|c| &c.name == name).unwrap_or(false);
                                 if is_current {
+                                    // Clear the current contract state so it doesn't get re-added
+                                    self.contract = None;
+                                    self.contract_path = None;
                                     self.address = None;
                                 }
                                 true
@@ -940,6 +902,7 @@ impl<P: Provider + Clone> App<P> {
             }
             KeyCode::Tab => {
                 self.state.focus = Focus::Output;
+                self.state.last_action = Some("Focus Output".into());
             }
             _ => {}
         }
@@ -995,7 +958,7 @@ impl<P: Provider + Clone> App<P> {
                     self.state.focus = Focus::Sidebar;
                 }
                 KeyCode::Enter => {
-                    let commands = default_commands();
+                    let commands = default_commands(self.state.debug_mode);
                     let query_lower = query.to_lowercase();
                     let filtered: Vec<_> = commands
                         .iter()
@@ -1020,7 +983,7 @@ impl<P: Provider + Clone> App<P> {
                     }
                 }
                 KeyCode::Down => {
-                    let commands = default_commands();
+                    let commands = default_commands(self.state.debug_mode);
                     let query_lower = query.to_lowercase();
                     let count = commands
                         .iter()
@@ -1359,20 +1322,17 @@ impl<P: Provider + Clone> App<P> {
     }
 
     async fn execute_command(&mut self, command_idx: usize) -> Result<()> {
-        let command_names = ["Edit config", "Clear output", "Open Logs", "Clear Logs", "Reconnect", "Reset", "Quit"];
+        let command_names = ["Edit config", "Clear output", "Open Logs", "Clear Logs", "Reconnect", "Toggle Debug", "Reset", "Quit"];
         let cmd_name = command_names.get(command_idx).unwrap_or(&"Unknown");
         log::info!("[COMMAND] execute_command: {} (idx={})", cmd_name, command_idx);
         match command_idx {
             0 => {
-                // Edit config
                 self.edit_config_requested = true;
             }
             1 => {
-                // Clear output
                 self.state.output.clear();
             }
             2 => {
-                // Open Logs
                 if let Some(home) = std::env::var_os("HOME") {
                     let log_path = std::path::PathBuf::from(home).join(".evm-cli/output.log");
                     if log_path.exists() {
@@ -1387,7 +1347,6 @@ impl<P: Provider + Clone> App<P> {
                 }
             }
             3 => {
-                // Clear Logs
                 if let Some(home) = std::env::var_os("HOME") {
                     let log_path = std::path::PathBuf::from(home).join(".evm-cli/output.log");
                     if log_path.exists() {
@@ -1402,15 +1361,17 @@ impl<P: Provider + Clone> App<P> {
                 }
             }
             4 => {
-                // Reconnect
                 self.try_connect().await;
             }
             5 => {
-                // Reset
-                self.clear_state();
+                self.state.debug_mode = !self.state.debug_mode;
+                let status = if self.state.debug_mode { "enabled" } else { "disabled" };
+                self.state.last_action = Some(format!("Debug {}", status));
             }
             6 => {
-                // Quit
+                self.clear_state();
+            }
+            7 => {
                 self.running = false;
             }
             _ => {}
@@ -2201,39 +2162,26 @@ impl<P: Provider + Clone> App<P> {
     }
 
     fn render_copy_menu(&self, frame: &mut Frame, options: &[crate::cards::CopyOption], selected: usize) {
-        use crate::tui::layout::centered_popup;
-        use ratatui::widgets::{Block, Borders, Clear};
-        use ratatui::style::{Color, Style, Modifier};
-        use ratatui::text::{Line, Span};
+        use crate::tui::theme;
+        use crate::tui::widgets::{Popup, SelectableList};
+        use ratatui::style::Style;
+        use ratatui::text::Span;
 
-        let popup_area = centered_popup(frame.area(), 30, 20);
-        frame.render_widget(Clear, popup_area);
+        let area = frame.area();
+        let popup = Popup::new("Copy")
+            .width_percent(30)
+            .height_percent(20);
+        let inner = popup.render_frame(area, frame.buffer_mut());
 
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan))
-            .title(" Copy ");
-        let inner = block.inner(popup_area);
-        frame.render_widget(block, popup_area);
-
-        let lines: Vec<Line> = options
-            .iter()
-            .enumerate()
-            .map(|(i, option)| {
-                let style = if i == selected {
-                    Style::default()
-                        .fg(Color::Black)
-                        .bg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD)
-                } else {
-                    Style::default().fg(Color::White)
-                };
-                Line::from(Span::styled(format!("  {option}  "), style))
-            })
-            .collect();
-
-        let paragraph = ratatui::widgets::Paragraph::new(lines);
-        frame.render_widget(paragraph, inner);
+        let list = SelectableList::new(options, selected, |option, is_selected| {
+            let style = if is_selected {
+                theme::selected_style()
+            } else {
+                Style::default().fg(theme::TEXT)
+            };
+            vec![Span::styled(format!("  {}  ", option), style)]
+        });
+        frame.render_widget(list, inner);
     }
 
     async fn execute_debug_call(&mut self, card_index: usize) -> Result<()> {
@@ -2356,79 +2304,62 @@ impl<P: Provider + Clone> App<P> {
     }
 
     fn render_tracer_menu(&self, frame: &mut Frame, tracers: &[crate::cards::TracerType], selected: usize) {
-        use crate::tui::layout::centered_popup;
-        use ratatui::widgets::{Block, Borders, Clear};
-        use ratatui::style::{Color, Style, Modifier};
-        use ratatui::text::{Line, Span};
+        use crate::tui::theme;
+        use crate::tui::widgets::{Popup, SelectableList};
+        use ratatui::style::Style;
+        use ratatui::text::Span;
 
-        let popup_area = centered_popup(frame.area(), 40, 30);
-        frame.render_widget(Clear, popup_area);
+        let area = frame.area();
+        let popup = Popup::new("Select Tracer")
+            .width_percent(40)
+            .height_percent(30);
+        let inner = popup.render_frame(area, frame.buffer_mut());
 
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan))
-            .title(" Select Tracer ");
-        let inner = block.inner(popup_area);
-        frame.render_widget(block, popup_area);
-
-        let lines: Vec<Line> = tracers
-            .iter()
-            .enumerate()
-            .map(|(i, tracer)| {
-                let prefix = if i == selected { "> " } else { "  " };
-                let style = if i == selected {
-                    Style::default()
-                        .bg(Color::DarkGray)
-                        .fg(Color::White)
-                        .add_modifier(Modifier::BOLD)
-                } else {
-                    Style::default().fg(Color::Cyan)
-                };
-                Line::from(Span::styled(format!("{prefix}{tracer}"), style))
-            })
-            .collect();
-
-        let paragraph = ratatui::widgets::Paragraph::new(lines);
-        paragraph.render(inner, frame.buffer_mut());
+        let list = SelectableList::new(tracers, selected, |tracer, is_selected| {
+            let style = if is_selected {
+                theme::selected_style()
+            } else {
+                Style::default().fg(theme::PRIMARY)
+            };
+            vec![
+                Span::styled(if is_selected { "> " } else { "  " }, style),
+                Span::styled(format!("{}", tracer), style),
+            ]
+        });
+        frame.render_widget(list, inner);
     }
 
     fn render_tracer_config(&self, frame: &mut Frame, config: &crate::cards::TracerConfig, current: usize) {
-        use crate::tui::layout::centered_popup;
-        use ratatui::widgets::{Block, Borders, Clear};
-        use ratatui::style::{Color, Style, Modifier};
+        use crate::tui::theme;
+        use crate::tui::widgets::{KeyboardHints, Popup};
         use ratatui::text::{Line, Span};
 
-        let popup_area = centered_popup(frame.area(), 50, 40);
-        frame.render_widget(Clear, popup_area);
-
-        let title = format!(" {} Config ", config.tracer_type);
-        let block = Block::default()
-            .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan))
-            .title(title);
-        let inner = block.inner(popup_area);
-        frame.render_widget(block, popup_area);
+        let area = frame.area();
+        let title = format!("{} Config", config.tracer_type);
+        let popup = Popup::new(&title)
+            .width_percent(50)
+            .height_percent(40);
+        let inner = popup.render_frame(area, frame.buffer_mut());
 
         let y = inner.y + 1;
 
-        // Helper to render a toggle field
         let render_toggle = |buf: &mut ratatui::buffer::Buffer, y: u16, label: &str, value: bool, is_focused: bool| {
             let label_style = if is_focused {
-                Style::default().fg(Color::Cyan).add_modifier(Modifier::BOLD)
+                theme::focused_label_style()
             } else {
-                Style::default().fg(Color::White)
+                theme::label_style()
             };
 
             let on_style = if value {
-                Style::default().fg(Color::Black).bg(Color::Cyan)
+                theme::selected_style()
             } else {
-                Style::default().fg(Color::DarkGray)
+                theme::muted_style()
             };
 
             let off_style = if !value {
-                Style::default().fg(Color::Black).bg(Color::Cyan)
+                theme::selected_style()
             } else {
-                Style::default().fg(Color::DarkGray)
+                theme::muted_style()
             };
 
             let line = Line::from(vec![
@@ -2440,7 +2371,6 @@ impl<P: Provider + Clone> App<P> {
             buf.set_line(inner.x + 1, y, &line, inner.width.saturating_sub(2));
         };
 
-        // Render fields based on tracer type
         match config.tracer_type {
             crate::cards::TracerType::Call => {
                 render_toggle(frame.buffer_mut(), y, "withLogs", config.with_logs, current == 0);
@@ -2456,20 +2386,15 @@ impl<P: Provider + Clone> App<P> {
             }
         }
 
-        // Render footer with hints
         let footer_y = inner.y + inner.height.saturating_sub(1);
-        let hint_style = Style::default().fg(Color::DarkGray);
-        let footer = Line::from(vec![
-            Span::styled("↑↓", Style::default().fg(Color::Yellow)),
-            Span::styled(": navigate  ", hint_style),
-            Span::styled("Space", Style::default().fg(Color::Yellow)),
-            Span::styled(": toggle  ", hint_style),
-            Span::styled("Enter", Style::default().fg(Color::Yellow)),
-            Span::styled(": execute  ", hint_style),
-            Span::styled("Esc", Style::default().fg(Color::Yellow)),
-            Span::styled(": cancel", hint_style),
+        let hints = KeyboardHints::new(vec![
+            ("↑↓", "navigate"),
+            ("Space", "toggle"),
+            ("Enter", "execute"),
+            ("Esc", "cancel"),
         ]);
-        frame.buffer_mut().set_line(inner.x + 1, footer_y, &footer, inner.width.saturating_sub(2));
+        let hints_area = ratatui::layout::Rect::new(inner.x + 1, footer_y, inner.width.saturating_sub(2), 1);
+        hints.render(hints_area, frame.buffer_mut());
     }
 
     async fn execute_rpc_debug_trace(

@@ -1,0 +1,934 @@
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Enter │ Action: - │ Sel: 1 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.606360 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.606360 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Enter │ Action: - │ Sel: 1 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.606360 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.606360 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: 'j' │ Action: Move down │ Sel: 2 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.606360 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.606360 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: ParameterPopup │ Key: Enter │ Action: Execute: Constructor { contract_name: "Demo", contract_p
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.606360 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                  ┌ constructor - Enter Parameters ──────────────────────────────────────────────────────┐                  │
+│                  │                                                                                      │                  │
+│                  │ Target:  EVM   PVM   (←/→ to switch)                                                 │                  │
+│                  │                                                                                      │                  │
+│                  │ _initial (uint256): 0█                                                               │                  │
+│                  │                                                                                      │                  │
+│                  │                                                                                      │                  │
+│                  │                                                                                      │                  │
+│                  │ ←/→: target  Tab: next  Shift+Tab: prev  Enter: submit  Esc: cancel                  │                  │
+│                  └──────────────────────────────────────────────────────────────────────────────────────┘                  │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.606360 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: ParameterPopup │ Key: Enter │ Action: Execute: Constructor { contract_name: "Demo", contract_p
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.606360 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                  ┌ constructor - Enter Parameters ──────────────────────────────────────────────────────┐                  │
+│                  │                                                                                      │                  │
+│                  │ Target:  EVM   PVM   (←/→ to switch)                                                 │                  │
+│                  │                                                                                      │                  │
+│                  │ _initial (uint256): 0█                                                               │                  │
+│                  │                                                                                      │                  │
+│                  │                                                                                      │                  │
+│                  │                                                                                      │                  │
+│                  │ ←/→: target  Tab: next  Shift+Tab: prev  Enter: submit  Esc: cancel                  │                  │
+│                  └──────────────────────────────────────────────────────────────────────────────────────┘                  │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.606360 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: ParameterPopup │ Key: '1' │ Action: - │ Sel: 2 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.606360 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                  ┌ constructor - Enter Parameters ──────────────────────────────────────────────────────┐                  │
+│                  │                                                                                      │                  │
+│                  │ Target:  EVM   PVM   (←/→ to switch)                                                 │                  │
+│                  │                                                                                      │                  │
+│                  │ _initial (uint256): 1█                                                               │                  │
+│                  │                                                                                      │                  │
+│                  │                                                                                      │                  │
+│                  │                                                                                      │                  │
+│                  │ ←/→: target  Tab: next  Shift+Tab: prev  Enter: submit  Esc: cancel                  │                  │
+│                  └──────────────────────────────────────────────────────────────────────────────────────┘                  │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.606360 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: ParameterPopup │ Key: '1' │ Action: - │ Sel: 2 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.606360 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                  ┌ constructor - Enter Parameters ──────────────────────────────────────────────────────┐                  │
+│                  │                                                                                      │                  │
+│                  │ Target:  EVM   PVM   (←/→ to switch)                                                 │                  │
+│                  │                                                                                      │                  │
+│                  │ _initial (uint256): 1█                                                               │                  │
+│                  │                                                                                      │                  │
+│                  │                                                                                      │                  │
+│                  │                                                                                      │                  │
+│                  │ ←/→: target  Tab: next  Shift+Tab: prev  Enter: submit  Esc: cancel                  │                  │
+│                  └──────────────────────────────────────────────────────────────────────────────────────┘                  │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.606360 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Enter │ Action: - │ Sel: 4 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Enter │ Action: - │ Sel: 4 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Enter │ Action: - │ Sel: 4 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Output │ Popup: None │ Key: Tab │ Action: Focus Output │ Sel: 4 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Output │ Popup: None │ Key: Tab │ Action: Focus Output │ Sel: 4 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Output │ Popup: None │ Key: Tab │ Action: Focus Output │ Sel: 4 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Tab │ Action: - │ Sel: 4 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Tab │ Action: - │ Sel: 4 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Tab │ Action: - │ Sel: 4 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: 'j' │ Action: Move down │ Sel: 5 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: 'j' │ Action: Move down │ Sel: 5 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: 'j' │ Action: Move down │ Sel: 5 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Output │ Popup: None │ Key: Tab │ Action: Focus Output │ Sel: 5 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Output │ Popup: None │ Key: Tab │ Action: Focus Output │ Sel: 5 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││ ┃ ◇ Copy (c)   ◇ View Receipt (r)   ◇ Debug Trace (d)                                │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Output │ Popup: None │ Key: 'j' │ Action: - │ Sel: 5 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Output │ Popup: None │ Key: 'j' │ Action: - │ Sel: 5 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Output │ Popup: None │ Key: 'j' │ Action: - │ Sel: 5 │ Cards: 2 │ Cards: 2
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▾ Demo                             ││ ┃   Connected                                                                        │
+│   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│   ◇ Load existing instance...      ││ ┃   Balance: 993.265971 ETH                                                          │
+│   ▾ 0x82745827d0b8972ec0583b3100ecb││ ┃   Chain ID: 31337                                                                  │
+│     ├ getCount() [view]            ││ ┃                                                                                    │
+│     ├ decrement() [send]           ││                                                                                      │
+│     ├ increment() [send]           ││ ┃ Transaction                                                                        │
+│     ├ setCount(_count: uint256) [se││ ┃   Hash: 0xbc20dc6fc85a7333cc36eeb01c6342ef721ecbb97565e498d469d542d05b4100         │
+│                                    ││ ┃   Status: Success                                                                  │
+│                                    ││ ┃   Function: Deploy Demo                                                            │
+│                                    ││ ┃   Contract: Demo                                                                   │
+│                                    ││ ┃   Address: 0x82745827d0b8972ec0583b3100ecb30b81db0072                              │
+│                                    ││ ┃   Gas: 340,502,491,819                                                             │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 993.265971 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+> cd /home/pg/github/evm-cli && EVM_CLI_DEBUG=1 cargo run --release 2>/dev/null
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────

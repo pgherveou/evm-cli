@@ -1,45 +1,44 @@
 # evm-cli
 
-An interactive terminal UI for deploying and interacting with Solidity smart contracts on EVM-compatible blockchains.
+Interactive terminal UI for Solidity smart contracts on EVM chains.
 
 [![asciicast](https://asciinema.org/a/uL5P6PpMVWVdGLKF.svg)](https://asciinema.org/a/uL5P6PpMVWVdGLKF)
 
-## Installation
-
-### Prerequisites
-
-- [Foundry](http://github.com/paritytech/foundry-polkadot/)
-
-### Install from source
+## Install
 
 ```bash
+# Prerequisites: Foundry (https://github.com/paritytech/foundry-polkadot/)
 git clone https://github.com/paritytech/evm-cli.git
 cd evm-cli
 cargo install --path .
 ```
 
-## Quick Start
-
-**Run evm-cli**:
+## Usage
 
 ```bash
 evm-cli
 ```
 
-3. **Load a contract**:
-   - Press Enter on "Load new contract..."
-   - Type or autocomplete the path to your `.sol` file
-   - Press Enter
+| Key | Action |
+|-----|--------|
+| `Enter` | Load contract / Deploy / Execute |
+| `j/k` | Navigate up/down |
+| `h/l` | Collapse/Expand |
+| `Tab` | Switch panels |
+| `Ctrl+P` | Command palette |
+| `Backspace` | Delete item |
 
-4. **Deploy or interact**:
-   - Navigate with arrow keys or `j/k`
-   - Press Enter to select actions
-   - View methods by expanding deployed instances
+## Features
+
+- **Load** `.sol` files with auto-compilation
+- **Deploy** to EVM or PVM targets
+- **Call** view and state-changing methods
+- **Inspect** transactions with debug traces
+- **Vim-style** keyboard navigation
 
 ## Development
 
-### Build
-
 ```bash
 cargo build --release
+cargo test
 ```

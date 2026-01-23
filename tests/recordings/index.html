@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VHS Test Screenshots - evm-cli</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        h1 {
+            text-align: center;
+            color: #00d9ff;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .controls button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .controls button.active {
+            background: #00d9ff;
+            color: #1a1a2e;
+        }
+        .controls button:not(.active) {
+            background: #2a2a4e;
+            color: #aaa;
+        }
+        .controls button:hover {
+            transform: translateY(-2px);
+        }
+        .test-group {
+            margin-bottom: 40px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .test-group-header {
+            background: #2a2a4e;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .test-group-header:hover {
+            background: #3a3a5e;
+        }
+        .test-group-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #00d9ff;
+        }
+        .test-group-header .count {
+            background: #00d9ff;
+            color: #1a1a2e;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        .screenshots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+            padding: 20px;
+            background: #0d0d1a;
+        }
+        .screenshot-card {
+            background: #1a1a2e;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #333;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .screenshot-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0, 217, 255, 0.2);
+        }
+        .screenshot-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            cursor: pointer;
+        }
+        .screenshot-card .info {
+            padding: 12px;
+        }
+        .screenshot-card .filename {
+            font-size: 13px;
+            color: #00d9ff;
+            word-break: break-all;
+        }
+        .screenshot-card .path {
+            font-size: 11px;
+            color: #666;
+            margin-top: 5px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 5px;
+        }
+        .modal .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 40px;
+            color: #fff;
+            cursor: pointer;
+        }
+        .modal .nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 50px;
+            color: #fff;
+            cursor: pointer;
+            padding: 20px;
+            user-select: none;
+        }
+        .modal .nav.prev { left: 10px; }
+        .modal .nav.next { right: 10px; }
+        .modal .nav:hover { color: #00d9ff; }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        .empty-state h2 {
+            color: #888;
+        }
+        .refresh-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #00d9ff;
+            color: #1a1a2e;
+            border: none;
+            padding: 15px 25px;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 14px;
+            box-shadow: 0 5px 20px rgba(0, 217, 255, 0.3);
+        }
+        .refresh-btn:hover {
+            transform: scale(1.05);
+        }
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+    <h1>VHS Test Screenshots</h1>
+    <p class="subtitle">Integration test recordings for evm-cli</p>
+    
+    <div class="controls">
+        <button class="active" data-filter="all">All</button>
+        <button data-filter="contracts-menu">Contracts Menu</button>
+        <button data-filter="output-panel">Output Panel</button>
+        <button data-filter="navigation">Navigation</button>
+        <button data-filter="parameter-popup">Parameter Popup</button>
+        <button data-filter="command-palette">Command Palette</button>
+        <button data-filter="error-handling">Error Handling</button>
+    </div>
+
+    <div id="content">
+        <div class="empty-state" id="empty-state">
+            <h2>No screenshots found</h2>
+            <p>Run the VHS tests first to generate screenshots:</p>
+            <code>./tests/run-vhs-tests.sh --skip-anvil</code>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <span class="nav prev" onclick="navigateModal(-1)">&#10094;</span>
+        <img id="modal-img" src="" alt="">
+        <span class="nav next" onclick="navigateModal(1)">&#10095;</span>
+    </div>
+
+    <button class="refresh-btn" onclick="location.reload()">Refresh</button>
+
+    <script>
+        let allImages = [];
+        let currentImageIndex = 0;
+
+        const testGroups = {
+            'contracts-menu': { title: 'Contracts Menu', files: [] },
+            'output-panel': { title: 'Output Panel', files: [] },
+            'navigation': { title: 'Navigation', files: [] },
+            'parameter-popup': { title: 'Parameter Popup', files: [] },
+            'command-palette': { title: 'Command Palette', files: [] },
+            'error-handling': { title: 'Error Handling', files: [] },
+        };
+
+        async function scanForImages() {
+            const groups = Object.keys(testGroups);
+            
+            for (const group of groups) {
+                const patterns = [
+                    `${group}/*.png`,
+                    `${group}/**/*.png`
+                ];
+                
+                for (let i = 1; i <= 20; i++) {
+                    const paddedNum = String(i).padStart(2, '0');
+                    const possibleFiles = [
+                        `${group}/${group.split('-').map(w => w[0]).join('')}-${paddedNum}.png`,
+                        `${group}/${group}-${paddedNum}.png`,
+                    ];
+                    
+                    const subDirs = ['load-contract', 'deploy-instance', 'navigation', 'delete-items',
+                                    'connection-card', 'card-navigation', 'card-actions',
+                                    'focus-switching', 'vim-keys', 'global-shortcuts',
+                                    'field-navigation', 'target-selection', 'validation',
+                                    'open-and-search', 'execute-commands',
+                                    'disconnected-mode', 'small-terminal'];
+                    
+                    for (const subDir of subDirs) {
+                        if (subDir.startsWith(group.split('/')[0]) || group.includes(subDir.split('-')[0])) {
+                            for (let j = 1; j <= 10; j++) {
+                                const subPaddedNum = String(j).padStart(2, '0');
+                                possibleFiles.push(`${group}/${subDir}-${subPaddedNum}.png`);
+                            }
+                        }
+                    }
+                }
+            }
+
+            const knownPatterns = [
+                'contracts-menu/load-contract-01-initial.png',
+                'contracts-menu/load-contract-02-picker.png', 
+                'contracts-menu/load-contract-03-loaded.png',
+                'contracts-menu/deploy-01-navigate.png',
+                'contracts-menu/deploy-02-popup.png',
+                'contracts-menu/deploy-03-param.png',
+                'contracts-menu/deploy-04-deployed.png',
+                'contracts-menu/nav-01-expanded.png',
+                'contracts-menu/nav-02-collapsed.png',
+                'contracts-menu/nav-03-expanded.png',
+                'contracts-menu/nav-04-down1.png',
+                'contracts-menu/nav-05-down2.png',
+                'contracts-menu/nav-06-up.png',
+                'contracts-menu/nav-07-top.png',
+                'contracts-menu/delete-01-deployed.png',
+                'contracts-menu/delete-02-select-instance.png',
+                'contracts-menu/delete-03-instance-deleted.png',
+                'contracts-menu/delete-04-contract-deleted.png',
+                'output-panel/connection-01-initial.png',
+                'output-panel/connection-02-details.png',
+                'output-panel/nav-01-initial.png',
+                'output-panel/nav-02-focus-output.png',
+                'output-panel/nav-03-next.png',
+                'output-panel/nav-04-prev.png',
+                'output-panel/nav-05-wrap.png',
+                'output-panel/actions-01-tx-card.png',
+                'output-panel/actions-02-copy-menu.png',
+                'output-panel/actions-03-debug-menu.png',
+                'output-panel/actions-04-after-receipt.png',
+                'navigation/focus-01-initial.png',
+                'navigation/focus-02-output.png',
+                'navigation/focus-03-sidebar.png',
+                'navigation/focus-04-sidebar-nav.png',
+                'navigation/focus-05-output-nav.png',
+                'navigation/vim-01-initial.png',
+                'navigation/vim-02-j.png',
+                'navigation/vim-03-k.png',
+                'navigation/vim-04-h.png',
+                'navigation/vim-05-l.png',
+                'navigation/shortcuts-01-ctrl-p.png',
+                'navigation/shortcuts-02-ctrl-p-output.png',
+                'navigation/shortcuts-03-closed.png',
+                'parameter-popup/field-01-select-method.png',
+                'parameter-popup/field-02-popup.png',
+                'parameter-popup/field-03-cancelled.png',
+                'parameter-popup/target-01-default-evm.png',
+                'parameter-popup/target-02-pvm.png',
+                'parameter-popup/target-03-evm-again.png',
+                'parameter-popup/valid-01-popup.png',
+                'parameter-popup/valid-02-error.png',
+                'parameter-popup/valid-03-valid.png',
+                'command-palette/search-01-all-commands.png',
+                'command-palette/search-02-filtered.png',
+                'command-palette/search-03-case-insensitive.png',
+                'command-palette/search-04-cleared.png',
+                'command-palette/exec-01-with-cards.png',
+                'command-palette/exec-02-nav-j.png',
+                'command-palette/exec-03-nav-k.png',
+                'command-palette/exec-04-escape.png',
+                'command-palette/exec-05-cleared.png',
+                'command-palette/exec-06-focus-returned.png',
+                'error-handling/reconnect-01-connected.png',
+                'error-handling/reconnect-02-command.png',
+                'error-handling/reconnect-03-still-connected.png',
+                'error-handling/small-01-constrained.png',
+                'error-handling/small-02-ctrl-p.png',
+            ];
+
+            for (const file of knownPatterns) {
+                const group = file.split('/')[0];
+                if (testGroups[group]) {
+                    testGroups[group].files.push(file);
+                }
+            }
+        }
+
+        function renderContent() {
+            const content = document.getElementById('content');
+            const emptyState = document.getElementById('empty-state');
+            
+            let hasAnyImages = false;
+            let html = '';
+            
+            for (const [groupId, group] of Object.entries(testGroups)) {
+                if (group.files.length === 0) continue;
+                hasAnyImages = true;
+                
+                html += `
+                    <div class="test-group" data-group="${groupId}">
+                        <div class="test-group-header" onclick="toggleGroup(this)">
+                            <h2>${group.title}</h2>
+                            <span class="count">${group.files.length} screenshots</span>
+                        </div>
+                        <div class="screenshots">
+                            ${group.files.map((file, idx) => `
+                                <div class="screenshot-card">
+                                    <img src="${file}" 
+                                         alt="${file}" 
+                                         onclick="openModal('${file}')"
+                                         onerror="this.parentElement.style.display='none'">
+                                    <div class="info">
+                                        <div class="filename">${file.split('/').pop()}</div>
+                                        <div class="path">${file}</div>
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            }
+            
+            if (hasAnyImages) {
+                emptyState.style.display = 'none';
+                content.innerHTML = html + content.innerHTML.replace(emptyState.outerHTML, '');
+            }
+            
+            allImages = Object.values(testGroups).flatMap(g => g.files);
+        }
+
+        function toggleGroup(header) {
+            const screenshots = header.nextElementSibling;
+            screenshots.classList.toggle('hidden');
+        }
+
+        function openModal(src) {
+            currentImageIndex = allImages.indexOf(src);
+            document.getElementById('modal-img').src = src;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function navigateModal(direction) {
+            currentImageIndex = (currentImageIndex + direction + allImages.length) % allImages.length;
+            document.getElementById('modal-img').src = allImages[currentImageIndex];
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('modal').classList.contains('active')) return;
+            if (e.key === 'Escape') closeModal();
+            if (e.key === 'ArrowLeft') navigateModal(-1);
+            if (e.key === 'ArrowRight') navigateModal(1);
+        });
+
+        document.querySelectorAll('.controls button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.controls button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const filter = btn.dataset.filter;
+                document.querySelectorAll('.test-group').forEach(group => {
+                    if (filter === 'all' || group.dataset.group === filter) {
+                        group.classList.remove('hidden');
+                    } else {
+                        group.classList.add('hidden');
+                    }
+                });
+            });
+        });
+
+        scanForImages();
+        renderContent();
+    </script>
+</body>
+</html>

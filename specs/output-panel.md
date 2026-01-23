@@ -135,8 +135,8 @@ Represents a read-only function call (view/pure).
 ┃   Called at: 2024-01-15 14:30:45
 ┃
 
-Footer: ◇ Copy Result (c)   ◇ View as JSON (j)   ◇ Copy Call Data (d)
-                ↑ (selected)
+┃   ◇ Debug Call (d)
+┃
 ```
 
 ### 4. Log Card
@@ -542,3 +542,36 @@ Available actions for interactive cards (Transaction/Call) are displayed in the 
 - `⟳` - Loading/pending (yellow)
 - `ℹ` - Info message (blue)
 - `◇` - Action menu item
+
+---
+
+## Acceptance Criteria
+
+### Card Types
+- **AC-OP-1**: Connection card appears at startup
+- **AC-OP-2**: Transaction cards show hash, status, function, gas
+- **AC-OP-3**: Call cards show function, parameters, result
+- **AC-OP-4**: Log cards show informational messages
+
+### Card Display
+- **AC-OP-5**: Cards have thick left border (┃)
+- **AC-OP-6**: Selected card uses bright colors (active state)
+- **AC-OP-7**: Unselected cards use muted colors
+- **AC-OP-8**: Cards display in chronological order (newest at bottom)
+
+### Navigation
+- **AC-OP-9**: j/k or arrows navigate between cards
+- **AC-OP-10**: Navigation wraps (last to first)
+- **AC-OP-11**: Selected card auto-scrolls into view
+
+### Card Actions
+- **AC-OP-12**: Transaction cards support r (View Receipt)
+- **AC-OP-13**: Transaction cards support d (Debug Trace)
+- **AC-OP-14**: Transaction cards support c (Copy)
+- **AC-OP-15**: Call cards support d (Debug Call)
+- **AC-OP-16**: Actions work globally (any focus)
+
+### Connection Card
+- **AC-OP-17**: Shows "Connected" or "Disconnected" status
+- **AC-OP-18**: Shows account address and balance when connected
+- **AC-OP-19**: Updates automatically on reconnection

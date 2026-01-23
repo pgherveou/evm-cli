@@ -1,6 +1,6 @@
 Output tests/recordings/contracts-menu.ascii
 
-Source ./tests/recordings/load_demo.tape
+Source ./tests/recordings/common/load_demo.tape
 
 Wait+Screen /Demo/
 Sleep 0.5s
@@ -18,7 +18,7 @@ Wait+Screen /constructor/
 Type "1"
 Enter
 Sleep 1s
-Wait+Screen /increment\(\)|getCount\(\)|setCount\(\)/
+Wait+Screen /increment|getCount|setCount/
 Sleep 0.5s
 
 # Call a view method
@@ -53,4 +53,4 @@ Delete
 Sleep 0.5s
 
 # Exit
-Type "C-c"
+Ctrl+C

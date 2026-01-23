@@ -406,3 +406,34 @@ For potentially risky operations:
 - [ ] Theme customization
 - [ ] Multi-account support with switching
 - [ ] Persistent card history
+
+---
+
+## Acceptance Criteria
+
+### Configuration
+- **AC-GS-1**: Config file created at ~/.evm-cli/config.json on first run
+- **AC-GS-2**: Default config uses localhost:8545 RPC
+- **AC-GS-3**: Config includes rpc_url, address, private_key fields
+- **AC-GS-4**: Deployments stored as path:name → [addresses] mapping
+
+### Config Reload
+- **AC-GS-5**: Config reloads after editing via Ctrl+P > Edit config
+- **AC-GS-6**: Account updates if private key changes
+- **AC-GS-7**: Note displayed that RPC URL changes require restart
+
+### Clear State
+- **AC-GS-8**: Reset command clears deployments only
+- **AC-GS-9**: RPC and account settings preserved after reset
+
+### Connection
+- **AC-GS-10**: App launches even without RPC connection
+- **AC-GS-11**: Background polling retries connection every 5 seconds
+- **AC-GS-12**: UI updates automatically on reconnection
+- **AC-GS-13**: Balance refreshed after each transaction
+
+### Error Handling
+- **AC-GS-14**: Compilation errors displayed in output panel
+- **AC-GS-15**: Transaction revert reasons shown when available
+- **AC-GS-16**: Network errors reported in status bar
+- **AC-GS-17**: Input validation errors shown inline in popups

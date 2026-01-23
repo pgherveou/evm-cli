@@ -4,26 +4,43 @@ pub struct AppLayout {
     pub sidebar: Rect,
     pub output: Rect,
     pub status_bar: Rect,
+    pub debug_bar: Option<Rect>,
 }
 
 impl AppLayout {
-    pub fn new(area: Rect) -> Self {
-        // Split into main area and status bar (with padding below)
-        let main_split = Layout::default()
-            .direction(Direction::Vertical)
-            .constraints([Constraint::Min(1), Constraint::Length(2)])
-            .split(area);
+    pub fn new(area: Rect, debug_mode: bool) -> Self {
+        let main_split = if debug_mode {
+            Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([
+                    Constraint::Length(1),
+                    Constraint::Min(1),
+                    Constraint::Length(2),
+                ])
+                .split(area)
+        } else {
+            Layout::default()
+                .direction(Direction::Vertical)
+                .constraints([Constraint::Min(1), Constraint::Length(2)])
+                .split(area)
+        };
 
-        // Split main area into sidebar and output
+        let (content_area, status_area, debug_area) = if debug_mode {
+            (main_split[1], main_split[2], Some(main_split[0]))
+        } else {
+            (main_split[0], main_split[1], None)
+        };
+
         let content_split = Layout::default()
             .direction(Direction::Horizontal)
             .constraints([Constraint::Percentage(30), Constraint::Percentage(70)])
-            .split(main_split[0]);
+            .split(content_area);
 
         Self {
             sidebar: content_split[0],
             output: content_split[1],
-            status_bar: main_split[1],
+            status_bar: status_area,
+            debug_bar: debug_area,
         }
     }
 }

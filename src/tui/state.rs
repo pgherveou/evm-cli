@@ -252,6 +252,9 @@ pub struct AppState {
     pub terminal_size: (u16, u16),
     pub terminal_too_small: bool,
     pub output_area_height: u16,
+    pub last_key: Option<String>,
+    pub last_action: Option<String>,
+    pub debug_mode: bool,
 }
 
 impl Default for AppState {
@@ -272,6 +275,9 @@ impl Default for AppState {
             terminal_size: (80, 24),
             terminal_too_small: false,
             output_area_height: 20,
+            last_key: None,
+            last_action: None,
+            debug_mode: std::env::var("EVM_CLI_DEBUG").is_ok(),
         }
     }
 }

@@ -1,0 +1,810 @@
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: - │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: - │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Ctrl+'p' │ Action: Open CommandPalette │ Sel: 0 │ Cards: 1 │ Card
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Ctrl+'p' │ Action: Open CommandPalette │ Sel: 0 │ Cards: 1 │ Card
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Ctrl+'p' │ Action: Open CommandPalette │ Sel: 0 │ Cards: 1 │ Card
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │> Edit config - Open config file in $EDITOR                               │                        │
+│                        │  Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Down │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │  Edit config - Open config file in $EDITOR                               │                        │
+│                        │> Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Down │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │  Edit config - Open config file in $EDITOR                               │                        │
+│                        │> Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Down │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> █                                                                       │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │  Edit config - Open config file in $EDITOR                               │                        │
+│                        │> Clear output - Clear the output area                                    │                        │
+│                        │  Open Logs - Open application log file                                   │                        │
+│                        │  Clear Logs - Delete the application log file                            │                        │
+│                        │  Reconnect - Retry connection to RPC server                              │                        │
+│                        │  Toggle Debug [ON] - Toggle debug panel visibility                       │                        │
+│                        │  Reset - Clear all saved state                                           │                        │
+│                        │  Quit - Exit the application [Ctrl+C]                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: 'j' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> j█                                                                      │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │  No matching commands                                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: 'j' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> j█                                                                      │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │  No matching commands                                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: 'j' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> j█                                                                      │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │  No matching commands                                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: 'k' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> jk█                                                                     │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │  No matching commands                                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: 'k' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> jk█                                                                     │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │  No matching commands                                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: 'k' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> jk█                                                                     │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │  No matching commands                                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Up │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> jk█                                                                     │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │  No matching commands                                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Up │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> jk█                                                                     │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │  No matching commands                                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Up │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                        ┌ Commands (Ctrl+P) ───────────────────────────────────────────────────────┐                        │
+│                        │> jk█                                                                     │                        │
+│                        │──────────────────────────────────────────────────────────────────────────│                        │
+│                        │  No matching commands                                                    │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │                                                                          │                        │
+│                        │↑↓: navigate  Enter: select  Esc: close                                   │                        │
+│                        └──────────────────────────────────────────────────────────────────────────┘                        │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Esc │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Esc │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Esc │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
+┌ Contracts ─────────────────────────┐┌ Output ──────────────────────────────────────────────────────────────────────────────┐
+│                                    ││                                                                                      │
+│ + Load new contract...             ││ ┃ Connection                                                                         │
+│ ▸ Demo                             ││ ┃   Connected                                                                        │
+│                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
+│                                    ││ ┃   Balance: 992.241746 ETH                                                          │
+│                                    ││ ┃   Chain ID: 31337                                                                  │
+│                                    ││ ┃                                                                                    │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+│                                    ││                                                                                      │
+└────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 992.241746 ETH
+
+────────────────────────────────────────────────────────────────────────────────
+> cd /home/pg/github/evm-cli && EVM_CLI_DEBUG=1 cargo run --release 2>/dev/null
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────

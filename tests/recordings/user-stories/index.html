@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VHS Test Recordings - User Stories - evm-cli</title>
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a2e;
+            color: #eee;
+        }
+        h1 {
+            text-align: center;
+            color: #00d9ff;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 30px;
+        }
+        .story-nav {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+        .story-nav button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .story-nav button.active {
+            background: #00d9ff;
+            color: #1a1a2e;
+        }
+        .story-nav button:not(.active) {
+            background: #2a2a4e;
+            color: #aaa;
+        }
+        .story-nav button:hover {
+            transform: translateY(-2px);
+        }
+        .user-story-section {
+            margin-bottom: 50px;
+            border: 1px solid #333;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        .story-header {
+            background: #2a2a4e;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .story-header:hover {
+            background: #3a3a5e;
+        }
+        .story-header h2 {
+            margin: 0;
+            font-size: 18px;
+            color: #00d9ff;
+        }
+        .story-header .badge {
+            display: flex;
+            gap: 10px;
+        }
+        .story-header .count {
+            background: #00d9ff;
+            color: #1a1a2e;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        .story-header .bug-badge {
+            background: #ff4757;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 15px;
+            font-size: 12px;
+        }
+        .user-story {
+            background: #0d0d1a;
+            padding: 20px;
+            border-bottom: 1px solid #333;
+        }
+        .user-story:last-child {
+            border-bottom: none;
+        }
+        .user-story h3 {
+            color: #00d9ff;
+            margin: 0 0 10px 0;
+            font-size: 16px;
+        }
+        .user-story h3.bug {
+            color: #ff4757;
+        }
+        .user-story .description {
+            color: #888;
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        .acceptance-criteria {
+            background: #1a1a2e;
+            padding: 10px 15px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .acceptance-criteria h4 {
+            color: #888;
+            font-size: 12px;
+            margin: 0 0 8px 0;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .acceptance-criteria ul {
+            margin: 0;
+            padding-left: 20px;
+            font-size: 12px;
+            color: #aaa;
+        }
+        .screenshots {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 15px;
+        }
+        .screenshot-card {
+            background: #1a1a2e;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #333;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .screenshot-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 217, 255, 0.2);
+        }
+        .screenshot-card img {
+            width: 100%;
+            height: auto;
+            display: block;
+            cursor: pointer;
+        }
+        .screenshot-card .info {
+            padding: 10px;
+        }
+        .screenshot-card .step {
+            font-size: 12px;
+            color: #00d9ff;
+        }
+        .screenshot-card .filename {
+            font-size: 11px;
+            color: #666;
+            margin-top: 3px;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 5px;
+        }
+        .modal .close {
+            position: absolute;
+            top: 20px;
+            right: 30px;
+            font-size: 40px;
+            color: #fff;
+            cursor: pointer;
+        }
+        .modal .nav {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 50px;
+            color: #fff;
+            cursor: pointer;
+            padding: 20px;
+            user-select: none;
+        }
+        .modal .nav.prev { left: 10px; }
+        .modal .nav.next { right: 10px; }
+        .modal .nav:hover { color: #00d9ff; }
+        .hidden {
+            display: none !important;
+        }
+        .summary {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #2a2a4e;
+            border-radius: 10px;
+        }
+        .summary-stats {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            margin-top: 10px;
+        }
+        .summary-stat {
+            text-align: center;
+        }
+        .summary-stat .number {
+            font-size: 28px;
+            color: #00d9ff;
+            font-weight: bold;
+        }
+        .summary-stat .label {
+            font-size: 12px;
+            color: #888;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+<body>
+    <h1>VHS Test Recordings</h1>
+    <p class="subtitle">Organized by User Story - evm-cli</p>
+
+    <div class="summary">
+        <div class="summary-stats">
+            <div class="summary-stat">
+                <div class="number">6</div>
+                <div class="label">Categories</div>
+            </div>
+            <div class="summary-stat">
+                <div class="number">22</div>
+                <div class="label">User Stories</div>
+            </div>
+            <div class="summary-stat">
+                <div class="number">1</div>
+                <div class="label">Known Bugs</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="story-nav">
+        <button class="active" data-filter="all">All Stories</button>
+        <button data-filter="contract-management">Contract Management</button>
+        <button data-filter="navigation">Navigation</button>
+        <button data-filter="output-panel">Output Panel</button>
+        <button data-filter="parameter-entry">Parameter Entry</button>
+        <button data-filter="command-palette">Command Palette</button>
+        <button data-filter="error-handling">Error Handling</button>
+    </div>
+
+    <div id="content">
+        <!-- Contract Management -->
+        <div class="user-story-section" data-category="contract-management">
+            <div class="story-header" onclick="toggleSection(this)">
+                <h2>Contract Management</h2>
+                <div class="badge">
+                    <span class="bug-badge">1 Bug</span>
+                    <span class="count">6 Stories</span>
+                </div>
+            </div>
+            
+            <div class="user-story">
+                <h3>01. Load a Contract</h3>
+                <p class="description">As a developer, I want to load a Solidity contract file into evm-cli so I can deploy and interact with it.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-CM-1: "Load new contract" appears at top of sidebar</li>
+                        <li>AC-CM-9: Contract auto-expands when loaded</li>
+                        <li>AC-CM-12: Enter on "Load new contract" opens file picker</li>
+                        <li>AC-CM-13: File picker filters for .sol files</li>
+                        <li>AC-CM-14: Tab autocompletes path in file picker</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="01-load-contract">
+                    <div class="screenshot-card">
+                        <img src="contract-management/01-load-01-initial.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Initial state</div><div class="filename">01-load-01-initial.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/01-load-02-file-picker.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: File picker opened</div><div class="filename">01-load-02-file-picker.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/01-load-03-path-entered.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Path entered</div><div class="filename">01-load-03-path-entered.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/01-load-04-loaded.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Contract loaded</div><div class="filename">01-load-04-loaded.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>02. Deploy a Contract</h3>
+                <p class="description">As a developer, I want to deploy a new instance of my contract to the blockchain so I can interact with it.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-CM-10: Instance auto-expands when deployed</li>
+                        <li>AC-CM-15: Enter on "Deploy new instance" shows parameter popup</li>
+                        <li>AC-CM-16: Parameter popup includes EVM/PVM target selection</li>
+                        <li>AC-CM-17: Deployed instance address appears in tree</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="02-deploy">
+                    <div class="screenshot-card">
+                        <img src="contract-management/02-deploy-01-select.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Select deploy</div><div class="filename">02-deploy-01-select.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/02-deploy-02-popup.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Parameter popup</div><div class="filename">02-deploy-02-popup.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/02-deploy-03-param.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Enter parameter</div><div class="filename">02-deploy-03-param.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/02-deploy-04-deployed.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Deployed</div><div class="filename">02-deploy-04-deployed.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>03. Load Existing Instance</h3>
+                <p class="description">As a developer, I want to load an already-deployed contract by its address so I can interact with it without redeploying.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-CM-11: Instance auto-expands when loaded by address</li>
+                        <li>AC-CM-18: Enter on "Load existing..." prompts for address</li>
+                        <li>AC-CM-19: Valid address adds instance to tree</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="03-load-existing">
+                    <div class="screenshot-card">
+                        <img src="contract-management/03-existing-01-select.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Select load existing</div><div class="filename">03-existing-01-select.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/03-existing-02-prompt.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Address prompt</div><div class="filename">03-existing-02-prompt.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/03-existing-03-address.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Enter address</div><div class="filename">03-existing-03-address.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/03-existing-04-loaded.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Instance loaded</div><div class="filename">03-existing-04-loaded.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>04. Delete an Instance</h3>
+                <p class="description">As a developer, I want to remove a deployed instance from the sidebar when I no longer need to interact with it.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-CM-20: Delete/Backspace removes item immediately (no confirmation)</li>
+                        <li>AC-CM-22: Deletion persists to config.json</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="04-delete-instance">
+                    <div class="screenshot-card">
+                        <img src="contract-management/04-delete-01-deployed.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Instance deployed</div><div class="filename">04-delete-01-deployed.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/04-delete-02-selected.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Select instance</div><div class="filename">04-delete-02-selected.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/04-delete-03-deleted.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Instance deleted</div><div class="filename">04-delete-03-deleted.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>05. Delete a Contract</h3>
+                <p class="description">As a developer, I want to remove an entire contract from the sidebar when I no longer need it.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-CM-20: Delete/Backspace removes item immediately (no confirmation)</li>
+                        <li>AC-CM-21: Deleting contract removes all its instances</li>
+                        <li>AC-CM-22: Deletion persists to config.json</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="05-delete-contract">
+                    <div class="screenshot-card">
+                        <img src="contract-management/05-contract-01-initial.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Contract with instance</div><div class="filename">05-contract-01-initial.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/05-contract-02-selected.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Select contract</div><div class="filename">05-contract-02-selected.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/05-contract-03-deleted.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Contract deleted</div><div class="filename">05-contract-03-deleted.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3 class="bug">06. Delete Second Contract (BUG)</h3>
+                <p class="description"><strong>BUG:</strong> When deleting the second contract, deployed addresses are removed but the contract itself remains in the sidebar.</p>
+                <div class="acceptance-criteria">
+                    <h4>Expected vs Actual</h4>
+                    <ul>
+                        <li><strong>Expected:</strong> Deleting second contract removes it entirely</li>
+                        <li><strong>Actual:</strong> Deployed addresses removed, but contract entry remains</li>
+                        <li>Related: AC-CM-21 (Deleting contract removes all its instances)</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="06-delete-second">
+                    <div class="screenshot-card">
+                        <img src="contract-management/06-second-01-first-loaded.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: First contract loaded</div><div class="filename">06-second-01-first-loaded.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/06-second-02-first-deployed.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: First deployed</div><div class="filename">06-second-02-first-deployed.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/06-second-03-second-loaded.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Second contract loaded</div><div class="filename">06-second-03-second-loaded.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/06-second-04-second-deployed.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Second deployed</div><div class="filename">06-second-04-second-deployed.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/06-second-05-second-selected.png" alt="Step 5" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 5: Select second contract</div><div class="filename">06-second-05-second-selected.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/06-second-06-after-delete.png" alt="Step 6" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 6: After delete (BUG)</div><div class="filename">06-second-06-after-delete.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/06-second-07-final-state.png" alt="Step 7" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 7: Final state</div><div class="filename">06-second-07-final-state.png</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation -->
+        <div class="user-story-section" data-category="navigation">
+            <div class="story-header" onclick="toggleSection(this)">
+                <h2>Navigation</h2>
+                <span class="count">4 Stories</span>
+            </div>
+            
+            <div class="user-story">
+                <h3>01. Navigate the Sidebar</h3>
+                <p class="description">As a developer, I want to navigate, expand, and collapse items in the contract sidebar using keyboard shortcuts.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-CM-5: j/k or arrow keys navigate items</li>
+                        <li>AC-CM-6: h/l or arrow keys collapse/expand nodes</li>
+                        <li>AC-CM-8: Navigation does NOT wrap at boundaries</li>
+                        <li>AC-UN-5-8: j/k/h/l vim-style navigation</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="01-sidebar-navigation">
+                    <div class="screenshot-card">
+                        <img src="navigation/01-sidebar-01-expanded.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Expanded</div><div class="filename">01-sidebar-01-expanded.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/01-sidebar-02-collapsed.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Collapsed (h)</div><div class="filename">01-sidebar-02-collapsed.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/01-sidebar-03-expanded.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Expanded (l)</div><div class="filename">01-sidebar-03-expanded.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/01-sidebar-04-down.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Move down (j)</div><div class="filename">01-sidebar-04-down.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/01-sidebar-05-down-again.png" alt="Step 5" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 5: Down again</div><div class="filename">01-sidebar-05-down-again.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/01-sidebar-06-up.png" alt="Step 6" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 6: Move up (k)</div><div class="filename">01-sidebar-06-up.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/01-sidebar-07-at-top.png" alt="Step 7" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 7: At top (no wrap)</div><div class="filename">01-sidebar-07-at-top.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>02. Switch Focus Between Panels</h3>
+                <p class="description">As a developer, I want to switch focus between the sidebar and output panel using Tab.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-UN-1: Tab switches focus between sidebar and output panel</li>
+                        <li>AC-MI-13: Tab key switches focus</li>
+                        <li>AC-MI-14: Current focus indicated by cyan highlighting</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="02-focus-switching">
+                    <div class="screenshot-card">
+                        <img src="navigation/02-focus-01-sidebar.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Sidebar focused</div><div class="filename">02-focus-01-sidebar.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/02-focus-02-output.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Output focused (Tab)</div><div class="filename">02-focus-02-output.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/02-focus-03-sidebar-again.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Back to sidebar</div><div class="filename">02-focus-03-sidebar-again.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/02-focus-04-sidebar-nav.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Navigate sidebar</div><div class="filename">02-focus-04-sidebar-nav.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/02-focus-05-output-nav.png" alt="Step 5" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 5: Navigate output</div><div class="filename">02-focus-05-output-nav.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>03. Vim-Style Navigation Keys</h3>
+                <p class="description">As a developer familiar with vim, I want to use j/k/h/l keys to navigate efficiently.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-UN-5: j/↓ moves to next item</li>
+                        <li>AC-UN-6: k/↑ moves to previous item</li>
+                        <li>AC-UN-7: h/← collapses expanded node</li>
+                        <li>AC-UN-8: l/→ expands collapsed node</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="03-vim-keys">
+                    <div class="screenshot-card">
+                        <img src="navigation/03-vim-01-initial.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Initial state</div><div class="filename">03-vim-01-initial.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/03-vim-02-j.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Press j (down)</div><div class="filename">03-vim-02-j.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/03-vim-03-k.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Press k (up)</div><div class="filename">03-vim-03-k.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/03-vim-04-h.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Press h (collapse)</div><div class="filename">03-vim-04-h.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/03-vim-05-l.png" alt="Step 5" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 5: Press l (expand)</div><div class="filename">03-vim-05-l.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>04. Global Keyboard Shortcuts</h3>
+                <p class="description">As a developer, I want Ctrl+P to open the command palette from anywhere and Escape to close popups.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-UN-2: Escape closes any open popup/overlay</li>
+                        <li>AC-UN-3: Ctrl+P opens command palette from anywhere</li>
+                        <li>AC-UN-4: Ctrl+C exits application immediately</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="04-global-shortcuts">
+                    <div class="screenshot-card">
+                        <img src="navigation/04-shortcuts-01-ctrl-p.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Ctrl+P from sidebar</div><div class="filename">04-shortcuts-01-ctrl-p.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/04-shortcuts-02-escape.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Escape to close</div><div class="filename">04-shortcuts-02-escape.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/04-shortcuts-03-output.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Switch to output</div><div class="filename">04-shortcuts-03-output.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/04-shortcuts-04-ctrl-p-output.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Ctrl+P from output</div><div class="filename">04-shortcuts-04-ctrl-p-output.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="navigation/04-shortcuts-05-closed.png" alt="Step 5" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 5: Closed</div><div class="filename">04-shortcuts-05-closed.png</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Output Panel -->
+        <div class="user-story-section" data-category="output-panel">
+            <div class="story-header" onclick="toggleSection(this)">
+                <h2>Output Panel</h2>
+                <span class="count">4 Stories</span>
+            </div>
+            
+            <div class="user-story">
+                <h3>01. View Connection Status</h3>
+                <p class="description">As a developer, when I launch evm-cli I want to see my connection status, account address, and balance.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-OP-1: Connection card appears at startup</li>
+                        <li>AC-OP-17: Shows "Connected" or "Disconnected" status</li>
+                        <li>AC-OP-18: Shows account address and balance when connected</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="01-connection-status">
+                    <div class="screenshot-card">
+                        <img src="output-panel/01-connection-01-launched.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: App launched</div><div class="filename">01-connection-01-launched.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/01-connection-02-details.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Connection details</div><div class="filename">01-connection-02-details.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/01-connection-03-status-bar.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Status bar</div><div class="filename">01-connection-03-status-bar.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>02. Navigate Output Cards</h3>
+                <p class="description">As a developer, I want to navigate between output cards to review different transactions and call results.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-OP-9: j/k or arrows navigate between cards</li>
+                        <li>AC-OP-10: Navigation wraps (last to first)</li>
+                        <li>AC-OP-11: Selected card auto-scrolls into view</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="02-card-navigation">
+                    <div class="screenshot-card">
+                        <img src="output-panel/02-cards-01-initial.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Initial cards</div><div class="filename">02-cards-01-initial.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/02-cards-02-focused.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Output focused</div><div class="filename">02-cards-02-focused.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/02-cards-03-next.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Next card</div><div class="filename">02-cards-03-next.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/02-cards-04-prev.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Previous card</div><div class="filename">02-cards-04-prev.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/02-cards-05-wrap.png" alt="Step 5" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 5: Navigation wraps</div><div class="filename">02-cards-05-wrap.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>03. Transaction Card Actions</h3>
+                <p class="description">As a developer, after deploying I want to inspect transactions by copying hash, viewing receipt, or debugging.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-OP-12: Transaction cards support r (View Receipt)</li>
+                        <li>AC-OP-13: Transaction cards support d (Debug Trace)</li>
+                        <li>AC-OP-14: Transaction cards support c (Copy)</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="03-card-actions">
+                    <div class="screenshot-card">
+                        <img src="output-panel/03-actions-01-tx-card.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Transaction card</div><div class="filename">03-actions-01-tx-card.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/03-actions-02-copy-menu.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Copy menu (c)</div><div class="filename">03-actions-02-copy-menu.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/03-actions-03-copy-closed.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Menu closed</div><div class="filename">03-actions-03-copy-closed.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/03-actions-04-debug-menu.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Debug menu (d)</div><div class="filename">03-actions-04-debug-menu.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/03-actions-05-debug-closed.png" alt="Step 5" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 5: Debug closed</div><div class="filename">03-actions-05-debug-closed.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/03-actions-06-receipt.png" alt="Step 6" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 6: View receipt (r)</div><div class="filename">03-actions-06-receipt.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>04. View Call Results</h3>
+                <p class="description">As a developer, I want to call view methods and see the results in the output panel.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-OP-3: Call cards show function, parameters, result</li>
+                        <li>AC-CM-7: Enter executes the selected action</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="04-call-results">
+                    <div class="screenshot-card">
+                        <img src="output-panel/04-call-01-select-method.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Select method</div><div class="filename">04-call-01-select-method.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/04-call-02-result.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Call result</div><div class="filename">04-call-02-result.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/04-call-03-increment.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Increment tx</div><div class="filename">04-call-03-increment.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="output-panel/04-call-04-new-value.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: New value</div><div class="filename">04-call-04-new-value.png</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parameter Entry -->
+        <div class="user-story-section" data-category="parameter-entry">
+            <div class="story-header" onclick="toggleSection(this)">
+                <h2>Parameter Entry</h2>
+                <span class="count">4 Stories</span>
+            </div>
+            
+            <div class="user-story">
+                <h3>01. Enter Method Parameters</h3>
+                <p class="description">As a developer, I want to enter parameters when calling a contract method so I can test different inputs.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-PP-5: Each field shows parameter name and type</li>
+                        <li>AC-PP-6: Current field has visible cursor</li>
+                        <li>AC-PP-10: Enter submits form</li>
+                        <li>AC-PP-11: Escape cancels and closes popup</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="01-enter-parameters">
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/01-params-01-select.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Select method</div><div class="filename">01-params-01-select.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/01-params-02-popup.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Parameter popup</div><div class="filename">01-params-02-popup.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/01-params-03-value.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Enter value</div><div class="filename">01-params-03-value.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/01-params-04-cancelled.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Cancelled</div><div class="filename">01-params-04-cancelled.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/01-params-05-submitted.png" alt="Step 5" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 5: Submitted</div><div class="filename">01-params-05-submitted.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>02. Validate Parameter Input</h3>
+                <p class="description">As a developer, I want to see validation errors when I enter invalid parameters.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-PP-7: Invalid fields show error message below</li>
+                        <li>AC-PP-17: Errors shown in real-time as user types</li>
+                        <li>AC-PP-18: Form cannot submit with validation errors</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="02-validation">
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/02-valid-01-popup.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Empty popup</div><div class="filename">02-valid-01-popup.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/02-valid-02-empty-error.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Empty error</div><div class="filename">02-valid-02-empty-error.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/02-valid-03-invalid.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Invalid input</div><div class="filename">02-valid-03-invalid.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/02-valid-04-valid.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Valid input</div><div class="filename">02-valid-04-valid.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>03. Select Deployment Target</h3>
+                <p class="description">As a developer deploying to a multi-VM chain, I want to choose between EVM and PVM targets.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-PP-12: EVM/PVM selector shown for deploy operations</li>
+                        <li>AC-PP-13: ←/→ switches between targets</li>
+                        <li>AC-PP-14: Default target is EVM</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="03-target-selection">
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/03-target-01-evm-default.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: EVM default</div><div class="filename">03-target-01-evm-default.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/03-target-02-pvm.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Switch to PVM</div><div class="filename">03-target-02-pvm.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/03-target-03-evm-again.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Back to EVM</div><div class="filename">03-target-03-evm-again.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>04. Navigate Between Fields</h3>
+                <p class="description">As a developer entering multiple parameters, I want to navigate between fields using Tab.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-PP-8: Tab moves to next field</li>
+                        <li>AC-PP-9: Shift+Tab moves to previous field</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="04-field-navigation">
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/04-field-01-first.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: First field</div><div class="filename">04-field-01-first.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/04-field-02-value.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Value entered</div><div class="filename">04-field-02-value.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="parameter-entry/04-field-03-after-tab.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: After Tab</div><div class="filename">04-field-03-after-tab.png</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Command Palette -->
+        <div class="user-story-section" data-category="command-palette">
+            <div class="story-header" onclick="toggleSection(this)">
+                <h2>Command Palette</h2>
+                <span class="count">5 Stories</span>
+            </div>
+            
+            <div class="user-story">
+                <h3>01. Open and Search</h3>
+                <p class="description">As a developer, I want to open the command palette and filter commands by typing.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-CP-1: Ctrl+P opens command palette from anywhere</li>
+                        <li>AC-CP-7: Typing filters commands in real-time</li>
+                        <li>AC-CP-8: Filter is case-insensitive</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="01-open-and-search">
+                    <div class="screenshot-card">
+                        <img src="command-palette/01-search-01-all.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: All commands</div><div class="filename">01-search-01-all.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/01-search-02-edit.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Filter "edit"</div><div class="filename">01-search-02-edit.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/01-search-03-log.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Filter "LOG"</div><div class="filename">01-search-03-log.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/01-search-04-cleared.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Cleared</div><div class="filename">01-search-04-cleared.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/01-search-05-closed.png" alt="Step 5" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 5: Closed</div><div class="filename">01-search-05-closed.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>02. Navigate Commands</h3>
+                <p class="description">As a developer, I want to navigate through commands using arrow keys or j/k.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-CP-6: Selected command highlighted with cyan background</li>
+                        <li>AC-CP-11: j/↓ moves to next command</li>
+                        <li>AC-CP-12: k/↑ moves to previous command</li>
+                        <li>AC-CP-13: Navigation wraps at boundaries</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="02-navigate-commands">
+                    <div class="screenshot-card">
+                        <img src="command-palette/02-nav-01-opened.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Opened</div><div class="filename">02-nav-01-opened.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/02-nav-02-down.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Down arrow</div><div class="filename">02-nav-02-down.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/02-nav-03-j.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Press j</div><div class="filename">02-nav-03-j.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/02-nav-04-k.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Press k</div><div class="filename">02-nav-04-k.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/02-nav-05-up.png" alt="Step 5" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 5: Up arrow</div><div class="filename">02-nav-05-up.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/02-nav-06-closed.png" alt="Step 6" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 6: Closed</div><div class="filename">02-nav-06-closed.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>03. Execute Commands</h3>
+                <p class="description">As a developer, I want to execute commands like "Clear output" from the palette.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-CP-14: Enter executes selected command</li>
+                        <li>AC-CP-18: "Clear output" removes all output cards</li>
+                        <li>AC-CP-16: Focus returns to previous panel after close</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="03-execute-command">
+                    <div class="screenshot-card">
+                        <img src="command-palette/03-exec-01-has-cards.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Has cards</div><div class="filename">03-exec-01-has-cards.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/03-exec-02-filtered.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Filter "clear"</div><div class="filename">03-exec-02-filtered.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/03-exec-03-cleared.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Output cleared</div><div class="filename">03-exec-03-cleared.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/03-exec-04-focus.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Focus returned</div><div class="filename">03-exec-04-focus.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>04. Toggle Debug Panel</h3>
+                <p class="description">As a developer, I want to toggle the debug panel visibility.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-CP-5: All commands visible including "Toggle Debug"</li>
+                        <li>AC-CP-14: Enter executes selected command</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="04-toggle-debug">
+                    <div class="screenshot-card">
+                        <img src="command-palette/04-debug-01-initial.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Initial state</div><div class="filename">04-debug-01-initial.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/04-debug-02-found.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Found toggle</div><div class="filename">04-debug-02-found.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/04-debug-03-toggled.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Toggled off</div><div class="filename">04-debug-03-toggled.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/04-debug-04-restored.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Restored</div><div class="filename">04-debug-04-restored.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>05. Reset Application State</h3>
+                <p class="description">As a developer, I want to reset the application state to clear all deployed contracts.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-CP-20: "Reset" clears all deployments from config</li>
+                        <li>AC-GS-8: Reset command clears deployments only</li>
+                        <li>AC-GS-9: RPC and account settings preserved</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="05-reset-state">
+                    <div class="screenshot-card">
+                        <img src="command-palette/05-reset-01-deployed.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Has deployments</div><div class="filename">05-reset-01-deployed.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/05-reset-02-found.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Find Reset</div><div class="filename">05-reset-02-found.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/05-reset-03-after.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: After reset</div><div class="filename">05-reset-03-after.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="command-palette/05-reset-04-clean.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Clean state</div><div class="filename">05-reset-04-clean.png</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Handling -->
+        <div class="user-story-section" data-category="error-handling">
+            <div class="story-header" onclick="toggleSection(this)">
+                <h2>Error Handling</h2>
+                <span class="count">3 Stories</span>
+            </div>
+            
+            <div class="user-story">
+                <h3>01. Reconnect to RPC</h3>
+                <p class="description">As a developer, when my connection drops I want to reconnect without restarting.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-CP-6: Commands include "Reconnect"</li>
+                        <li>AC-GS-10: App launches even without RPC connection</li>
+                        <li>AC-GS-12: UI updates automatically on reconnection</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="01-reconnect">
+                    <div class="screenshot-card">
+                        <img src="error-handling/01-reconnect-01-connected.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Connected</div><div class="filename">01-reconnect-01-connected.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="error-handling/01-reconnect-02-command.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Reconnect command</div><div class="filename">01-reconnect-02-command.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="error-handling/01-reconnect-03-still-connected.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Still connected</div><div class="filename">01-reconnect-03-still-connected.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>02. Handle Small Terminal</h3>
+                <p class="description">As a developer, I want the app to handle small terminal sizes gracefully.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-MI-10: Warning displayed when terminal < 80 chars</li>
+                        <li>AC-MI-11: Layout re-renders on terminal resize</li>
+                        <li>AC-MI-12: Address truncation adapts to width</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="02-small-terminal">
+                    <div class="screenshot-card">
+                        <img src="error-handling/02-small-01-constrained.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Constrained size</div><div class="filename">02-small-01-constrained.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="error-handling/02-small-02-navigated.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Navigation works</div><div class="filename">02-small-02-navigated.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="error-handling/02-small-03-ctrl-p.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Ctrl+P works</div><div class="filename">02-small-03-ctrl-p.png</div></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="user-story">
+                <h3>03. Transaction Errors</h3>
+                <p class="description">As a developer, when a transaction fails I want to see clear error messages.</p>
+                <div class="acceptance-criteria">
+                    <h4>Acceptance Criteria</h4>
+                    <ul>
+                        <li>AC-GS-14: Compilation errors displayed in output</li>
+                        <li>AC-GS-15: Transaction revert reasons shown</li>
+                        <li>AC-GS-16: Network errors reported in status bar</li>
+                    </ul>
+                </div>
+                <div class="screenshots" data-story="03-transaction-errors">
+                    <div class="screenshot-card">
+                        <img src="error-handling/03-error-01-deployed.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Deployed</div><div class="filename">03-error-01-deployed.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="error-handling/03-error-02-fib-deployed.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Fibonacci deployed</div><div class="filename">03-error-02-fib-deployed.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="error-handling/03-error-03-reverted.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Transaction reverted</div><div class="filename">03-error-03-reverted.png</div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <span class="close" onclick="closeModal()">&times;</span>
+        <span class="nav prev" onclick="navigateModal(-1)">&#10094;</span>
+        <img id="modal-img" src="" alt="">
+        <span class="nav next" onclick="navigateModal(1)">&#10095;</span>
+    </div>
+
+    <script>
+        let allImages = [];
+        let currentImageIndex = 0;
+
+        // Collect all images
+        document.querySelectorAll('.screenshot-card img').forEach(img => {
+            allImages.push(img.src);
+        });
+
+        function toggleSection(header) {
+            const section = header.closest('.user-story-section');
+            const stories = section.querySelectorAll('.user-story');
+            stories.forEach(story => story.classList.toggle('hidden'));
+        }
+
+        function openModal(src) {
+            currentImageIndex = allImages.indexOf(src);
+            document.getElementById('modal-img').src = src;
+            document.getElementById('modal').classList.add('active');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.remove('active');
+        }
+
+        function navigateModal(direction) {
+            currentImageIndex = (currentImageIndex + direction + allImages.length) % allImages.length;
+            document.getElementById('modal-img').src = allImages[currentImageIndex];
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (!document.getElementById('modal').classList.contains('active')) return;
+            if (e.key === 'Escape') closeModal();
+            if (e.key === 'ArrowLeft') navigateModal(-1);
+            if (e.key === 'ArrowRight') navigateModal(1);
+        });
+
+        // Category filter
+        document.querySelectorAll('.story-nav button').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.story-nav button').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                const filter = btn.dataset.filter;
+                document.querySelectorAll('.user-story-section').forEach(section => {
+                    if (filter === 'all' || section.dataset.category === filter) {
+                        section.classList.remove('hidden');
+                    } else {
+                        section.classList.add('hidden');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

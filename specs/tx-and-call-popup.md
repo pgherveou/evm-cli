@@ -375,3 +375,40 @@ Loading contract ABI...
 - Error messages descriptive and actionable
 - Validation feedback immediate
 - Tab order follows logical flow
+
+---
+
+## Acceptance Criteria
+
+### Layout
+- **AC-PP-1**: Popup centered on screen
+- **AC-PP-2**: Title shows method/constructor signature
+- **AC-PP-3**: Close hint (esc) displayed in top-right
+- **AC-PP-4**: Footer shows navigation instructions
+
+### Field Display
+- **AC-PP-5**: Each field shows parameter name and type
+- **AC-PP-6**: Current field has visible cursor
+- **AC-PP-7**: Invalid fields show error message below
+
+### Navigation
+- **AC-PP-8**: Tab moves to next field
+- **AC-PP-9**: Shift+Tab moves to previous field
+- **AC-PP-10**: Enter submits form
+- **AC-PP-11**: Escape cancels and closes popup
+
+### Target Selection (Constructor)
+- **AC-PP-12**: EVM/PVM selector shown for deploy operations
+- **AC-PP-13**: ←/→ switches between targets
+- **AC-PP-14**: Default target is EVM
+
+### Validation
+- **AC-PP-15**: Address fields validate 0x + 40 hex chars
+- **AC-PP-16**: Numeric fields validate appropriate ranges
+- **AC-PP-17**: Errors shown in real-time as user types
+- **AC-PP-18**: Form cannot submit with validation errors
+
+### Type Support
+- **AC-PP-19**: address, bool, uint256, int256, bytes, string supported
+- **AC-PP-20**: Arrays entered as comma-separated values
+- **AC-PP-21**: Tuples displayed as dot-notation fields

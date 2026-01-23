@@ -253,3 +253,235 @@ impl DeploymentStore {
         self.deployments.clear();
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use tempfile::TempDir;
+
+    /// Helper to create a test store with a temporary directory
+    fn create_test_store() -> (DeploymentStore, TempDir) {
+        let temp_dir = TempDir::new().unwrap();
+        let config_path = temp_dir.path().join("config.json");
+        let store = DeploymentStore::load_from(Some(config_path)).unwrap();
+        (store, temp_dir)
+    }
+
+    #[test]
+    fn test_default_config_values() {
+        let config = Config::default();
+        assert_eq!(config.rpc_url, DEFAULT_RPC_URL);
+        assert_eq!(config.address, DEFAULT_ADDRESS);
+        assert_eq!(config.private_key, DEFAULT_PRIVATE_KEY);
+    }
+
+    #[test]
+    fn test_contract_id_to_key_and_back() {
+        let contract_id =
+            ContractId::new(PathBuf::from("/tmp/Test.sol"), "TestContract".to_string());
+        let key = contract_id.to_key();
+
+        // Key should contain path and name separated by colon
+        assert!(key.contains("Test.sol"));
+        assert!(key.ends_with(":TestContract"));
+
+        // Parse back
+        let parsed = ContractId::from_key(&key).unwrap();
+        assert_eq!(parsed.name, "TestContract");
+    }
+
+    #[test]
+    fn test_contract_id_from_key_with_windows_path() {
+        // Windows paths have colons, so we need to handle them correctly
+        let key = "C:\\Users\\test\\Contract.sol:MyContract";
+        let parsed = ContractId::from_key(key).unwrap();
+        assert_eq!(parsed.name, "MyContract");
+        assert_eq!(parsed.path, PathBuf::from("C:\\Users\\test\\Contract.sol"));
+    }
+
+    #[test]
+    fn test_contract_id_from_key_invalid() {
+        // No colon
+        assert!(ContractId::from_key("invalid").is_none());
+        // Empty name
+        assert!(ContractId::from_key("/path/to/file:").is_none());
+    }
+
+    #[test]
+    fn test_store_load_creates_default_config() {
+        let (store, _temp_dir) = create_test_store();
+
+        assert_eq!(store.config.rpc_url, DEFAULT_RPC_URL);
+        assert_eq!(store.config.address, DEFAULT_ADDRESS);
+        assert!(store.all_contracts().is_empty());
+    }
+
+    #[test]
+    fn test_store_save_and_reload() {
+        let temp_dir = TempDir::new().unwrap();
+        let config_path = temp_dir.path().join("config.json");
+
+        // Create and modify store
+        {
+            let mut store = DeploymentStore::load_from(Some(config_path.clone())).unwrap();
+            store.config.rpc_url = "http://custom:8545".to_string();
+
+            let contract_id =
+                ContractId::new(PathBuf::from("/test/Contract.sol"), "Test".to_string());
+            store.ensure_contract(&contract_id);
+            store.save().unwrap();
+        }
+
+        // Reload and verify
+        let store = DeploymentStore::load_from(Some(config_path)).unwrap();
+        assert_eq!(store.config.rpc_url, "http://custom:8545");
+        assert_eq!(store.all_contracts().len(), 1);
+    }
+
+    #[test]
+    fn test_add_and_get_deployment() {
+        let (mut store, _temp_dir) = create_test_store();
+        let contract_id = ContractId::new(PathBuf::from("/test/Contract.sol"), "Test".to_string());
+        let address: Address = "0x1234567890123456789012345678901234567890"
+            .parse()
+            .unwrap();
+
+        // Initially empty
+        assert!(store.get_deployments(&contract_id).is_empty());
+
+        // Add deployment
+        store.add_deployment(&contract_id, address);
+
+        // Verify
+        let deployments = store.get_deployments(&contract_id);
+        assert_eq!(deployments.len(), 1);
+        assert_eq!(deployments[0], address);
+    }
+
+    #[test]
+    fn test_add_duplicate_deployment_ignored() {
+        let (mut store, _temp_dir) = create_test_store();
+        let contract_id = ContractId::new(PathBuf::from("/test/Contract.sol"), "Test".to_string());
+        let address: Address = "0x1234567890123456789012345678901234567890"
+            .parse()
+            .unwrap();
+
+        store.add_deployment(&contract_id, address);
+        store.add_deployment(&contract_id, address); // Duplicate
+
+        let deployments = store.get_deployments(&contract_id);
+        assert_eq!(deployments.len(), 1);
+    }
+
+    #[test]
+    fn test_remove_deployment() {
+        let (mut store, _temp_dir) = create_test_store();
+        let contract_id = ContractId::new(PathBuf::from("/test/Contract.sol"), "Test".to_string());
+        let address1: Address = "0x1234567890123456789012345678901234567890"
+            .parse()
+            .unwrap();
+        let address2: Address = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
+            .parse()
+            .unwrap();
+
+        store.add_deployment(&contract_id, address1);
+        store.add_deployment(&contract_id, address2);
+        assert_eq!(store.get_deployments(&contract_id).len(), 2);
+
+        // Remove one
+        let removed = store.remove_deployment(&contract_id, address1);
+        assert!(removed);
+
+        let deployments = store.get_deployments(&contract_id);
+        assert_eq!(deployments.len(), 1);
+        assert_eq!(deployments[0], address2);
+
+        // Contract entry still exists (even with one deployment)
+        assert_eq!(store.all_contracts().len(), 1);
+    }
+
+    #[test]
+    fn test_remove_nonexistent_deployment() {
+        let (mut store, _temp_dir) = create_test_store();
+        let contract_id = ContractId::new(PathBuf::from("/test/Contract.sol"), "Test".to_string());
+        let address: Address = "0x1234567890123456789012345678901234567890"
+            .parse()
+            .unwrap();
+
+        let removed = store.remove_deployment(&contract_id, address);
+        assert!(!removed);
+    }
+
+    #[test]
+    fn test_remove_contract() {
+        let (mut store, _temp_dir) = create_test_store();
+        let contract_id = ContractId::new(PathBuf::from("/test/Contract.sol"), "Test".to_string());
+        let address: Address = "0x1234567890123456789012345678901234567890"
+            .parse()
+            .unwrap();
+
+        store.add_deployment(&contract_id, address);
+        assert_eq!(store.all_contracts().len(), 1);
+
+        let removed = store.remove_contract(&contract_id);
+        assert!(removed);
+        assert!(store.all_contracts().is_empty());
+    }
+
+    #[test]
+    fn test_ensure_contract_creates_empty_entry() {
+        let (mut store, _temp_dir) = create_test_store();
+        let contract_id = ContractId::new(PathBuf::from("/test/Contract.sol"), "Test".to_string());
+
+        store.ensure_contract(&contract_id);
+
+        // Contract exists but has no deployments
+        assert_eq!(store.all_contracts().len(), 1);
+        assert!(store.get_deployments(&contract_id).is_empty());
+    }
+
+    #[test]
+    fn test_clear_removes_all_deployments() {
+        let (mut store, _temp_dir) = create_test_store();
+
+        let contract1 = ContractId::new(PathBuf::from("/test/A.sol"), "A".to_string());
+        let contract2 = ContractId::new(PathBuf::from("/test/B.sol"), "B".to_string());
+        let address: Address = "0x1234567890123456789012345678901234567890"
+            .parse()
+            .unwrap();
+
+        store.add_deployment(&contract1, address);
+        store.add_deployment(&contract2, address);
+        assert_eq!(store.all_contracts().len(), 2);
+
+        store.clear();
+        assert!(store.all_contracts().is_empty());
+    }
+
+    #[test]
+    fn test_all_contracts_returns_all_entries() {
+        let (mut store, _temp_dir) = create_test_store();
+
+        let contract1 = ContractId::new(PathBuf::from("/test/A.sol"), "ContractA".to_string());
+        let contract2 = ContractId::new(PathBuf::from("/test/B.sol"), "ContractB".to_string());
+
+        store.ensure_contract(&contract1);
+        store.ensure_contract(&contract2);
+
+        let contracts = store.all_contracts();
+        assert_eq!(contracts.len(), 2);
+
+        let names: Vec<_> = contracts.iter().map(|c| c.name.as_str()).collect();
+        assert!(names.contains(&"ContractA"));
+        assert!(names.contains(&"ContractB"));
+    }
+
+    #[test]
+    fn test_config_path_returns_correct_path() {
+        let temp_dir = TempDir::new().unwrap();
+        let config_path = temp_dir.path().join("custom_config.json");
+        let store = DeploymentStore::load_from(Some(config_path.clone())).unwrap();
+
+        assert_eq!(store.config_path(), &config_path);
+    }
+}

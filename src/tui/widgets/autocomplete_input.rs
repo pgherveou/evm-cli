@@ -1,7 +1,9 @@
+use crate::tui::theme;
+use crate::tui::widgets::InputField;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
-    style::{Color, Modifier, Style},
+    style::Style,
     text::{Line, Span},
     widgets::Widget,
 };
@@ -27,29 +29,18 @@ impl PathSuggestion {
     }
 }
 
-/// Parses user input to determine which directory to scan and what prefix to match
-///
-/// Examples:
-/// - "./cont" → (Path("."), "cont")
-/// - "./contracts/" → (Path("./contracts"), "")
-/// - "src/hello" → (Path("src"), "hello")
-/// - "" → (Path("."), "")
-/// - "~/foo" → (Path("/home/user"), "foo")
 pub fn parse_path_for_autocomplete(input: &str) -> (PathBuf, String) {
     if input.is_empty() {
         return (PathBuf::from("."), String::new());
     }
 
-    // Expand ~ to home directory
     let expanded_input = expand_home_dir(input);
     let path = Path::new(&expanded_input);
 
-    // If input ends with separator, scan that directory with empty prefix
     if input.ends_with('/') || input.ends_with('\\') {
         return (path.to_path_buf(), String::new());
     }
 
-    // Split into parent dir and file prefix
     let Some(parent) = path.parent() else {
         return (PathBuf::from("."), input.to_string());
     };
@@ -79,18 +70,11 @@ fn expand_home_dir(input: &str) -> String {
     }
 }
 
-/// Scans filesystem for matching files and directories
-///
-/// Only shows: .sol files and directories (for navigation)
-/// Filters by prefix (case-insensitive)
-/// Skips hidden files unless prefix starts with '.'
-/// Limits to 50 suggestions for performance
 pub fn scan_path_suggestions(dir: &Path, prefix: &str) -> Vec<PathSuggestion> {
     let mut suggestions = Vec::new();
     let show_hidden = prefix.starts_with('.');
     let prefix_lower = prefix.to_lowercase();
 
-    // Try to read directory, fail silently on permission errors
     let entries = match std::fs::read_dir(dir) {
         Ok(entries) => entries,
         Err(_) => return suggestions,
@@ -103,12 +87,10 @@ pub fn scan_path_suggestions(dir: &Path, prefix: &str) -> Vec<PathSuggestion> {
         let file_name = entry.file_name();
         let name_str = file_name.to_string_lossy();
 
-        // Skip hidden files unless prefix starts with '.'
         if name_str.starts_with('.') && !show_hidden {
             continue;
         }
 
-        // Filter by prefix (case-insensitive)
         if !prefix.is_empty() && !name_str.to_lowercase().starts_with(&prefix_lower) {
             continue;
         }
@@ -118,25 +100,20 @@ pub fn scan_path_suggestions(dir: &Path, prefix: &str) -> Vec<PathSuggestion> {
 
         let suggestion = PathSuggestion::new(name_str.to_string(), path, is_dir);
 
-        // Only include .sol files and directories
         if suggestion.is_sol_file {
             sol_files.push(suggestion);
         } else if suggestion.is_directory {
             directories.push(suggestion);
         }
-        // Skip all other file types
 
-        // Limit total suggestions for performance
         if sol_files.len() + directories.len() >= 50 {
             break;
         }
     }
 
-    // Sort each category alphabetically
     sol_files.sort_by(|a, b| a.display_name.cmp(&b.display_name));
     directories.sort_by(|a, b| a.display_name.cmp(&b.display_name));
 
-    // Combine in priority order: .sol files → directories
     suggestions.extend(sol_files);
     suggestions.extend(directories);
 
@@ -149,7 +126,6 @@ pub struct AutocompleteInput<'a> {
     placeholder: Option<&'a str>,
     error: Option<&'a str>,
     focused: bool,
-    cursor_position: usize,
     suggestions: &'a [PathSuggestion],
     selected_suggestion: usize,
     show_suggestions: bool,
@@ -163,7 +139,6 @@ impl<'a> AutocompleteInput<'a> {
             placeholder: None,
             error: None,
             focused: false,
-            cursor_position: value.len(),
             suggestions: &[],
             selected_suggestion: 0,
             show_suggestions: false,
@@ -205,88 +180,25 @@ impl Widget for AutocompleteInput<'_> {
 
         let mut current_y = area.y;
 
-        // Render input field (same as InputField)
-        let label_style = if self.focused {
-            Style::default()
-                .fg(Color::Cyan)
-                .add_modifier(Modifier::BOLD)
-        } else {
-            Style::default().fg(Color::White)
-        };
+        let mut input = InputField::new(self.label, self.value)
+            .focused(self.focused)
+            .cursor_position(self.value.len());
 
-        let label_span = Span::styled(format!("{}: ", self.label), label_style);
-
-        // Value or placeholder
-        let (value_content, value_style) = if self.value.is_empty() {
-            (
-                self.placeholder.unwrap_or("").to_string(),
-                Style::default().fg(Color::DarkGray),
-            )
-        } else {
-            (self.value.to_string(), Style::default().fg(Color::White))
-        };
-
-        let mut spans = vec![label_span];
-
-        if self.focused && !self.value.is_empty() {
-            // Show cursor in the middle of text
-            let (before, after) = self
-                .value
-                .split_at(self.cursor_position.min(self.value.len()));
-            spans.push(Span::styled(before, value_style));
-            if after.is_empty() {
-                spans.push(Span::styled(
-                    "█",
-                    Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::SLOW_BLINK),
-                ));
-            } else {
-                let mut chars = after.chars();
-                if let Some(cursor_char) = chars.next() {
-                    spans.push(Span::styled(
-                        cursor_char.to_string(),
-                        Style::default().fg(Color::Black).bg(Color::Cyan),
-                    ));
-                    let rest: String = chars.collect();
-                    if !rest.is_empty() {
-                        spans.push(Span::styled(rest, value_style));
-                    }
-                }
-            }
-        } else if self.focused && self.value.is_empty() {
-            spans.push(Span::styled(value_content, value_style));
-            spans.push(Span::styled(
-                "█",
-                Style::default()
-                    .fg(Color::Cyan)
-                    .add_modifier(Modifier::SLOW_BLINK),
-            ));
-        } else {
-            spans.push(Span::styled(value_content, value_style));
+        if let Some(placeholder) = self.placeholder {
+            input = input.placeholder(placeholder);
         }
-
-        let line = Line::from(spans);
-        buf.set_line(area.x, current_y, &line, area.width);
-        current_y += 1;
-
-        // Error message on second line if present
         if let Some(error) = self.error {
-            if current_y < area.y + area.height {
-                let error_line = Line::from(Span::styled(
-                    format!("  └ {error}"),
-                    Style::default().fg(Color::Red),
-                ));
-                buf.set_line(area.x, current_y, &error_line, area.width);
-                current_y += 1;
-            }
+            input = input.error(Some(error));
         }
 
-        // Show preview of selected path
+        let input_height = if self.error.is_some() { 2 } else { 1 };
+        let input_area = Rect::new(area.x, current_y, area.width, input_height);
+        input.render(input_area, buf);
+        current_y += input_height;
+
         if self.show_suggestions && self.focused && !self.suggestions.is_empty() {
             if let Some(selected) = self.suggestions.get(self.selected_suggestion) {
                 if current_y < area.y + area.height {
-                    // Show the canonicalized (fully resolved) path
                     let resolved_path = selected
                         .full_path
                         .canonicalize()
@@ -299,8 +211,8 @@ impl Widget for AutocompleteInput<'_> {
                     };
 
                     let preview_line = Line::from(vec![
-                        Span::styled("  → ", Style::default().fg(Color::DarkGray)),
-                        Span::styled(preview_path, Style::default().fg(Color::Yellow)),
+                        Span::styled("  → ", theme::muted_style()),
+                        Span::styled(preview_path, Style::default().fg(theme::ACCENT)),
                     ]);
                     buf.set_line(area.x, current_y, &preview_line, area.width);
                     current_y += 1;
@@ -308,19 +220,16 @@ impl Widget for AutocompleteInput<'_> {
             }
         }
 
-        // Render suggestions dropdown if visible
         if self.show_suggestions && self.focused && current_y < area.y + area.height {
-            // Add separator
             let separator = Line::from(Span::styled(
                 "─".repeat(area.width as usize),
-                Style::default().fg(Color::DarkGray),
+                theme::separator_style(),
             ));
             if current_y < area.y + area.height {
                 buf.set_line(area.x, current_y, &separator, area.width);
                 current_y += 1;
             }
 
-            // Render up to 8 suggestions
             let max_suggestions = 8;
             let visible_suggestions = self.suggestions.iter().take(max_suggestions);
 
@@ -331,30 +240,14 @@ impl Widget for AutocompleteInput<'_> {
 
                 let is_selected = idx == self.selected_suggestion;
 
-                // Determine style based on file type and selection
                 let (name_style, prefix_style) = if is_selected {
-                    (
-                        Style::default()
-                            .bg(Color::Cyan)
-                            .fg(Color::Black)
-                            .add_modifier(Modifier::BOLD),
-                        Style::default().bg(Color::Cyan).fg(Color::Black),
-                    )
+                    (theme::selected_style(), theme::selected_style())
                 } else if suggestion.is_sol_file {
-                    (
-                        Style::default().fg(Color::Cyan),
-                        Style::default().fg(Color::DarkGray),
-                    )
+                    (Style::default().fg(theme::PRIMARY), theme::muted_style())
                 } else if suggestion.is_directory {
-                    (
-                        Style::default().fg(Color::DarkGray),
-                        Style::default().fg(Color::DarkGray),
-                    )
+                    (theme::muted_style(), theme::muted_style())
                 } else {
-                    (
-                        Style::default().fg(Color::White),
-                        Style::default().fg(Color::DarkGray),
-                    )
+                    (Style::default().fg(theme::TEXT), theme::muted_style())
                 };
 
                 let mut line_spans = vec![Span::styled(
@@ -362,7 +255,6 @@ impl Widget for AutocompleteInput<'_> {
                     prefix_style,
                 )];
 
-                // Add directory suffix if applicable
                 let display_text = if suggestion.is_directory {
                     format!("{}/", suggestion.display_name)
                 } else {

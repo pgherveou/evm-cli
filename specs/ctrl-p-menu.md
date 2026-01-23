@@ -15,12 +15,11 @@ The Command Palette is a centered overlay menu providing quick access to applica
                │> Edit config - Open config file in $EDITOR  │
                │  Clear output - Clear the output area       │
                │  Open Logs - Open application log file      │
+               │  Clear Logs - Delete the application log    │
                │  Reconnect - Retry connection to RPC server │
+               │  Toggle Debug [OFF] - Toggle debug panel    │
                │  Reset - Clear all saved state              │
                │  Quit - Exit the application [Ctrl+C]       │
-               │                                             │
-               │                                             │
-               │                                             │
                └─────────────────────────────────────────────┘
 ```
 
@@ -57,8 +56,11 @@ Commands available in the palette (in order):
 | 1 | Edit config | (none) | Open `.evm-cli/config.json` in `$EDITOR` |
 | 2 | Clear output | (none) | Clear all cards from output panel |
 | 3 | Open Logs | (none) | Open `~/.evm-cli/output.log` in `$EDITOR` |
-| 5 | Reset | (none) | Clear all deployment addresses from config (keeps RPC/account settings) |
-| 6 | Quit | Ctrl+C | Exit the application |
+| 4 | Clear Logs | (none) | Delete the application log file |
+| 5 | Reconnect | (none) | Retry connection to RPC server |
+| 6 | Toggle Debug | (none) | Toggle debug panel visibility (shows key/action/focus info) |
+| 7 | Reset | (none) | Clear all deployment addresses from config (keeps RPC/account settings) |
+| 8 | Quit | Ctrl+C | Exit the application |
 
 
 ## Command Execution
@@ -159,4 +161,41 @@ User presses down arrow:
 - `Enter` executes command and closes
 - `Tab` alternative close method
 - On close: Previous focus (sidebar/output) restored
+
+---
+
+## Acceptance Criteria
+
+### Opening
+- **AC-CP-1**: Ctrl+P opens command palette from anywhere
+- **AC-CP-2**: Search input automatically focused
+- **AC-CP-3**: First command pre-selected
+
+### Display
+- **AC-CP-4**: Palette centered on screen
+- **AC-CP-5**: All 7 commands visible (Edit config, Clear output, Open Logs, Clear Logs, Reconnect, Reset, Quit)
+- **AC-CP-6**: Selected command highlighted with cyan background
+
+### Search
+- **AC-CP-7**: Typing filters commands in real-time
+- **AC-CP-8**: Filter is case-insensitive
+- **AC-CP-9**: Empty results show no commands (blank list)
+- **AC-CP-10**: Backspace removes search characters
+
+### Navigation
+- **AC-CP-11**: j/↓ moves to next command
+- **AC-CP-12**: k/↑ moves to previous command
+- **AC-CP-13**: Navigation wraps at boundaries
+- **AC-CP-14**: Enter executes selected command
+
+### Closing
+- **AC-CP-15**: Escape closes palette without action
+- **AC-CP-16**: Focus returns to previous panel after close
+
+### Commands
+- **AC-CP-17**: "Edit config" opens config.json in $EDITOR
+- **AC-CP-18**: "Clear output" removes all output cards
+- **AC-CP-19**: "Open Logs" opens log file in $EDITOR
+- **AC-CP-20**: "Reset" clears all deployments from config
+- **AC-CP-21**: "Quit" exits application
 

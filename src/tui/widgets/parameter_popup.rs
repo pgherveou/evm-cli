@@ -1,12 +1,13 @@
 use crate::compile::BytecodeTarget;
 use crate::tui::layout::centered_popup;
 use crate::tui::state::FieldState;
-use crate::tui::widgets::InputField;
+use crate::tui::theme;
+use crate::tui::widgets::{InputField, KeyboardHints};
 use alloy::json_abi::Param;
 use ratatui::{
     buffer::Buffer,
     layout::Rect,
-    style::{Color, Modifier, Style},
+    style::Style,
     text::{Line, Span},
     widgets::{Block, Borders, Clear, Widget},
 };
@@ -43,20 +44,17 @@ impl<'a> ParameterPopup<'a> {
 
 impl Widget for ParameterPopup<'_> {
     fn render(self, area: Rect, buf: &mut Buffer) {
-        // Calculate popup height based on number of fields (2 lines per field + header + footer)
-        // Add extra space if bytecode target selector is shown
         let extra_height = if self.bytecode_target.is_some() { 2 } else { 0 };
         let height_percent =
             ((self.fields.len() * 3 + 6 + extra_height) as u16 * 100 / area.height).min(80);
         let popup_area = centered_popup(area, 70, height_percent.max(30));
 
-        // Clear the popup area
         Clear.render(popup_area, buf);
 
         let title = format!(" {} - Enter Parameters ", self.method_name);
         let block = Block::default()
             .borders(Borders::ALL)
-            .border_style(Style::default().fg(Color::Cyan))
+            .border_style(theme::border_style())
             .title(title);
 
         let inner = block.inner(popup_area);
@@ -64,32 +62,23 @@ impl Widget for ParameterPopup<'_> {
 
         let mut y = inner.y + 1;
 
-        // Render bytecode target selector if this is a deploy operation
         if let Some(target) = self.bytecode_target {
-            let hint_style = Style::default().fg(Color::DarkGray);
-            let selected_style = Style::default()
-                .fg(Color::Black)
-                .bg(Color::Cyan)
-                .add_modifier(Modifier::BOLD);
-            let unselected_style = Style::default().fg(Color::DarkGray);
-
             let (evm_style, pvm_style) = match target {
-                BytecodeTarget::Evm => (selected_style, unselected_style),
-                BytecodeTarget::Pvm => (unselected_style, selected_style),
+                BytecodeTarget::Evm => (theme::selected_style(), theme::muted_style()),
+                BytecodeTarget::Pvm => (theme::muted_style(), theme::selected_style()),
             };
 
             let target_line = Line::from(vec![
-                Span::styled("Target: ", Style::default().fg(Color::Cyan)),
+                Span::styled("Target: ", Style::default().fg(theme::PRIMARY)),
                 Span::styled(" EVM ", evm_style),
                 Span::styled(" ", Style::default()),
                 Span::styled(" PVM ", pvm_style),
-                Span::styled("  (←/→ to switch)", hint_style),
+                Span::styled("  (←/→ to switch)", theme::hint_desc_style()),
             ]);
             buf.set_line(inner.x + 1, y, &target_line, inner.width.saturating_sub(2));
             y += 2;
         }
 
-        // Render each field
         for (i, (param, field)) in self.params.iter().zip(self.fields.iter()).enumerate() {
             if y >= inner.y + inner.height.saturating_sub(2) {
                 break;
@@ -108,41 +97,28 @@ impl Widget for ParameterPopup<'_> {
                 .focused(is_focused)
                 .cursor_position(field.value.len());
 
-            // Render input field (takes 2 lines if error present)
             let field_height = if field.error.is_some() { 2 } else { 1 };
             let field_area = Rect::new(inner.x + 1, y, inner.width.saturating_sub(2), field_height);
             input.render(field_area, buf);
 
-            y += field_height + 1; // spacing between fields
+            y += field_height + 1;
         }
 
-        // Render footer with hints
         let footer_y = inner.y + inner.height.saturating_sub(1);
-        let hint_style = Style::default().fg(Color::DarkGray);
-        let mut footer_spans = vec![
-            Span::styled("Tab", Style::default().fg(Color::Yellow)),
-            Span::styled(": next  ", hint_style),
-            Span::styled("Shift+Tab", Style::default().fg(Color::Yellow)),
-            Span::styled(": prev  ", hint_style),
-            Span::styled("Enter", Style::default().fg(Color::Yellow)),
-            Span::styled(": submit  ", hint_style),
-            Span::styled("Esc", Style::default().fg(Color::Yellow)),
-            Span::styled(": cancel", hint_style),
+        let mut hints = vec![
+            ("Tab", "next"),
+            ("Shift+Tab", "prev"),
+            ("Enter", "submit"),
+            ("Esc", "cancel"),
         ];
 
         if self.bytecode_target.is_some() {
-            footer_spans.insert(0, Span::styled("  ", hint_style));
-            footer_spans.insert(0, Span::styled(": target", hint_style));
-            footer_spans.insert(0, Span::styled("←/→", Style::default().fg(Color::Yellow)));
+            hints.insert(0, ("←/→", "target"));
         }
 
-        let footer = Line::from(footer_spans);
-        buf.set_line(
-            inner.x + 1,
-            footer_y,
-            &footer,
-            inner.width.saturating_sub(2),
-        );
+        let keyboard_hints = KeyboardHints::new(hints);
+        let hints_area = Rect::new(inner.x + 1, footer_y, inner.width.saturating_sub(2), 1);
+        keyboard_hints.render(hints_area, buf);
     }
 }
 

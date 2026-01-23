@@ -1,0 +1,387 @@
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: - │ Action: - │ Sel: 0 │ Cards: 1 │ C
+┌ Contracts ───────────┐┌ Output ───────────────────────────────────────────────┐
+│                      ││                                                       │
+│ + Load new contract..││ ┃ Connection                                          │
+│ ▸ Demo               ││ ┃   Disconnected                                      │
+│                      ││ ┃   Account:                                          │
+│                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
+│                      ││ ┃   Error: error sending request for url              │
+│                      ││ (http://localhost:8545/)                              │
+│                      ││ ┃                                                     │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+└──────────────────────┘└───────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: - │ Action: - │ Sel: 0 │ Cards: 1 │ C
+┌ Contracts ───────────┐┌ Output ───────────────────────────────────────────────┐
+│                      ││                                                       │
+│ + Load new contract..││ ┃ Connection                                          │
+│ ▸ Demo               ││ ┃   Disconnected                                      │
+│                      ││ ┃   Account:                                          │
+│                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
+│                      ││ ┃   Error: error sending request for url              │
+│                      ││ (http://localhost:8545/)                              │
+│                      ││ ┃                                                     │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+└──────────────────────┘└───────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: 'j' │ Action: Move down │ Sel: 1 │ Ca
+┌ Contracts ───────────┐┌ Output ───────────────────────────────────────────────┐
+│                      ││                                                       │
+│ + Load new contract..││ ┃ Connection                                          │
+│ ▸ Demo               ││ ┃   Disconnected                                      │
+│                      ││ ┃   Account:                                          │
+│                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
+│                      ││ ┃   Error: error sending request for url              │
+│                      ││ (http://localhost:8545/)                              │
+│                      ││ ┃                                                     │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+└──────────────────────┘└───────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: 'j' │ Action: Move down │ Sel: 1 │ Ca
+┌ Contracts ───────────┐┌ Output ───────────────────────────────────────────────┐
+│                      ││                                                       │
+│ + Load new contract..││ ┃ Connection                                          │
+│ ▸ Demo               ││ ┃   Disconnected                                      │
+│                      ││ ┃   Account:                                          │
+│                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
+│                      ││ ┃   Error: error sending request for url              │
+│                      ││ (http://localhost:8545/)                              │
+│                      ││ ┃                                                     │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+└──────────────────────┘└───────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: 'k' │ Action: Move up │ Sel: 0 │ Card
+┌ Contracts ───────────┐┌ Output ───────────────────────────────────────────────┐
+│                      ││                                                       │
+│ + Load new contract..││ ┃ Connection                                          │
+│ ▸ Demo               ││ ┃   Disconnected                                      │
+│                      ││ ┃   Account:                                          │
+│                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
+│                      ││ ┃   Error: error sending request for url              │
+│                      ││ (http://localhost:8545/)                              │
+│                      ││ ┃                                                     │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+└──────────────────────┘└───────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: 'k' │ Action: Move up │ Sel: 0 │ Card
+┌ Contracts ───────────┐┌ Output ───────────────────────────────────────────────┐
+│                      ││                                                       │
+│ + Load new contract..││ ┃ Connection                                          │
+│ ▸ Demo               ││ ┃   Disconnected                                      │
+│                      ││ ┃   Account:                                          │
+│                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
+│                      ││ ┃   Error: error sending request for url              │
+│                      ││ (http://localhost:8545/)                              │
+│                      ││ ┃                                                     │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+└──────────────────────┘└───────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Ctrl+'p' │ Action: O
+┌ Contracts ───────────┐┌ Output ───────────────────────────────────────────────┐
+│                      ││                                                       │
+│ + Load new contract..││ ┃ Connection                                          │
+│ ▸ Demo               ││ ┃   Disconnected                                      │
+│               ┌ Commands (Ctrl+P) ────────────────────────────┐               │
+│               │> █                                            │cac            │
+│               │───────────────────────────────────────────────│l              │
+│               │> Edit config - Open config file in $EDITOR    │               │
+│               │  Clear output - Clear                                         │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+└──────────────────────┘└───────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Ctrl+'p' │ Action: O
+┌ Contracts ───────────┐┌ Output ───────────────────────────────────────────────┐
+│                      ││                                                       │
+│ + Load new contract..││ ┃ Connection                                          │
+│ ▸ Demo               ││ ┃   Disconnected                                      │
+│               ┌ Commands (Ctrl+P) ────────────────────────────┐               │
+│               │> █                                            │cac            │
+│               │───────────────────────────────────────────────│l              │
+│               │> Edit config - Open config file in $EDITOR    │               │
+│               │  Clear output - Clear the output area         │               │
+│               │  Open Logs - Open application log file        │               │
+│               │  Clear Logs - Delete the application log file │               │
+│               │  Reconnect - Retry connection to RPC server   │               │
+│               └───────────────────────────────────────────────┘               │
+│                      ││                                                       │
+└──────────────────────┘└───────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Ctrl+'p' │ Action: O
+┌ Contracts ───────────┐┌ Output ───────────────────────────────────────────────┐
+│                      ││                                                       │
+│ + Load new contract..││ ┃ Connection                                          │
+│ ▸ Demo               ││ ┃   Disconnected                                      │
+│               ┌ Commands (Ctrl+P) ────────────────────────────┐               │
+│               │> █                                            │cac            │
+│               │───────────────────────────────────────────────│l              │
+│               │> Edit config - Open config file in $EDITOR    │               │
+│               │  Clear output - Clear the output area         │               │
+│               │  Open Logs - Open application log file        │               │
+│               │  Clear Logs - Delete the application log file │               │
+│               │  Reconnect - Retry connection to RPC server   │               │
+│               └───────────────────────────────────────────────┘               │
+│                      ││                                                       │
+└──────────────────────┘└───────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Esc │ Action: - │ Sel: 0 │ Cards: 1 │
+┌ Contracts ───────────┐┌ Output ───────────────────────────────────────────────┐
+│                      ││                                                       │
+│ + Load new contract..││ ┃ Connection                                          │
+│ ▸ Demo               ││ ┃   Disconnected                                      │
+│                      ││ ┃   Account:                                          │
+│                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
+│                      ││ ┃   Error: error sending request for url              │
+│                      ││ (http://localhost:8545/)                              │
+│                      ││ ┃                                                     │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+└──────────────────────┘└───────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+
+────────────────────────────────────────────────────────────────────────────────
+ DEBUG  Focus: Sidebar │ Popup: None │ Key: Esc │ Action: - │ Sel: 0 │ Cards: 1 │
+┌ Contracts ───────────┐┌ Output ───────────────────────────────────────────────┐
+│                      ││                                                       │
+│ + Load new contract..││ ┃ Connection                                          │
+│ ▸ Demo               ││ ┃   Disconnected                                      │
+│                      ││ ┃   Account:                                          │
+│                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
+│                      ││ ┃   Error: error sending request for url              │
+│                      ││ (http://localhost:8545/)                              │
+│                      ││ ┃                                                     │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+│                      ││                                                       │
+└──────────────────────┘└───────────────────────────────────────────────────────┘
+○ Disconnected | Chain: N/A | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+
+────────────────────────────────────────────────────────────────────────────────
+> cd /home/pg/github/evm-cli && EVM_CLI_DEBUG=1 cargo run --release 2>/dev/null
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+────────────────────────────────────────────────────────────────────────────────
