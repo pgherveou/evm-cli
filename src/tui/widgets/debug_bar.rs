@@ -85,14 +85,6 @@ impl Widget for DebugBarWidget<'_> {
             value_style,
         ));
 
-        // Card count
-        spans.push(Span::styled(" │ ", separator_style));
-        spans.push(Span::styled("Cards: ", separator_style));
-        spans.push(Span::styled(
-            format!("{}", self.state.cards.cards.len()),
-            value_style,
-        ));
-
         let line = Line::from(spans);
         buf.set_line(area.x, area.y, &line, area.width);
     }
