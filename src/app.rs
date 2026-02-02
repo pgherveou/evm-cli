@@ -1872,9 +1872,7 @@ impl<P: Provider + Clone> App<P> {
                 Err(e) => {
                     let error_msg = format!("Compilation failed: {e}");
                     log::error!("{error_msg}");
-                    self.state.output.push_error(error_msg);
-                    self.state.output.push_separator();
-                    self.state.output.scroll_to_bottom();
+                    self.push_error_and_scroll(error_msg);
                     return;
                 }
             }
@@ -1901,10 +1899,7 @@ impl<P: Provider + Clone> App<P> {
             Ok(p) => p,
             Err(e) => {
                 let error_msg = format!("Deployment failed: {e}");
-                self.state.output.push_error(&error_msg);
-                self.state.output.push_separator();
-                self.state.output.scroll_to_bottom();
-                // Add a log card so the error is visible in the card view
+                self.push_error_and_scroll(&error_msg);
                 self.add_log_card(format!("Failed: Deploy {contract_name}\n\n{error_msg}"));
                 return;
             }
@@ -1918,10 +1913,7 @@ impl<P: Provider + Clone> App<P> {
             Ok(r) => r,
             Err(e) => {
                 let error_msg = format!("Failed to get receipt: {e}");
-                self.state.output.push_error(&error_msg);
-                self.state.output.push_separator();
-                self.state.output.scroll_to_bottom();
-                // Add a log card so the error is visible in the card view
+                self.push_error_and_scroll(&error_msg);
                 self.add_log_card(format!("Failed: Deploy {contract_name} (tx: {tx_hash:?})\n\n{error_msg}"));
                 return;
             }
@@ -1931,10 +1923,7 @@ impl<P: Provider + Clone> App<P> {
             Some(a) => a,
             None => {
                 let error_msg = "No contract address in receipt";
-                self.state.output.push_error(error_msg);
-                self.state.output.push_separator();
-                self.state.output.scroll_to_bottom();
-                // Add a log card so the error is visible in the card view
+                self.push_error_and_scroll(error_msg);
                 self.add_log_card(format!("Failed: Deploy {contract_name} (tx: {tx_hash:?})\n\n{error_msg}"));
                 return;
             }
@@ -1961,9 +1950,7 @@ impl<P: Provider + Clone> App<P> {
 
         if !receipt.status() {
             let error_display = error_message.as_deref().unwrap_or("Unknown reason");
-            self.state.output.push_error(format!("Deployment reverted: {error_display}"));
-            self.state.output.push_separator();
-            self.state.output.scroll_to_bottom();
+            self.push_error_and_scroll(format!("Deployment reverted: {error_display}"));
             return;
         }
 
@@ -2024,9 +2011,7 @@ impl<P: Provider + Clone> App<P> {
         let calldata = match func.abi_encode_input(&args) {
             Ok(data) => data,
             Err(e) => {
-                self.state.output.push_error(format!("Failed to encode function call: {e}"));
-                self.state.output.push_separator();
-                self.state.output.scroll_to_bottom();
+                self.push_error_and_scroll(format!("Failed to encode function call: {e}"));
                 return;
             }
         };
@@ -2039,9 +2024,7 @@ impl<P: Provider + Clone> App<P> {
             let result = match self.provider.call(tx).await {
                 Ok(r) => r,
                 Err(e) => {
-                    self.state.output.push_error(format!("Call to {contract_name} {address:?} failed: {e}"));
-                    self.state.output.push_separator();
-                    self.state.output.scroll_to_bottom();
+                    self.push_error_and_scroll(format!("Call to {contract_name} {address:?} failed: {e}"));
                     return;
                 }
             };
@@ -2049,9 +2032,7 @@ impl<P: Provider + Clone> App<P> {
             let decoded = match func.abi_decode_output(&result) {
                 Ok(d) => d,
                 Err(e) => {
-                    self.state.output.push_error(format!("Failed to decode return value: {e}"));
-                    self.state.output.push_separator();
-                    self.state.output.scroll_to_bottom();
+                    self.push_error_and_scroll(format!("Failed to decode return value: {e}"));
                     return;
                 }
             };
@@ -2094,10 +2075,7 @@ impl<P: Provider + Clone> App<P> {
                 Ok(p) => p,
                 Err(e) => {
                     let error_msg = format!("Transaction failed: {e}");
-                    self.state.output.push_error(&error_msg);
-                    self.state.output.push_separator();
-                    self.state.output.scroll_to_bottom();
-                    // Add a log card so the error is visible in the card view
+                    self.push_error_and_scroll(&error_msg);
                     self.add_log_card(format!("Failed: {} @ {address:?}\n\n{error_msg}", func.name));
                     return;
                 }
@@ -2115,10 +2093,7 @@ impl<P: Provider + Clone> App<P> {
                 Ok(r) => r,
                 Err(e) => {
                     let error_msg = format!("Failed to get receipt: {e}");
-                    self.state.output.push_error(&error_msg);
-                    self.state.output.push_separator();
-                    self.state.output.scroll_to_bottom();
-                    // Add a log card so the error is visible in the card view
+                    self.push_error_and_scroll(&error_msg);
                     self.add_log_card(format!("Failed: {} @ {address:?} (tx: {tx_hash:?})\n\n{error_msg}", func.name));
                     return;
                 }
@@ -2864,6 +2839,12 @@ impl<P: Provider + Clone> App<P> {
         self.state.cards.selected_index = self.state.cards.cards.len() - 1;
         let viewport_height = self.state.output_area_height as usize;
         self.state.cards.scroll_offset = self.state.cards.calculate_scroll_offset(viewport_height);
+    }
+
+    fn push_error_and_scroll(&mut self, msg: impl Into<String>) {
+        self.state.output.push_error(msg);
+        self.state.output.push_separator();
+        self.state.output.scroll_to_bottom();
     }
 
     #[allow(clippy::too_many_arguments)]
