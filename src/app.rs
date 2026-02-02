@@ -29,7 +29,7 @@ use crate::tui::widgets::{
     AutocompleteInput, CommandPalette, ContractTree, DebugBarWidget, OutputArea, ParameterPopup,
     StatusBarWidget, parse_path_for_autocomplete, scan_path_suggestions,
 };
-use crate::tui::widgets::command_palette::default_commands;
+use crate::tui::widgets::command_palette::{CommandId, default_commands};
 use crate::tui::widgets::contract_tree::TreeNode;
 use crate::tui::InputEvent;
 
@@ -1112,19 +1112,18 @@ impl<P: Provider + Clone> App<P> {
                     let query_lower = query.to_lowercase();
                     let filtered: Vec<_> = commands
                         .iter()
-                        .enumerate()
-                        .filter(|(_, cmd)| {
+                        .filter(|cmd| {
                             query_lower.is_empty()
                                 || cmd.name.to_lowercase().contains(&query_lower)
                                 || cmd.description.to_lowercase().contains(&query_lower)
                         })
                         .collect();
 
-                    if let Some((idx, _)) = filtered.get(*selected) {
-                        let action = *idx;
+                    if let Some(cmd) = filtered.get(*selected) {
+                        let command_id = cmd.id;
                         self.state.popup = PopupState::None;
                         self.state.focus = Focus::Sidebar;
-                        self.execute_command(action).await?;
+                        self.execute_command(command_id).await?;
                     }
                 }
                 KeyCode::Up => {
@@ -1552,19 +1551,17 @@ impl<P: Provider + Clone> App<P> {
         Ok(())
     }
 
-    async fn execute_command(&mut self, command_idx: usize) -> Result<()> {
-        let command_names = ["Edit config", "Clear output", "Open Logs", "Clear Logs", "Reconnect", "Toggle Debug", "Reset", "Quit"];
-        let cmd_name = command_names.get(command_idx).unwrap_or(&"Unknown");
-        log::info!("[COMMAND] execute_command: {} (idx={})", cmd_name, command_idx);
-        match command_idx {
-            0 => {
+    async fn execute_command(&mut self, command: CommandId) -> Result<()> {
+        log::info!("[COMMAND] execute_command: {:?}", command);
+        match command {
+            CommandId::EditConfig => {
                 self.edit_config_requested = true;
             }
-            1 => {
+            CommandId::ClearOutput => {
                 self.state.output.clear();
                 self.state.cards.clear();
             }
-            2 => {
+            CommandId::OpenLogs => {
                 if let Some(home) = std::env::var_os("HOME") {
                     let log_path = std::path::PathBuf::from(home).join(".evm-cli/output.log");
                     if log_path.exists() {
@@ -1578,7 +1575,7 @@ impl<P: Provider + Clone> App<P> {
                     }
                 }
             }
-            3 => {
+            CommandId::ClearLogs => {
                 if let Some(home) = std::env::var_os("HOME") {
                     let log_path = std::path::PathBuf::from(home).join(".evm-cli/output.log");
                     if log_path.exists() {
@@ -1592,21 +1589,20 @@ impl<P: Provider + Clone> App<P> {
                     }
                 }
             }
-            4 => {
+            CommandId::Reconnect => {
                 self.try_connect().await;
             }
-            5 => {
+            CommandId::ToggleDebug => {
                 self.state.debug_mode = !self.state.debug_mode;
                 let status = if self.state.debug_mode { "enabled" } else { "disabled" };
                 self.state.last_action = Some(format!("Debug {}", status));
             }
-            6 => {
+            CommandId::Reset => {
                 self.clear_state();
             }
-            7 => {
+            CommandId::Quit => {
                 self.running = false;
             }
-            _ => {}
         }
         Ok(())
     }

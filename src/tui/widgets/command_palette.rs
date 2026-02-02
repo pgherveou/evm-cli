@@ -8,16 +8,30 @@ use ratatui::{
     widgets::Widget,
 };
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum CommandId {
+    EditConfig,
+    ClearOutput,
+    OpenLogs,
+    ClearLogs,
+    Reconnect,
+    ToggleDebug,
+    Reset,
+    Quit,
+}
+
 #[derive(Debug, Clone)]
 pub struct Command {
+    pub id: CommandId,
     pub name: String,
     pub description: String,
     pub shortcut: Option<String>,
 }
 
 impl Command {
-    pub fn new(name: impl Into<String>, description: impl Into<String>) -> Self {
+    pub fn new(id: CommandId, name: impl Into<String>, description: impl Into<String>) -> Self {
         Self {
+            id,
             name: name.into(),
             description: description.into(),
             shortcut: None,
@@ -37,14 +51,38 @@ pub fn default_commands(debug_mode: bool) -> Vec<Command> {
         "Toggle Debug [OFF]"
     };
     vec![
-        Command::new("Edit config", "Open config file in $EDITOR"),
-        Command::new("Clear output", "Clear the output area"),
-        Command::new("Open Logs", "Open application log file"),
-        Command::new("Clear Logs", "Delete the application log file"),
-        Command::new("Reconnect", "Retry connection to RPC server"),
-        Command::new(debug_label, "Toggle debug panel visibility"),
-        Command::new("Reset", "Clear all saved state"),
-        Command::new("Quit", "Exit the application").with_shortcut("Ctrl+C"),
+        Command::new(
+            CommandId::EditConfig,
+            "Edit config",
+            "Open config file in $EDITOR",
+        ),
+        Command::new(
+            CommandId::ClearOutput,
+            "Clear output",
+            "Clear the output area",
+        ),
+        Command::new(
+            CommandId::OpenLogs,
+            "Open Logs",
+            "Open application log file",
+        ),
+        Command::new(
+            CommandId::ClearLogs,
+            "Clear Logs",
+            "Delete the application log file",
+        ),
+        Command::new(
+            CommandId::Reconnect,
+            "Reconnect",
+            "Retry connection to RPC server",
+        ),
+        Command::new(
+            CommandId::ToggleDebug,
+            debug_label,
+            "Toggle debug panel visibility",
+        ),
+        Command::new(CommandId::Reset, "Reset", "Clear all saved state"),
+        Command::new(CommandId::Quit, "Quit", "Exit the application").with_shortcut("Ctrl+C"),
     ]
 }
 
