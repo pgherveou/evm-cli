@@ -2859,6 +2859,13 @@ impl<P: Provider + Clone> App<P> {
         Ok(result)
     }
 
+    fn add_card(&mut self, card: crate::cards::Card) {
+        self.state.cards.cards.push(card);
+        self.state.cards.selected_index = self.state.cards.cards.len() - 1;
+        let viewport_height = self.state.output_area_height as usize;
+        self.state.cards.scroll_offset = self.state.cards.calculate_scroll_offset(viewport_height);
+    }
+
     #[allow(clippy::too_many_arguments)]
     fn add_transaction_card(
         &mut self,
@@ -2870,7 +2877,7 @@ impl<P: Provider + Clone> App<P> {
         contract_address: Option<Address>,
         error_message: Option<String>,
     ) {
-        let card = crate::cards::Card::Transaction {
+        self.add_card(crate::cards::Card::Transaction {
             hash,
             status,
             function_name: function,
@@ -2878,35 +2885,20 @@ impl<P: Provider + Clone> App<P> {
             contract_name,
             contract_address,
             error_message,
-        };
-        self.state.cards.cards.push(card);
-        self.state.cards.selected_index = self.state.cards.cards.len() - 1;
-        // Auto-scroll to show new card
-        let viewport_height = self.state.output_area_height as usize;
-        self.state.cards.scroll_offset = self.state.cards.calculate_scroll_offset(viewport_height);
+        });
     }
 
     fn add_call_card(&mut self, from: Address, to: Address, function: String, result: String) {
-        let card = crate::cards::Card::Call {
+        self.add_card(crate::cards::Card::Call {
             from,
             to,
             function_signature: function,
             result,
-        };
-        self.state.cards.cards.push(card);
-        self.state.cards.selected_index = self.state.cards.cards.len() - 1;
-        // Auto-scroll to show new card
-        let viewport_height = self.state.output_area_height as usize;
-        self.state.cards.scroll_offset = self.state.cards.calculate_scroll_offset(viewport_height);
+        });
     }
 
     pub fn add_log_card(&mut self, message: String) {
-        let card = crate::cards::Card::Log { message };
-        self.state.cards.cards.push(card);
-        self.state.cards.selected_index = self.state.cards.cards.len() - 1;
-        // Auto-scroll to show new card
-        let viewport_height = self.state.output_area_height as usize;
-        self.state.cards.scroll_offset = self.state.cards.calculate_scroll_offset(viewport_height);
+        self.add_card(crate::cards::Card::Log { message });
     }
 }
 
