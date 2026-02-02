@@ -85,9 +85,18 @@ impl Widget for StatusBarWidget<'_> {
         };
         spans.push(Span::raw(chain_text));
 
-        // Account (full address)
         if let Some(account) = self.state.account {
-            spans.push(Span::raw(format!("Account: {account:?} | ")));
+            let addr = format!("{account:?}");
+            let account_text = if area.width > 120 {
+                format!("Account: {addr} | ")
+            } else if area.width > 80 {
+                let truncated = format!("{}...{}", &addr[..6], &addr[addr.len() - 4..]);
+                format!("Account: {truncated} | ")
+            } else {
+                let truncated = format!("{}...", &addr[..6]);
+                format!("Acct: {truncated} | ")
+            };
+            spans.push(Span::raw(account_text));
         } else {
             spans.push(Span::raw("Account: N/A | "));
         }

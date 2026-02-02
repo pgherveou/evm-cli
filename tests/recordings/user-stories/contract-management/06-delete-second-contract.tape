@@ -1,18 +1,12 @@
-# User Story: Delete Second Contract (Bug Test)
+# User Story: Delete Second Contract
 #
-# BUG IDENTIFIED: When deleting the second contract, the deployed addresses
-# are removed but the contract itself remains in the sidebar.
+# As a developer with multiple contracts loaded, I want to delete any contract
+# and have it fully removed including all its deployed instances.
 #
-# As a developer, I expect that deleting any contract removes both the
-# contract and all its deployed instances completely.
-#
-# Expected Behavior:
-# - Deleting second contract should remove it entirely
-# - No orphaned entries should remain
-#
-# Actual Behavior (BUG):
-# - Deployed addresses are removed
-# - Contract entry remains in sidebar
+# Acceptance Criteria:
+# - AC-CM-20: Delete/Backspace removes item immediately (no confirmation)
+# - AC-CM-21: Deleting contract removes all its instances
+# - AC-CM-22: Deletion persists to config.json
 
 Output tests/recordings/user-stories/contract-management/06-delete-second-contract.ascii
 
@@ -56,8 +50,8 @@ Sleep 1.5s
 Wait+Screen /0x[0-9a-fA-F]/
 Screenshot tests/recordings/user-stories/contract-management/06-second-04-second-deployed.png
 
-# Step 5: Navigate to select the SECOND contract (Counter)
-Type "kkkkk"
+# Step 5: Navigate UP to select the Fibonacci contract (3 ups from address at index 12 to Fibonacci at index 9)
+Type "kkk"
 Sleep 0.3s
 Screenshot tests/recordings/user-stories/contract-management/06-second-05-second-selected.png
 

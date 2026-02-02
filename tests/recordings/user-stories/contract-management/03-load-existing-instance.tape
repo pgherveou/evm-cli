@@ -23,8 +23,8 @@ Sleep 1.5s
 Wait+Screen /0x[0-9a-fA-F]/
 Screenshot tests/recordings/user-stories/contract-management/03-existing-01-deployed.png
 
-# Step 2: Navigate to "Load existing instance"
-Type "jj"
+# Step 2: Navigate UP to "Load existing instance" (1 up from address at Sel:4 to Sel:3)
+Type "k"
 Sleep 0.3s
 Screenshot tests/recordings/user-stories/contract-management/03-existing-02-select.png
 

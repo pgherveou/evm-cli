@@ -2,13 +2,33 @@
 
 ## Overview
 
-**evm-cli** is an interactive terminal UI (TUI) for deploying and interacting with Solidity smart contracts on EVM-compatible blockchains. It provides a keyboard-driven interface for contract development workflows without leaving the terminal.
+**evm-cli** is an interactive terminal UI (TUI) for deploying and interacting with smart contracts on EVM-compatible blockchains. It supports both Solidity and Rust contracts (via cargo-pvm-contract), providing a keyboard-driven interface for contract development workflows without leaving the terminal.
 
 ## Target Users
 
 - Solidity developers working with local development nodes (Anvil, Hardhat)
+- Rust developers building PolkaVM smart contracts
 - Developers who prefer terminal-based workflows
 - Teams testing smart contracts during development
+
+## Supported Contract Types
+
+evm-cli supports two types of smart contracts:
+
+### Solidity Contracts
+- **Source:** `.sol` files
+- **Compilation:** `forge build` (Foundry)
+- **Targets:** EVM and PVM (via resolc)
+- **ABI:** Extracted from forge artifacts
+
+### Rust Contracts (cargo-pvm-contract)
+- **Source:** Cargo projects with `[[bin]]` targets
+- **Compilation:** `cargo build` with PolkaVM target
+- **Targets:** PVM only (EVM not supported)
+- **ABI:** Extracted from accompanying Solidity interface file
+- **Reference:** [cargo-pvm-contract](https://github.com/parity-tech/cargo-pvm-contract)
+
+Rust contracts require a Solidity interface file (`.sol`) in the project that defines the contract's public API. This interface is used to generate the ABI for deployment and interaction.
 
 ## Core User Journey
 
@@ -17,12 +37,20 @@
    └── App starts, connects to RPC (or gracefully shows disconnected state)
 
 2. Load Contract
-   └── Select "Load new contract" → File picker → Select .sol file
-   └── Contract compiles via forge → ABI extracted → Contract added to sidebar
+   └── Select "Load contract..." → Expands menu
+       ├── Solidity (.sol): File picker → Select .sol file
+       │   └── Contract compiles via forge → ABI extracted
+       └── Rust (Cargo project): Folder picker → Select project
+           └── Configure binary/interface/mode → Contract builds via cargo
+   └── Contract Loading card shows real-time progress
+   └── Contract added to sidebar on success
 
 3. Deploy Instance
-   └── Select "Deploy new instance" → Choose target (EVM/PVM)
-   └── Enter constructor parameters → Transaction sent → Instance appears in tree
+   └── Select "Deploy new instance"
+       ├── Solidity contracts: Choose target (EVM or PVM)
+       └── Rust contracts: PVM only (EVM not available)
+   └── Enter constructor parameters → Transaction sent
+   └── Instance appears in tree with all methods
 
 4. Interact with Contract
    └── Expand deployed instance → View methods
@@ -128,6 +156,18 @@
 
 - **Foundry**: Required for `forge build` (Solidity compilation)
 - **Local RPC**: Anvil, Hardhat, or any EVM-compatible node
+
+## Code Quality Requirements
+
+All code changes must pass the following checks with zero warnings:
+
+```bash
+cargo build    # Must produce no warnings
+cargo clippy   # Must produce no warnings
+cargo test     # All tests must pass
+```
+
+Use `#[allow(dead_code)]` sparingly and only for intentionally unused API surface that will be used in future iterations. Prefer removing truly unused code over suppressing warnings.
 
 ## Spec Index
 

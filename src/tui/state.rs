@@ -60,6 +60,24 @@ pub enum PopupState {
         options: Vec<CopyOption>,
         selected: usize,
     },
+    RustContractConfig {
+        project_path: PathBuf,
+        bin_targets: Vec<String>,
+        selected_bin: usize,
+        sol_files: Vec<PathBuf>,
+        selected_sol: usize,
+        release_mode: bool,
+        current_field: RustConfigField,
+    },
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default)]
+pub enum RustConfigField {
+    #[default]
+    BinTarget,
+    SolInterface,
+    BuildMode,
+    Buttons,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -72,7 +90,7 @@ pub enum ConnectionStatus {
 pub struct SidebarState {
     pub selected: usize,
     pub scroll_offset: usize,
-    /// Expanded contracts: (path, contract_name) pairs
+    pub load_menu_expanded: bool,
     pub expanded_contracts: std::collections::HashSet<(PathBuf, String)>,
     pub expanded_instances: std::collections::HashSet<Address>,
 }
@@ -149,8 +167,12 @@ pub struct CardState {
 }
 
 impl CardState {
-    /// Calculate the scroll offset needed to keep the selected card visible
-    /// Returns the new scroll offset
+    pub fn clear(&mut self) {
+        self.cards.clear();
+        self.selected_index = 0;
+        self.scroll_offset = 0;
+    }
+
     pub fn calculate_scroll_offset(&self, viewport_height: usize) -> usize {
         if self.cards.is_empty() {
             return 0;
@@ -196,10 +218,20 @@ impl CardState {
                     1 + message_lines + 1 + 1
                 }
                 Card::Connection { error, .. } => {
-                    // header + connected/disconnected + account + balance (optional) + chain_id (optional) + error (optional) + border + spacing
-                    let base = 4; // header + status + account + border
+                    let base = 4;
                     let error_line = if error.is_some() { 1 } else { 0 };
-                    base + 2 + error_line + 1 // +2 for balance and chain_id, +1 for spacing
+                    base + 2 + error_line + 1
+                }
+                Card::ContractLoading { status, error, .. } => {
+                    let base = 5;
+                    let error_lines = error.as_ref().map(|e| e.lines().count()).unwrap_or(0);
+                    let actions = if is_selected && *status == crate::cards::LoadingStatus::Building
+                    {
+                        2
+                    } else {
+                        0
+                    };
+                    base + error_lines + actions + 2
                 }
             };
             total_lines += card_height;
@@ -249,6 +281,7 @@ pub struct AppState {
     pub connection_error: Option<String>,
     pub file_picker_suggestions: Vec<PathSuggestion>,
     pub file_picker_selected_idx: usize,
+    pub file_picker_rust_mode: bool,
     pub terminal_size: (u16, u16),
     pub terminal_too_small: bool,
     pub output_area_height: u16,
@@ -272,6 +305,7 @@ impl Default for AppState {
             connection_error: None,
             file_picker_suggestions: Vec::new(),
             file_picker_selected_idx: 0,
+            file_picker_rust_mode: false,
             terminal_size: (80, 24),
             terminal_too_small: false,
             output_area_height: 20,

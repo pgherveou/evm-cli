@@ -13,8 +13,9 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use tokio::sync::mpsc;
 
-use crate::compile::{BytecodeTarget, CompiledContract};
+use crate::compile::{BytecodeTarget, CompiledContract, RustBuildResult};
 
 type AbiCache = RefCell<HashMap<PathBuf, Vec<(String, Arc<JsonAbi>)>>>;
 
@@ -39,11 +40,18 @@ enum PendingAction {
         contract_name: String,
         contract_path: PathBuf,
         abi: Arc<JsonAbi>,
+        is_rust: bool,
     },
     CallMethod {
         function: Function,
         address: Address,
     },
+}
+
+struct RustBuildComplete {
+    card_index: usize,
+    sol_path: PathBuf,
+    result: Result<(CompiledContract, RustBuildResult), String>,
 }
 
 pub struct App<P> {
@@ -57,11 +65,10 @@ pub struct App<P> {
     running: bool,
     pending_action: PendingAction,
     edit_config_requested: bool,
-    /// Content to display in external editor. Set this field and the main loop
-    /// will handle terminal restore, editor launch, and terminal re-setup.
     pending_editor_content: Option<String>,
-    /// Cache of loaded ABIs to avoid re-parsing files on every render
     abi_cache: AbiCache,
+    build_rx: mpsc::Receiver<RustBuildComplete>,
+    build_tx: mpsc::Sender<RustBuildComplete>,
 }
 
 impl<P: Provider + Clone> App<P> {
@@ -70,6 +77,8 @@ impl<P: Provider + Clone> App<P> {
             account: Some(signer_address),
             ..Default::default()
         };
+
+        let (build_tx, build_rx) = mpsc::channel(16);
 
         Self {
             provider,
@@ -84,6 +93,8 @@ impl<P: Provider + Clone> App<P> {
             edit_config_requested: false,
             pending_editor_content: None,
             abi_cache: RefCell::new(HashMap::new()),
+            build_rx,
+            build_tx,
         }
     }
 
@@ -144,20 +155,23 @@ impl<P: Provider + Clone> App<P> {
 
     pub fn set_contract(&mut self, contract: CompiledContract, path: PathBuf) {
         let contract_name = contract.name.clone();
+        let source = contract.source.clone().unwrap_or_else(|| {
+            crate::compile::ContractSource::Solidity {
+                sol_path: path.clone(),
+            }
+        });
+
         self.contract = Some(contract);
         self.contract_path = Some(path.clone());
         self.address = None;
 
-        // Expand the contract (use canonicalized path + name for per-contract expansion)
         let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
         self.state.sidebar.expanded_contracts.insert((canonical_path, contract_name.clone()));
 
-        // Select the contract in the sidebar (must match both path AND name for multi-contract files)
         self.select_contract_in_sidebar(&path, &contract_name);
 
-        // Ensure the contract is in the store (with empty deployments if not yet deployed)
         let contract_id = ContractId::new(path, contract_name);
-        self.store.ensure_contract(&contract_id);
+        self.store.ensure_contract(&contract_id, source);
         if let Err(e) = self.store.save() {
             self.state.output.push_error(format!("Failed to save contract: {e}"));
         }
@@ -169,7 +183,7 @@ impl<P: Provider + Clone> App<P> {
         let canonical_path = path.canonicalize().unwrap_or_else(|_| path.to_path_buf());
         let nodes = self.build_tree_nodes();
         for (i, node) in nodes.iter().enumerate() {
-            if let TreeNode::Contract { path: node_path, name: node_name } = node {
+            if let TreeNode::Contract { path: node_path, name: node_name, .. } = node {
                 // Match both path AND contract name (node_path is already canonicalized)
                 if *node_path == canonical_path && node_name == contract_name {
                     self.state.sidebar.selected = i;
@@ -258,30 +272,33 @@ impl<P: Provider + Clone> App<P> {
 
         let mut nodes = Vec::new();
 
-        // Always show "New contract" at top
-        nodes.push(TreeNode::NewContract);
+        nodes.push(TreeNode::LoadContractMenu);
+        if self.state.sidebar.load_menu_expanded {
+            nodes.push(TreeNode::LoadSolidity);
+            nodes.push(TreeNode::LoadRust);
+        }
 
-        // Get all contracts and sort them for stable ordering
-        let mut all_contracts: Vec<ContractId> = self.store.all_contracts();
+        let store_contracts = self.store.all_contracts();
+        let mut all_contracts: Vec<(ContractId, bool)> = store_contracts
+            .into_iter()
+            .map(|(id, source)| (id, source.is_rust()))
+            .collect();
 
-        // Add current contract if it's not already in the store
-        // We canonicalize for comparison since the store uses canonicalized paths
         if let (Some(current_path), Some(current_contract)) = (&self.contract_path, &self.contract) {
             let current_canonical = current_path.canonicalize().unwrap_or_else(|_| current_path.clone());
             let current_id = ContractId::new(current_canonical.clone(), current_contract.name.clone());
-            // Check if this exact contract (path + name) is in the store
-            let is_in_store = all_contracts.iter().any(|c| {
+            let is_rust = current_contract.source.as_ref().is_some_and(|s| s.is_rust());
+            let is_in_store = all_contracts.iter().any(|(c, _)| {
                 let c_canonical = c.path.canonicalize().unwrap_or_else(|_| c.path.clone());
                 c_canonical == current_canonical && c.name == current_contract.name
             });
 
             if !is_in_store {
-                all_contracts.push(current_id);
+                all_contracts.push((current_id, is_rust));
             }
         }
 
-        // Sort for stable ordering (by path then name)
-        all_contracts.sort_by(|a, b| {
+        all_contracts.sort_by(|(a, _), (b, _)| {
             let path_cmp = a.path.cmp(&b.path);
             if path_cmp == std::cmp::Ordering::Equal {
                 a.name.cmp(&b.name)
@@ -290,25 +307,24 @@ impl<P: Provider + Clone> App<P> {
             }
         });
 
-        // Add each contract in sorted order
-        for contract_id in all_contracts {
+        for (contract_id, is_rust) in &all_contracts {
             let contract_path = &contract_id.path;
             let name = &contract_id.name;
-            let abi = self.get_abi_for_contract(&contract_id);
+            let abi = self.get_abi_for_contract(contract_id);
 
             nodes.push(TreeNode::Contract {
                 name: name.clone(),
                 path: contract_path.clone(),
+                is_rust: *is_rust,
             });
 
-            // Check if this contract is expanded (by path + name)
             if self.state.sidebar.expanded_contracts.contains(&(contract_path.clone(), name.clone())) {
-                // Add constructor and load options for all expanded contracts
                 let abi_clone = Arc::clone(&abi);
                 nodes.push(TreeNode::Constructor {
                     contract_name: name.clone(),
                     contract_path: contract_path.clone(),
                     abi: abi_clone,
+                    is_rust: *is_rust,
                 });
 
                 let abi_clone = Arc::clone(&abi);
@@ -319,7 +335,7 @@ impl<P: Provider + Clone> App<P> {
                 });
 
                 // Show deployed instances for this contract
-                let deployments = self.store.get_deployments(&contract_id);
+                let deployments = self.store.get_deployments(contract_id);
                 for address in &deployments {
                     nodes.push(TreeNode::DeployedInstance {
                         address: *address,
@@ -358,7 +374,19 @@ impl<P: Provider + Clone> App<P> {
             }
         }
 
-        // Fall back to cached ABI loading
+        if let Some(crate::compile::ContractSource::Rust { project_path, sol_path, .. }) =
+            self.store.get_contract_source(contract_id)
+        {
+            if let Ok(contracts) = crate::compile::load_rust_contract_abi(project_path, sol_path) {
+                for (name, abi) in contracts {
+                    if name == contract_id.name {
+                        return Arc::new(abi);
+                    }
+                }
+            }
+            return Arc::new(JsonAbi::new());
+        }
+
         if let Some(contracts) = self.load_contract_abi_cached(&contract_id.path) {
             for (name, abi) in contracts {
                 if name == contract_id.name {
@@ -445,9 +473,12 @@ impl<P: Provider + Clone> App<P> {
                 // Refresh connection status and balance with new account
                 self.try_connect().await;
 
-                // Re-setup terminal
                 terminal = crate::tui::setup()?;
                 continue;
+            }
+
+            while let Ok(build) = self.build_rx.try_recv() {
+                self.handle_build_complete(build);
             }
 
             terminal.draw(|f| {
@@ -608,6 +639,27 @@ impl<P: Provider + Clone> App<P> {
             PopupState::CopyMenu { card_index: _, options, selected } => {
                 self.render_copy_menu(frame, options, *selected);
             }
+            PopupState::RustContractConfig {
+                project_path,
+                bin_targets,
+                selected_bin,
+                sol_files,
+                selected_sol,
+                release_mode,
+                current_field,
+            } => {
+                use crate::tui::widgets::RustConfigPopup;
+                let popup = RustConfigPopup::new(
+                    project_path,
+                    bin_targets,
+                    *selected_bin,
+                    sol_files,
+                    *selected_sol,
+                    *release_mode,
+                    *current_field,
+                );
+                frame.render_widget(popup, frame.area());
+            }
         }
     }
 
@@ -703,6 +755,7 @@ impl<P: Provider + Clone> App<P> {
             PopupState::TracerMenu { .. } => "TracerMenu",
             PopupState::TracerConfig { .. } => "TracerConfig",
             PopupState::CopyMenu { .. } => "CopyMenu",
+            PopupState::RustContractConfig { .. } => "RustContractConfig",
         };
         log::trace!("[KEY] {} | focus={:?} popup={}", key_str, self.state.focus, popup_state);
 
@@ -753,9 +806,18 @@ impl<P: Provider + Clone> App<P> {
                         }
                     }
                     KeyCode::Char('c') => {
-                        // Copy shortcut for Transaction cards
                         if matches!(&self.state.cards.cards[card_index], crate::cards::Card::Transaction { .. }) {
                             self.handle_card_action(card_index, crate::cards::CardAction::Copy).await?;
+                            return Ok(());
+                        }
+                    }
+                    KeyCode::Char('v') => {
+                        if matches!(
+                            &self.state.cards.cards[card_index],
+                            crate::cards::Card::ContractLoading { status, .. }
+                            if *status == crate::cards::LoadingStatus::Failed
+                        ) {
+                            self.handle_card_action(card_index, crate::cards::CardAction::ViewDetails).await?;
                             return Ok(());
                         }
                     }
@@ -775,8 +837,94 @@ impl<P: Provider + Clone> App<P> {
             PopupState::TracerMenu { .. } => self.handle_tracer_menu_key(key).await?,
             PopupState::TracerConfig { .. } => self.handle_tracer_config_key(key).await?,
             PopupState::CopyMenu { .. } => self.handle_copy_menu_key(key).await?,
+            PopupState::RustContractConfig { .. } => self.handle_rust_config_key(key).await?,
         }
 
+        Ok(())
+    }
+
+    async fn handle_rust_config_key(&mut self, key: KeyEvent) -> Result<()> {
+        use crate::tui::state::RustConfigField;
+
+        if let PopupState::RustContractConfig {
+            ref project_path,
+            ref bin_targets,
+            ref mut selected_bin,
+            ref sol_files,
+            ref mut selected_sol,
+            ref mut release_mode,
+            ref mut current_field,
+        } = self.state.popup
+        {
+            match key.code {
+                KeyCode::Esc => {
+                    self.state.popup = PopupState::None;
+                    self.state.focus = Focus::Sidebar;
+                }
+                KeyCode::Up | KeyCode::BackTab => {
+                    *current_field = match current_field {
+                        RustConfigField::BinTarget => RustConfigField::Buttons,
+                        RustConfigField::SolInterface => RustConfigField::BinTarget,
+                        RustConfigField::BuildMode => RustConfigField::SolInterface,
+                        RustConfigField::Buttons => RustConfigField::BuildMode,
+                    };
+                }
+                KeyCode::Down | KeyCode::Tab => {
+                    *current_field = match current_field {
+                        RustConfigField::BinTarget => RustConfigField::SolInterface,
+                        RustConfigField::SolInterface => RustConfigField::BuildMode,
+                        RustConfigField::BuildMode => RustConfigField::Buttons,
+                        RustConfigField::Buttons => RustConfigField::BinTarget,
+                    };
+                }
+                KeyCode::Left => match current_field {
+                    RustConfigField::BinTarget => {
+                        if *selected_bin > 0 {
+                            *selected_bin -= 1;
+                        }
+                    }
+                    RustConfigField::SolInterface => {
+                        if *selected_sol > 0 {
+                            *selected_sol -= 1;
+                        }
+                    }
+                    RustConfigField::BuildMode => {
+                        *release_mode = false;
+                    }
+                    RustConfigField::Buttons => {}
+                },
+                KeyCode::Right => match current_field {
+                    RustConfigField::BinTarget => {
+                        if *selected_bin + 1 < bin_targets.len() {
+                            *selected_bin += 1;
+                        }
+                    }
+                    RustConfigField::SolInterface => {
+                        if *selected_sol + 1 < sol_files.len() {
+                            *selected_sol += 1;
+                        }
+                    }
+                    RustConfigField::BuildMode => {
+                        *release_mode = true;
+                    }
+                    RustConfigField::Buttons => {}
+                },
+                KeyCode::Enter => {
+                    let project = project_path.clone();
+                    let bin = bin_targets.get(*selected_bin).cloned();
+                    let sol = sol_files.get(*selected_sol).cloned();
+                    let release = *release_mode;
+
+                    self.state.popup = PopupState::None;
+                    self.state.focus = Focus::Sidebar;
+
+                    if let (Some(bin_target), Some(sol_path)) = (bin, sol) {
+                        self.start_rust_contract_build(project, bin_target, sol_path, release);
+                    }
+                }
+                _ => {}
+            }
+        }
         Ok(())
     }
 
@@ -813,7 +961,7 @@ impl<P: Provider + Clone> App<P> {
             KeyCode::Left | KeyCode::Char('h') => {
                 if let Some(node) = nodes.get(self.state.sidebar.selected) {
                     match node {
-                        TreeNode::Contract { path, name } => {
+                        TreeNode::Contract { path, name, .. } => {
                             let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
                             self.state.sidebar.expanded_contracts.remove(&(canonical_path, name.clone()));
                             self.state.last_action = Some("Collapse contract".into());
@@ -829,7 +977,7 @@ impl<P: Provider + Clone> App<P> {
             KeyCode::Right | KeyCode::Char('l') => {
                 if let Some(node) = nodes.get(self.state.sidebar.selected) {
                     match node {
-                        TreeNode::Contract { path, name } => {
+                        TreeNode::Contract { path, name, .. } => {
                             let canonical_path = path.canonicalize().unwrap_or_else(|_| path.clone());
                             self.state.sidebar.expanded_contracts.insert((canonical_path, name.clone()));
                             self.state.last_action = Some("Expand contract".into());
@@ -1045,9 +1193,15 @@ impl<P: Provider + Clone> App<P> {
                         self.pending_action = PendingAction::None;
 
                         match action {
-                            PendingAction::Deploy { contract_name, contract_path, abi } => {
-                                // target is Some for deploy operations
-                                self.do_deploy(contract_name, contract_path, abi, args, target.unwrap_or_default()).await;
+                            PendingAction::Deploy { contract_name, contract_path, abi, is_rust } => {
+                                // For Rust contracts, always use PVM (target is None)
+                                // For Solidity contracts, use selected target (default: EVM)
+                                let effective_target = target.unwrap_or(if is_rust {
+                                    BytecodeTarget::Pvm
+                                } else {
+                                    BytecodeTarget::Evm
+                                });
+                                self.do_deploy(contract_name, contract_path, abi, args, effective_target).await;
                             }
                             PendingAction::CallMethod { function, address } => {
                                 self.do_call_function(&function, address, args).await;
@@ -1154,8 +1308,63 @@ impl<P: Provider + Clone> App<P> {
                 }
                 KeyCode::Enter => {
                     let suggestion = self.state.file_picker_suggestions.get(self.state.file_picker_selected_idx);
+                    let rust_mode = self.state.file_picker_rust_mode;
 
-                    // If selected suggestion is a directory, navigate into it
+                    let selected_path = suggestion
+                        .map(|s| s.full_path.clone())
+                        .unwrap_or_else(|| PathBuf::from(path.as_str()));
+
+                    if rust_mode {
+                        let cargo_toml = selected_path.join("Cargo.toml");
+                        if selected_path.is_dir() && cargo_toml.exists() {
+                            match crate::compile::parse_cargo_bin_targets(&selected_path) {
+                                Ok(bin_targets) if !bin_targets.is_empty() => {
+                                    let sol_files =
+                                        crate::compile::find_sol_files(&selected_path)
+                                            .unwrap_or_default();
+
+                                    let selected_sol = if !sol_files.is_empty() && !bin_targets.is_empty() {
+                                        crate::compile::match_sol_to_bin(&bin_targets[0], &sol_files)
+                                            .unwrap_or(0)
+                                    } else {
+                                        0
+                                    };
+
+                                    self.state.popup = PopupState::RustContractConfig {
+                                        project_path: selected_path,
+                                        bin_targets,
+                                        selected_bin: 0,
+                                        sol_files,
+                                        selected_sol,
+                                        release_mode: true,
+                                        current_field: crate::tui::state::RustConfigField::BinTarget,
+                                    };
+                                    self.state.file_picker_suggestions.clear();
+                                    self.state.file_picker_selected_idx = 0;
+                                    return Ok(());
+                                }
+                                Ok(_) => {
+                                    *error = Some("No bin targets found in Cargo.toml".to_string());
+                                    return Ok(());
+                                }
+                                Err(e) => {
+                                    *error = Some(format!("Failed to parse Cargo.toml: {e}"));
+                                    return Ok(());
+                                }
+                            }
+                        } else if selected_path.is_dir() {
+                            let new_path = selected_path.to_string_lossy().to_string();
+                            *path = format!("{new_path}/");
+                            *error = None;
+                            let path_clone = path.clone();
+                            self.update_file_picker_suggestions(&path_clone);
+                            return Ok(());
+                        } else {
+                            *error = Some("Select a directory with Cargo.toml".to_string());
+                            return Ok(());
+                        }
+                    }
+
                     if let Some(s) = suggestion.filter(|s| s.is_directory) {
                         let new_path = s.full_path.to_string_lossy().to_string();
                         *path = format!("{new_path}/");
@@ -1165,22 +1374,16 @@ impl<P: Provider + Clone> App<P> {
                         return Ok(());
                     }
 
-                    // Determine file path: from suggestion or raw input
-                    let file_path = suggestion
-                        .map(|s| s.full_path.clone())
-                        .unwrap_or_else(|| PathBuf::from(path.as_str()));
-
-                    if !file_path.exists() {
+                    if !selected_path.exists() {
                         *error = Some("File does not exist".to_string());
                         return Ok(());
                     }
 
-                    // Load the file
                     self.state.popup = PopupState::None;
                     self.state.focus = Focus::Sidebar;
                     self.state.file_picker_suggestions.clear();
                     self.state.file_picker_selected_idx = 0;
-                    self.load_contract_from_path(file_path).await?;
+                    self.load_contract_from_path(selected_path).await?;
                 }
                 KeyCode::Char(c) => {
                     path.push(c);
@@ -1214,6 +1417,21 @@ impl<P: Provider + Clone> App<P> {
                             self.state.popup = PopupState::None;
                             self.state.focus = Focus::Sidebar;
                             self.set_address(addr);
+
+                            if let (Some(contract), Some(path)) = (&self.contract, &self.contract_path) {
+                                let contract_id = ContractId::new(path.clone(), contract.name.clone());
+                                let source = contract.source.clone().unwrap_or_else(|| {
+                                    crate::compile::ContractSource::Solidity {
+                                        sol_path: path.clone(),
+                                    }
+                                });
+                                self.store.add_deployment(&contract_id, addr, source);
+                                if let Err(e) = self.store.save() {
+                                    self.state.output.push_error(format!("Failed to save: {e}"));
+                                }
+                                self.state.sidebar.expanded_instances.insert(addr);
+                                self.select_instance_in_sidebar(addr);
+                            }
                         }
                         Err(_) => {
                             log::warn!("[ADDRESS] Invalid address format: {}", address);
@@ -1268,7 +1486,11 @@ impl<P: Provider + Clone> App<P> {
     async fn execute_tree_node(&mut self, node: TreeNode) -> Result<()> {
         log::info!("[ACTION] execute_tree_node: {}", node.label());
         match node {
-            TreeNode::NewContract => {
+            TreeNode::LoadContractMenu => {
+                self.state.sidebar.load_menu_expanded = !self.state.sidebar.load_menu_expanded;
+            }
+            TreeNode::LoadSolidity => {
+                self.state.file_picker_rust_mode = false;
                 self.state.popup = PopupState::FilePicker {
                     path: String::new(),
                     error: None,
@@ -1276,8 +1498,16 @@ impl<P: Provider + Clone> App<P> {
                 self.state.focus = Focus::CommandPalette;
                 self.update_file_picker_suggestions("");
             }
-            TreeNode::Contract { path, name } => {
-                // Toggle expansion for this contract (path is already canonicalized from tree)
+            TreeNode::LoadRust => {
+                self.state.file_picker_rust_mode = true;
+                self.state.popup = PopupState::FilePicker {
+                    path: String::new(),
+                    error: None,
+                };
+                self.state.focus = Focus::CommandPalette;
+                self.update_file_picker_suggestions("");
+            }
+            TreeNode::Contract { path, name, .. } => {
                 let key = (path.clone(), name.clone());
                 if self.state.sidebar.expanded_contracts.contains(&key) {
                     self.state.sidebar.expanded_contracts.remove(&key);
@@ -1285,16 +1515,15 @@ impl<P: Provider + Clone> App<P> {
                     self.state.sidebar.expanded_contracts.insert(key);
                 }
             }
-            TreeNode::Constructor { contract_name, contract_path, abi } => {
-                // Deploy directly using node data - no need to set app state
-                self.start_deploy(contract_name, contract_path, abi).await;
+            TreeNode::Constructor { contract_name, contract_path, abi, is_rust } => {
+                self.start_deploy(contract_name, contract_path, abi, is_rust).await;
             }
             TreeNode::LoadExistingInstance { contract_name, contract_path, abi } => {
-                // Set this as current contract for loading instance
                 let compiled = CompiledContract {
                     name: contract_name,
                     abi: (*abi).clone(),
                     bytecode: Vec::new(),
+                    source: None,
                 };
                 self.set_contract(compiled, contract_path);
                 self.state.popup = PopupState::AddressInput {
@@ -1333,6 +1562,7 @@ impl<P: Provider + Clone> App<P> {
             }
             1 => {
                 self.state.output.clear();
+                self.state.cards.clear();
             }
             2 => {
                 if let Some(home) = std::env::var_os("HOME") {
@@ -1387,11 +1617,11 @@ impl<P: Provider + Clone> App<P> {
             Ok(contracts) => {
                 if contracts.len() == 1 {
                     let (name, abi) = contracts.into_iter().next().unwrap();
-                    // Create a contract with just ABI (bytecode will be compiled on demand)
                     let contract = CompiledContract {
                         name,
                         abi,
-                        bytecode: Vec::new(), // Will be filled during deploy
+                        bytecode: Vec::new(),
+                        source: None,
                     };
                     self.set_contract(contract, path);
                 } else {
@@ -1422,7 +1652,8 @@ impl<P: Provider + Clone> App<P> {
                 let contract = CompiledContract {
                     name: name.to_string(),
                     abi,
-                    bytecode: Vec::new(), // Will be filled during deploy
+                    bytecode: Vec::new(),
+                    source: None,
                 };
                 self.set_contract(contract, path);
             }
@@ -1430,30 +1661,41 @@ impl<P: Provider + Clone> App<P> {
         Ok(())
     }
 
-    async fn start_deploy(&mut self, contract_name: String, contract_path: PathBuf, abi: Arc<JsonAbi>) {
+    async fn start_deploy(&mut self, contract_name: String, contract_path: PathBuf, abi: Arc<JsonAbi>, is_rust: bool) {
         self.state.output.push_normal(format!("\nPreparing to deploy {contract_name}..."));
 
-        // Get constructor parameters (empty vec if no constructor)
         let params = abi
             .constructor
             .as_ref()
             .map(|ctor| ctor.inputs.clone())
             .unwrap_or_default();
 
+        if is_rust && params.is_empty() {
+            self.do_deploy(contract_name, contract_path, abi, vec![], BytecodeTarget::Pvm).await;
+            return;
+        }
+
         let fields: Vec<FieldState> = params.iter().map(|_| FieldState::default()).collect();
 
-        // Always show popup with target selector for deploy operations
         self.pending_action = PendingAction::Deploy {
             contract_name,
             contract_path,
             abi,
+            is_rust,
         };
+
+        let bytecode_target = if is_rust {
+            None
+        } else {
+            Some(BytecodeTarget::Evm)
+        };
+
         self.state.popup = PopupState::ParameterPopup {
             method_name: "constructor".to_string(),
             params,
             fields,
             current: 0,
-            bytecode_target: Some(BytecodeTarget::Evm), // Default to EVM
+            bytecode_target,
         };
     }
 
@@ -1482,6 +1724,89 @@ impl<P: Provider + Clone> App<P> {
 
         // No parameters - call directly
         self.do_call_function(&func, address, vec![]).await;
+    }
+
+    fn start_rust_contract_build(
+        &mut self,
+        project_path: PathBuf,
+        bin_target: String,
+        sol_path: PathBuf,
+        release: bool,
+    ) {
+        use crate::cards::{Card, ContractSourceType, LoadingStatus};
+
+        let build_cmd = format!(
+            "cargo build --bin {}{}",
+            bin_target,
+            if release { " --release" } else { "" }
+        );
+
+        self.state.cards.cards.push(Card::ContractLoading {
+            source_type: ContractSourceType::Rust,
+            path: project_path.clone(),
+            bin_target: Some(bin_target.clone()),
+            release_mode: Some(release),
+            status: LoadingStatus::Building,
+            build_command: Some(build_cmd),
+            evm_bytecode_path: None,
+            pvm_bytecode_path: None,
+            contract_name: None,
+            error: None,
+            error_details: None,
+        });
+
+        let card_index = self.state.cards.cards.len() - 1;
+        self.state.cards.selected_index = card_index;
+
+        let tx = self.build_tx.clone();
+        let sol_path_clone = sol_path.clone();
+
+        tokio::task::spawn_blocking(move || {
+            let result =
+                crate::compile::compile_rust_contract(&project_path, &bin_target, &sol_path, release)
+                    .map_err(|e| e.to_string());
+
+            let _ = tx.blocking_send(RustBuildComplete {
+                card_index,
+                sol_path: sol_path_clone,
+                result,
+            });
+        });
+    }
+
+    fn handle_build_complete(&mut self, build: RustBuildComplete) {
+        use crate::cards::{Card, LoadingStatus};
+
+        match build.result {
+            Ok((contract, build_result)) => {
+                if let Some(Card::ContractLoading {
+                    status,
+                    pvm_bytecode_path,
+                    contract_name,
+                    ..
+                }) = self.state.cards.cards.get_mut(build.card_index)
+                {
+                    *status = LoadingStatus::Success;
+                    *pvm_bytecode_path = Some(build_result.pvm_path);
+                    *contract_name = Some(contract.name.clone());
+                }
+
+                self.set_contract(contract, build.sol_path);
+            }
+            Err(e) => {
+                if let Some(Card::ContractLoading {
+                    status,
+                    error,
+                    error_details,
+                    ..
+                }) = self.state.cards.cards.get_mut(build.card_index)
+                {
+                    *status = LoadingStatus::Failed;
+                    *error = Some("cargo build failed".to_string());
+                    *error_details = Some(e);
+                }
+            }
+        }
     }
 
     fn try_parse_params(
@@ -1520,25 +1845,42 @@ impl<P: Provider + Clone> App<P> {
             self.add_log_card("Cannot deploy: not connected to RPC".to_string());
             return;
         }
-        
-        // Compile on demand for the selected target
-        self.state.output.push_info(format!("Compiling {contract_name} for {target}..."));
 
-        let compiled = match crate::compile::compile_contract(&contract_path, &contract_name, target) {
-            Ok(c) => c,
-            Err(e) => {
-                let error_msg = format!("Compilation failed: {e}");
-                log::error!("{error_msg}");
-                self.state.output.push_error(error_msg);
-                self.state.output.push_separator();
-                self.state.output.scroll_to_bottom();
+        // Check if this is a Rust contract (already has PVM bytecode)
+        let is_rust = self.contract
+            .as_ref()
+            .is_some_and(|c| c.source.as_ref().is_some_and(|s| s.is_rust()));
+
+        let bytecode = if is_rust {
+            // For Rust contracts, use the pre-built PVM bytecode
+            if let Some(contract) = &self.contract {
+                self.state.output.push_info(format!("Using pre-built PVM bytecode for {contract_name}..."));
+                contract.bytecode.clone()
+            } else {
+                self.state.output.push_error("No contract loaded");
                 return;
+            }
+        } else {
+            // For Solidity contracts, compile on demand for the selected target
+            self.state.output.push_info(format!("Compiling {contract_name} for {target}..."));
+
+            match crate::compile::compile_contract(&contract_path, &contract_name, target) {
+                Ok(c) => {
+                    self.state.output.push_success(format!("Compilation successful ({target})"));
+                    c.bytecode
+                }
+                Err(e) => {
+                    let error_msg = format!("Compilation failed: {e}");
+                    log::error!("{error_msg}");
+                    self.state.output.push_error(error_msg);
+                    self.state.output.push_separator();
+                    self.state.output.scroll_to_bottom();
+                    return;
+                }
             }
         };
 
-        self.state.output.push_success(format!("Compilation successful ({target})"));
-
-        let mut deploy_data = compiled.bytecode.clone();
+        let mut deploy_data = bytecode;
 
         if !args.is_empty() {
             let encoded = DynSolValue::Tuple(args).abi_encode_params();
@@ -1630,7 +1972,14 @@ impl<P: Provider + Clone> App<P> {
         self.set_address(address);
 
         let contract_id = ContractId::new(contract_path.clone(), contract_name.to_string());
-        self.store.add_deployment(&contract_id, address);
+        let source = self
+            .contract
+            .as_ref()
+            .and_then(|c| c.source.clone())
+            .unwrap_or_else(|| crate::compile::ContractSource::Solidity {
+                sol_path: contract_path.clone(),
+            });
+        self.store.add_deployment(&contract_id, address, source);
         if let Err(e) = self.store.save() {
             self.state.output.push_error(format!("Failed to save deployment: {e}"));
         }
@@ -1871,13 +2220,10 @@ impl<P: Provider + Clone> App<P> {
         }
     }
 
-    /// Try to find an ABI for a given address by checking known deployments
     fn find_abi_for_address(&self, address: Address) -> Option<Arc<JsonAbi>> {
-        // Check all contracts in the store
-        for contract_id in self.store.all_contracts() {
+        for (contract_id, _source) in self.store.all_contracts() {
             let deployments = self.store.get_deployments(&contract_id);
             if deployments.contains(&address) {
-                // This contract has this address
                 return Some(self.get_abi_for_contract(&contract_id));
             }
         }
@@ -2071,8 +2417,14 @@ impl<P: Provider + Clone> App<P> {
             crate::cards::CardAction::DebugCall => {
                 if let crate::cards::Card::Call { .. } = card {
                     self.execute_debug_call(card_index).await?;
-                    // Return to card view with selection preserved
                     self.state.focus = Focus::Output;
+                }
+            }
+            crate::cards::CardAction::ViewDetails => {
+                if let crate::cards::Card::ContractLoading { error_details, .. } = card {
+                    if let Some(details) = error_details.clone() {
+                        self.display_in_editor(&details)?;
+                    }
                 }
             }
         }

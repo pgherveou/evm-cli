@@ -163,7 +163,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │                                    ││ ┃   Connected                                                                        │
 │                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│                                    ││ ┃   Balance: 995.980507 ETH                                                          │
+│                                    ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                                    ││                                                                                      │
@@ -185,7 +185,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: Enter │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
@@ -194,7 +194,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │                                    ││ ┃   Connected                                                                        │
 │                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│                                    ││ ┃   Balance: 995.980507 ETH                                                          │
+│                                    ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                                    ││                                                                                      │
@@ -216,7 +216,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: CommandPalette │ Popup: FilePicker │ Key: Enter │ Action: Execute: NewContract │ Sel: 0 │ Cards: 1 │ Cards: 1
@@ -225,7 +225,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │                                    ││ ┃   Connected                                                                        │
 │                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│                                    ││ ┃   Balance: 995.980507 ETH                                                          │
+│                                    ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                        ┌ Load Contract ───────────────────────────────────────────────────────────┐                        │
@@ -247,7 +247,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: CommandPalette │ Popup: FilePicker │ Key: Enter │ Action: Execute: NewContract │ Sel: 0 │ Cards: 1 │ Cards: 1
@@ -256,7 +256,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │                                    ││ ┃   Connected                                                                        │
 │                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│                                    ││ ┃   Balance: 995.980507 ETH                                                          │
+│                                    ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                        ┌ Load Contract ───────────────────────────────────────────────────────────┐                        │
@@ -278,7 +278,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: CommandPalette │ Popup: FilePicker │ Key: Enter │ Action: Execute: NewContract │ Sel: 0 │ Cards: 1 │ Cards: 1
@@ -287,7 +287,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │                                    ││ ┃   Connected                                                                        │
 │                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│                                    ││ ┃   Balance: 995.980507 ETH                                                          │
+│                                    ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                        ┌ Load Contract ───────────────────────────────────────────────────────────┐                        │
@@ -309,7 +309,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: CommandPalette │ Popup: FilePicker │ Key: Enter │ Action: Execute: NewContract │ Sel: 0 │ Cards: 1 │ Cards: 1
@@ -318,7 +318,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │                                    ││ ┃   Connected                                                                        │
 │                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│                                    ││ ┃   Balance: 995.980507 ETH                                                          │
+│                                    ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                        ┌ Load Contract ───────────────────────────────────────────────────────────┐                        │
@@ -340,7 +340,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: CommandPalette │ Popup: FilePicker │ Key: 'l' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
@@ -349,7 +349,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │                                    ││ ┃   Connected                                                                        │
 │                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│                                    ││ ┃   Balance: 995.980507 ETH                                                          │
+│                                    ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                        ┌ Load Contract ───────────────────────────────────────────────────────────┐                        │
@@ -371,7 +371,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: CommandPalette │ Popup: FilePicker │ Key: 'l' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
@@ -380,7 +380,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │                                    ││ ┃   Connected                                                                        │
 │                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│                                    ││ ┃   Balance: 995.980507 ETH                                                          │
+│                                    ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                        ┌ Load Contract ───────────────────────────────────────────────────────────┐                        │
@@ -402,7 +402,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: CommandPalette │ Popup: FilePicker │ Key: 'l' │ Action: - │ Sel: 0 │ Cards: 1 │ Cards: 1
@@ -411,7 +411,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │                                    ││ ┃   Connected                                                                        │
 │                                    ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│                                    ││ ┃   Balance: 995.980507 ETH                                                          │
+│                                    ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                        ┌ Load Contract ───────────────────────────────────────────────────────────┐                        │
@@ -433,7 +433,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: Enter │ Action: - │ Sel: 1 │ Cards: 1 │ Cards: 1
@@ -442,7 +442,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │ ▾ Demo                             ││ ┃   Connected                                                                        │
 │   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│   ◇ Load existing instance...      ││ ┃   Balance: 995.980507 ETH                                                          │
+│   ◇ Load existing instance...      ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                                    ││                                                                                      │
@@ -464,7 +464,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: Enter │ Action: - │ Sel: 1 │ Cards: 1 │ Cards: 1
@@ -473,7 +473,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │ ▾ Demo                             ││ ┃   Connected                                                                        │
 │   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│   ◇ Load existing instance...      ││ ┃   Balance: 995.980507 ETH                                                          │
+│   ◇ Load existing instance...      ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                                    ││                                                                                      │
@@ -495,7 +495,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: Enter │ Action: - │ Sel: 1 │ Cards: 1 │ Cards: 1
@@ -504,7 +504,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │ ▾ Demo                             ││ ┃   Connected                                                                        │
 │   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│   ◇ Load existing instance...      ││ ┃   Balance: 995.980507 ETH                                                          │
+│   ◇ Load existing instance...      ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                                    ││                                                                                      │
@@ -526,7 +526,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: Enter │ Action: - │ Sel: 1 │ Cards: 1 │ Cards: 1
@@ -535,7 +535,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │ ▾ Demo                             ││ ┃   Connected                                                                        │
 │   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│   ◇ Load existing instance...      ││ ┃   Balance: 995.980507 ETH                                                          │
+│   ◇ Load existing instance...      ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                                    ││                                                                                      │
@@ -557,7 +557,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: Enter │ Action: - │ Sel: 1 │ Cards: 1 │ Cards: 1
@@ -566,7 +566,7 @@
 │ + Load new contract...             ││ ┃ Connection                                                                         │
 │ ▾ Demo                             ││ ┃   Connected                                                                        │
 │   ◇ Deploy new instance            ││ ┃   Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac                              │
-│   ◇ Load existing instance...      ││ ┃   Balance: 995.980507 ETH                                                          │
+│   ◇ Load existing instance...      ││ ┃   Balance: 981.037983 ETH                                                          │
 │                                    ││ ┃   Chain ID: 31337                                                                  │
 │                                    ││ ┃                                                                                    │
 │                                    ││                                                                                      │
@@ -588,7 +588,7 @@
 │                                    ││                                                                                      │
 │                                    ││                                                                                      │
 └────────────────────────────────────┘└──────────────────────────────────────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 995.980507 ETH
+● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac | Balance: 981.037983 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
 > cd /home/pg/github/evm-cli && EVM_CLI_DEBUG=1 cargo run --release 2>/dev/null

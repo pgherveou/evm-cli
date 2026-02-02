@@ -164,7 +164,7 @@
 │ ▸ Demo               ││ ┃   Connected                                         │
 │                      ││ ┃   Account:                                          │
 │                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
-│                      ││ ┃   Balance: 992.241746 ETH                           │
+│                      ││ ┃   Balance: 975.937573 ETH                           │
 │                      ││ ┃   Chain ID: 31337                                   │
 │                      ││ ┃                                                     │
 │                      ││                                                       │
@@ -173,7 +173,7 @@
 │                      ││                                                       │
 │                      ││                                                       │
 └──────────────────────┘└───────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+● Connected | Chain: 31337 | Account: 0xf24f...6cac | Balance: 975.937573 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: - │ Action: - │ Sel: 0 │ Cards: 1 │ C
@@ -183,7 +183,7 @@
 │ ▸ Demo               ││ ┃   Connected                                         │
 │                      ││ ┃   Account:                                          │
 │                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
-│                      ││ ┃   Balance: 992.241746 ETH                           │
+│                      ││ ┃   Balance: 975.937573 ETH                           │
 │                      ││ ┃   Chain ID: 31337                                   │
 │                      ││ ┃                                                     │
 │                      ││                                                       │
@@ -192,7 +192,7 @@
 │                      ││                                                       │
 │                      ││                                                       │
 └──────────────────────┘└───────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+● Connected | Chain: 31337 | Account: 0xf24f...6cac | Balance: 975.937573 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: 'j' │ Action: Move down │ Sel: 1 │ Ca
@@ -202,7 +202,7 @@
 │ ▸ Demo               ││ ┃   Connected                                         │
 │                      ││ ┃   Account:                                          │
 │                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
-│                      ││ ┃   Balance: 992.241746 ETH                           │
+│                      ││ ┃   Balance: 975.937573 ETH                           │
 │                      ││ ┃   Chain ID: 31337                                   │
 │                      ││ ┃                                                     │
 │                      ││                                                       │
@@ -211,7 +211,7 @@
 │                      ││                                                       │
 │                      ││                                                       │
 └──────────────────────┘└───────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+● Connected | Chain: 31337 | Account: 0xf24f...6cac | Balance: 975.937573 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: 'j' │ Action: Move down │ Sel: 1 │ Ca
@@ -221,7 +221,7 @@
 │ ▸ Demo               ││ ┃   Connected                                         │
 │                      ││ ┃   Account:                                          │
 │                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
-│                      ││ ┃   Balance: 992.241746 ETH                           │
+│                      ││ ┃   Balance: 975.937573 ETH                           │
 │                      ││ ┃   Chain ID: 31337                                   │
 │                      ││ ┃                                                     │
 │                      ││                                                       │
@@ -230,7 +230,7 @@
 │                      ││                                                       │
 │                      ││                                                       │
 └──────────────────────┘└───────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+● Connected | Chain: 31337 | Account: 0xf24f...6cac | Balance: 975.937573 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: 'k' │ Action: Move up │ Sel: 0 │ Card
@@ -240,7 +240,7 @@
 │ ▸ Demo               ││ ┃   Connected                                         │
 │                      ││ ┃   Account:                                          │
 │                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
-│                      ││ ┃   Balance: 992.241746 ETH                           │
+│                      ││ ┃   Balance: 975.937573 ETH                           │
 │                      ││ ┃   Chain ID: 31337                                   │
 │                      ││ ┃                                                     │
 │                      ││                                                       │
@@ -249,7 +249,7 @@
 │                      ││                                                       │
 │                      ││                                                       │
 └──────────────────────┘└───────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+● Connected | Chain: 31337 | Account: 0xf24f...6cac | Balance: 975.937573 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: 'k' │ Action: Move up │ Sel: 0 │ Card
@@ -259,7 +259,7 @@
 │ ▸ Demo               ││ ┃   Connected                                         │
 │                      ││ ┃   Account:                                          │
 │                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
-│                      ││ ┃   Balance: 992.241746 ETH                           │
+│                      ││ ┃   Balance: 975.937573 ETH                           │
 │                      ││ ┃   Chain ID: 31337                                   │
 │                      ││ ┃                                                     │
 │                      ││                                                       │
@@ -268,7 +268,7 @@
 │                      ││                                                       │
 │                      ││                                                       │
 └──────────────────────┘└───────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+● Connected | Chain: 31337 | Account: 0xf24f...6cac | Balance: 975.937573 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: 'k' │ Action: Move up │ Sel: 0 │ Card
@@ -278,7 +278,7 @@
 │ ▸ Demo               ││ ┃   Connected                                         │
 │                      ││ ┃   Account:                                          │
 │                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
-│                      ││ ┃   Balance: 992.241746 ETH                           │
+│                      ││ ┃   Balance: 975.937573 ETH                           │
 │                      ││ ┃   Chain ID: 31337                                   │
 │                      ││ ┃                                                     │
 │                      ││                                                       │
@@ -287,7 +287,7 @@
 │                      ││                                                       │
 │                      ││                                                       │
 └──────────────────────┘└───────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+● Connected | Chain: 31337 | Account: 0xf24f...6cac | Balance: 975.937573 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: 'k' │ Action: Move up │ Sel: 0 │ Card
@@ -297,7 +297,7 @@
 │ ▸ Demo               ││ ┃   Connected                                         │
 │                      ││ ┃   Account:                                          │
 │                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
-│                      ││ ┃   Balance: 992.241746 ETH                           │
+│                      ││ ┃   Balance: 975.937573 ETH                           │
 │                      ││ ┃   Chain ID: 31337                                   │
 │                      ││ ┃                                                     │
 │                      ││                                                       │
@@ -306,7 +306,7 @@
 │                      ││                                                       │
 │                      ││                                                       │
 └──────────────────────┘└───────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+● Connected | Chain: 31337 | Account: 0xf24f...6cac | Balance: 975.937573 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Ctrl+'p' │ Action: O
@@ -325,7 +325,7 @@
 │               └───────────────────────────────────────────────┘               │
 │                      ││                                                       │
 └──────────────────────┘└───────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+● Connected | Chain: 31337 | Account: 0xf24f...6cac | Balance: 975.937573 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: CommandPalette │ Popup: CommandPalette │ Key: Ctrl+'p' │ Action: O
@@ -344,7 +344,7 @@
 │               └───────────────────────────────────────────────┘               │
 │                      ││                                                       │
 └──────────────────────┘└───────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+● Connected | Chain: 31337 | Account: 0xf24f...6cac | Balance: 975.937573 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: Esc │ Action: - │ Sel: 0 │ Cards: 1 │
@@ -354,7 +354,7 @@
 │ ▸ Demo               ││ ┃   Connected                                         │
 │                      ││ ┃   Account:                                          │
 │                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
-│                      ││ ┃   Balance: 992.241746 ETH                           │
+│                      ││ ┃   Balance: 975.937573 ETH                           │
 │                      ││ ┃   Chain ID: 31337                                   │
 │                      ││ ┃                                                     │
 │                      ││                                                       │
@@ -363,7 +363,7 @@
 │                      ││                                                       │
 │                      ││                                                       │
 └──────────────────────┘└───────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+● Connected | Chain: 31337 | Account: 0xf24f...6cac | Balance: 975.937573 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
  DEBUG  Focus: Sidebar │ Popup: None │ Key: Esc │ Action: - │ Sel: 0 │ Cards: 1 │
@@ -373,7 +373,7 @@
 │ ▸ Demo               ││ ┃   Connected                                         │
 │                      ││ ┃   Account:                                          │
 │                      ││ 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac            │
-│                      ││ ┃   Balance: 992.241746 ETH                           │
+│                      ││ ┃   Balance: 975.937573 ETH                           │
 │                      ││ ┃   Chain ID: 31337                                   │
 │                      ││ ┃                                                     │
 │                      ││                                                       │
@@ -382,7 +382,7 @@
 │                      ││                                                       │
 │                      ││                                                       │
 └──────────────────────┘└───────────────────────────────────────────────────────┘
-● Connected | Chain: 31337 | Account: 0xf24ff3a9cf04c71dbc94d0b566f7a27b94566cac
+● Connected | Chain: 31337 | Account: 0xf24f...6cac | Balance: 975.937573 ETH
 
 ────────────────────────────────────────────────────────────────────────────────
 > cd /home/pg/github/evm-cli && EVM_CLI_DEBUG=1 cargo run --release 2>/dev/null

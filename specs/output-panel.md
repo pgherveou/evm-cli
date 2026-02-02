@@ -151,6 +151,98 @@ Example:
 ┃
 ```
 
+### 5. Contract Loading Card
+
+Represents the loading and compilation of a contract. This card is created immediately when loading begins and updates in-place as compilation progresses.
+
+**Card States:**
+
+#### Building State (Interactive)
+```
+┃ Loading Contract                             (yellow text)
+┃   Source: Solidity | Rust (cargo-pvm-contract)
+┃   Path: /path/to/source
+┃   Binary: my-token                           (Rust only)
+┃   Mode: Release                              (Rust only)
+┃   Status: Building... ⟳
+┃
+┃   ◇ Cancel (c)
+┃
+```
+
+The cancel action is only available during the "Building" state.
+
+#### Success State
+```
+┃ Contract Loaded                              (green text)
+┃   Name: ContractName
+┃   Source: Solidity | Rust (cargo-pvm-contract)
+┃   Path: /path/to/source
+┃   Interface: /path/to/Interface.sol          (Rust only)
+┃
+┃   Build Command:
+┃     forge build -o out-evm /path/to/Contract.sol
+┃     -- or --
+┃     cargo build --release --bin my-token
+┃
+┃   Bytecode:
+┃     EVM: /path/to/out-evm/Contract.sol/Contract.json
+┃     PVM: /path/to/out-pvm/Contract.sol/Contract.json
+┃     -- or for Rust --
+┃     PVM: /path/to/target/my-token.polkavm
+┃     EVM: Not available (Rust contracts are PVM-only)
+┃
+```
+
+#### Failed State
+```
+┃ Contract Load Failed                         (red text)
+┃   Source: Solidity | Rust (cargo-pvm-contract)
+┃   Path: /path/to/source
+┃
+┃   Error: Compilation failed
+┃   Details:
+┃     error[E0432]: unresolved import `foo::bar`
+┃      --> src/lib.rs:1:5
+┃       |
+┃     1 | use foo::bar;
+┃       |     ^^^^^^^^ no `bar` in `foo`
+┃
+```
+
+#### Cancelled State
+```
+┃ Contract Loading Cancelled                   (gray text)
+┃   Source: Rust (cargo-pvm-contract)
+┃   Path: /tmp/my-token
+┃   Status: Cancelled by user
+┃
+```
+
+**Behavior:**
+- Created immediately when contract loading begins
+- Updates in-place as compilation progresses
+- Cancel action (`c`) available only during Building state
+- Pressing `c` during Building:
+  - Kills the compilation process
+  - Updates card to show "Cancelled" status
+  - Card remains in output (clearable via "Clear output" command)
+- After completion (success, failure, or cancelled): No actions available
+- Non-interactive after completion
+
+**Card Content by Source Type:**
+
+| Field | Solidity | Rust |
+|-------|----------|------|
+| Source | "Solidity" | "Rust (cargo-pvm-contract)" |
+| Path | .sol file path | Cargo project path |
+| Binary | - | Binary target name |
+| Mode | - | "Release" or "Debug" |
+| Interface | - | .sol interface path |
+| Build Command | `forge build ...` | `cargo build ...` |
+| EVM Bytecode | Path to .json artifact | "Not available" |
+| PVM Bytecode | Path to .json artifact (if resolc) | Path to .polkavm |
+
 ---
 
 ## Card Navigation
@@ -575,3 +667,15 @@ Available actions for interactive cards (Transaction/Call) are displayed in the 
 - **AC-OP-17**: Shows "Connected" or "Disconnected" status
 - **AC-OP-18**: Shows account address and balance when connected
 - **AC-OP-19**: Updates automatically on reconnection
+
+### Contract Loading Card
+- **AC-OP-20**: Contract Loading card created immediately when loading begins
+- **AC-OP-21**: Card shows "Building..." status with yellow styling during compilation
+- **AC-OP-22**: Cancel action (c) available only during Building state
+- **AC-OP-23**: Pressing c cancels build and updates card to "Cancelled" status
+- **AC-OP-24**: Card updates to green "Contract Loaded" on success
+- **AC-OP-25**: Card updates to red "Contract Load Failed" on failure
+- **AC-OP-26**: Card shows build command that was executed
+- **AC-OP-27**: Card shows bytecode paths (EVM, PVM, or "Not available")
+- **AC-OP-28**: Card shows full error output on failure
+- **AC-OP-29**: Cancelled cards remain in output (clearable via Clear output command)

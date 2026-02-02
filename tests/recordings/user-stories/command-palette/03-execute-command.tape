@@ -31,14 +31,16 @@ Screenshot tests/recordings/user-stories/command-palette/03-exec-01-has-cards.pn
 # Step 2: Open palette and search for "clear"
 Ctrl+P
 Wait+Screen /Commands/
-Type "clear out"
 Sleep 0.3s
+Type "clear out"
+Sleep 0.5s
 Screenshot tests/recordings/user-stories/command-palette/03-exec-02-filtered.png
 
 # Step 3: Execute the command with Enter
 Enter
 Sleep 0.5s
 Screenshot tests/recordings/user-stories/command-palette/03-exec-03-cleared.png
+Sleep 0.3s
 
 # Step 4: Verify focus returned to previous panel
 Screenshot tests/recordings/user-stories/command-palette/03-exec-04-focus.png

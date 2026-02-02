@@ -1,7 +1,7 @@
 use alloy::json_abi::JsonAbi;
 use anyhow::{bail, Context, Result};
 use serde::Deserialize;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::Command;
 
 /// Target bytecode format for compilation
@@ -39,11 +39,39 @@ impl std::fmt::Display for BytecodeTarget {
     }
 }
 
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+pub enum ContractSource {
+    Solidity {
+        sol_path: PathBuf,
+    },
+    Rust {
+        project_path: PathBuf,
+        sol_path: PathBuf,
+        bin_target: String,
+        release_mode: bool,
+    },
+}
+
+impl ContractSource {
+    pub fn is_rust(&self) -> bool {
+        matches!(self, ContractSource::Rust { .. })
+    }
+
+    #[allow(dead_code)]
+    pub fn sol_path(&self) -> &PathBuf {
+        match self {
+            ContractSource::Solidity { sol_path } => sol_path,
+            ContractSource::Rust { sol_path, .. } => sol_path,
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub struct CompiledContract {
     pub name: String,
     pub abi: JsonAbi,
     pub bytecode: Vec<u8>,
+    pub source: Option<ContractSource>,
 }
 
 /// Forge artifact JSON structure
@@ -196,6 +224,7 @@ pub fn compile_contract(
         name: contract_name.to_string(),
         abi,
         bytecode,
+        source: None,
     })
 }
 
@@ -259,7 +288,6 @@ fn run_forge_build(sol_path: &Path, target: BytecodeTarget) -> Result<String> {
     Ok(cmd_display)
 }
 
-/// Get the artifact path for a compiled contract
 fn get_artifact_path(
     sol_path: &Path,
     contract_name: &str,
@@ -272,4 +300,383 @@ fn get_artifact_path(
         .join(target.output_dir())
         .join(format!("{filename}.sol"))
         .join(format!("{contract_name}.json"))
+}
+
+#[derive(Debug, Deserialize)]
+struct CargoToml {
+    package: Option<CargoPackage>,
+    bin: Option<Vec<CargoBin>>,
+}
+
+#[derive(Debug, Deserialize)]
+struct CargoPackage {
+    name: String,
+}
+
+#[derive(Debug, Deserialize)]
+struct CargoBin {
+    name: String,
+    #[allow(dead_code)]
+    path: Option<String>,
+}
+
+pub fn parse_cargo_bin_targets(project_path: &Path) -> Result<Vec<String>> {
+    let cargo_toml_path = project_path.join("Cargo.toml");
+    if !cargo_toml_path.exists() {
+        bail!("Cargo.toml not found in {}", project_path.display());
+    }
+
+    let content = std::fs::read_to_string(&cargo_toml_path)
+        .with_context(|| format!("Failed to read {}", cargo_toml_path.display()))?;
+
+    let cargo: CargoToml = toml::from_str(&content)
+        .with_context(|| format!("Failed to parse {}", cargo_toml_path.display()))?;
+
+    let mut targets = Vec::new();
+
+    if let Some(bins) = cargo.bin {
+        for bin in bins {
+            targets.push(bin.name);
+        }
+    }
+
+    if targets.is_empty() {
+        if let Some(package) = cargo.package {
+            let main_rs = project_path.join("src").join("main.rs");
+            let bin_rs = project_path
+                .join("src")
+                .join(format!("{}.rs", package.name));
+            if main_rs.exists() || bin_rs.exists() {
+                targets.push(package.name);
+            }
+        }
+    }
+
+    if targets.is_empty() {
+        bail!("No binary targets found in Cargo.toml");
+    }
+
+    Ok(targets)
+}
+
+pub fn find_sol_files(project_path: &Path) -> Result<Vec<PathBuf>> {
+    let mut sol_files = Vec::new();
+
+    for entry in std::fs::read_dir(project_path)
+        .with_context(|| format!("Failed to read directory {}", project_path.display()))?
+    {
+        let entry = entry?;
+        let path = entry.path();
+        if path.extension().and_then(|e| e.to_str()) == Some("sol") {
+            sol_files.push(path);
+        }
+    }
+
+    let src_path = project_path.join("src");
+    if src_path.exists() {
+        for entry in std::fs::read_dir(&src_path)
+            .with_context(|| format!("Failed to read directory {}", src_path.display()))?
+        {
+            let entry = entry?;
+            let path = entry.path();
+            if path.extension().and_then(|e| e.to_str()) == Some("sol") {
+                sol_files.push(path);
+            }
+        }
+    }
+
+    if sol_files.is_empty() {
+        bail!("No Solidity interface files (.sol) found in project");
+    }
+
+    Ok(sol_files)
+}
+
+pub fn match_sol_to_bin(bin_name: &str, sol_files: &[PathBuf]) -> Option<usize> {
+    let bin_pascal = to_pascal_case(bin_name);
+
+    for (i, sol_path) in sol_files.iter().enumerate() {
+        if let Some(stem) = sol_path.file_stem().and_then(|s| s.to_str()) {
+            if stem.eq_ignore_ascii_case(&bin_pascal) {
+                return Some(i);
+            }
+        }
+    }
+
+    for (i, sol_path) in sol_files.iter().enumerate() {
+        if let Some(stem) = sol_path.file_stem().and_then(|s| s.to_str()) {
+            let stem_lower = stem.to_lowercase().replace(['_', '-'], "");
+            let bin_lower = bin_name.to_lowercase().replace(['_', '-'], "");
+            if stem_lower == bin_lower {
+                return Some(i);
+            }
+        }
+    }
+
+    None
+}
+
+fn to_pascal_case(s: &str) -> String {
+    s.split(['-', '_'])
+        .map(|part| {
+            let mut chars = part.chars();
+            match chars.next() {
+                None => String::new(),
+                Some(first) => first.to_uppercase().collect::<String>() + chars.as_str(),
+            }
+        })
+        .collect()
+}
+
+#[allow(dead_code)]
+pub struct RustBuildResult {
+    pub command: String,
+    pub pvm_path: PathBuf,
+}
+
+pub fn build_rust_contract(
+    project_path: &Path,
+    bin_target: &str,
+    release_mode: bool,
+) -> Result<RustBuildResult> {
+    let mut cmd = Command::new("cargo");
+    cmd.arg("build").arg("--bin").arg(bin_target);
+
+    if release_mode {
+        cmd.arg("--release");
+    }
+
+    cmd.current_dir(project_path);
+
+    let cmd_display = format!(
+        "cd {} && cargo build{} --bin {}",
+        project_path.display(),
+        if release_mode { " --release" } else { "" },
+        bin_target
+    );
+
+    log::info!("Running: {}", cmd_display);
+
+    let output = cmd
+        .output()
+        .context("Failed to execute cargo. Is it installed?")?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        let stdout = String::from_utf8_lossy(&output.stdout);
+        let combined = if stderr.is_empty() {
+            stdout.to_string()
+        } else {
+            stderr.to_string()
+        };
+
+        log::error!("cargo build failed:\n{}", combined);
+        bail!("cargo build failed:\n{}", combined);
+    }
+
+    let pvm_path = if release_mode {
+        project_path
+            .join("target")
+            .join(format!("{}.release.polkavm", bin_target))
+    } else {
+        project_path
+            .join("target")
+            .join(format!("{}.debug.polkavm", bin_target))
+    };
+
+    if !pvm_path.exists() {
+        let alt_paths = [
+            project_path
+                .join("target")
+                .join(format!("{}.polkavm", bin_target)),
+            project_path
+                .join("target")
+                .join(format!("{}.release.polkavm", bin_target)),
+            project_path
+                .join("target")
+                .join(format!("{}.debug.polkavm", bin_target)),
+        ];
+        for alt_path in &alt_paths {
+            if alt_path.exists() {
+                return Ok(RustBuildResult {
+                    command: cmd_display,
+                    pvm_path: alt_path.clone(),
+                });
+            }
+        }
+        bail!(
+            "PVM bytecode not found at expected path: {}",
+            pvm_path.display()
+        );
+    }
+
+    Ok(RustBuildResult {
+        command: cmd_display,
+        pvm_path,
+    })
+}
+
+pub fn compile_rust_contract(
+    project_path: &Path,
+    bin_target: &str,
+    sol_path: &Path,
+    release_mode: bool,
+) -> Result<(CompiledContract, RustBuildResult)> {
+    let build_result = build_rust_contract(project_path, bin_target, release_mode)?;
+
+    let bytecode = std::fs::read(&build_result.pvm_path).with_context(|| {
+        format!(
+            "Failed to read PVM bytecode from {}",
+            build_result.pvm_path.display()
+        )
+    })?;
+
+    if bytecode.len() < 4 || bytecode[..4] != PVM_MAGIC {
+        bail!("Invalid PVM bytecode: missing magic bytes");
+    }
+
+    let (name, abi) = compile_solidity_abi(project_path, sol_path)?;
+
+    let contract = CompiledContract {
+        name,
+        abi,
+        bytecode,
+        source: Some(ContractSource::Rust {
+            project_path: project_path.to_path_buf(),
+            sol_path: sol_path.to_path_buf(),
+            bin_target: bin_target.to_string(),
+            release_mode,
+        }),
+    };
+
+    Ok((contract, build_result))
+}
+
+/// Compile Solidity interface to get ABI, storing artifacts in project's target/abi/ folder.
+fn compile_solidity_abi(project_path: &Path, sol_path: &Path) -> Result<(String, JsonAbi)> {
+    let sol_path = sol_path
+        .canonicalize()
+        .with_context(|| format!("Failed to resolve path: {}", sol_path.display()))?;
+
+    let output_dir = project_path.join("target").join("abi");
+
+    let mut cmd = Command::new("forge");
+    cmd.arg("build")
+        .arg("-o")
+        .arg(&output_dir)
+        .arg(&sol_path)
+        .current_dir(project_path);
+
+    let cmd_display = format!(
+        "cd {} && forge build -o {} {}",
+        project_path.display(),
+        output_dir.display(),
+        sol_path.display()
+    );
+
+    log::info!("Running: {}", cmd_display);
+
+    let output = cmd
+        .output()
+        .context("Failed to execute forge. Is it installed?")?;
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        log::error!("forge build failed:\n{}", stderr);
+        bail!("forge build failed:\n{}", stderr);
+    }
+
+    let filename = sol_path
+        .file_stem()
+        .ok_or_else(|| anyhow::anyhow!("Invalid file path"))?
+        .to_string_lossy();
+
+    let artifact_dir = output_dir.join(format!("{filename}.sol"));
+
+    if !artifact_dir.exists() {
+        bail!("No artifacts found at {}", artifact_dir.display());
+    }
+
+    for entry in std::fs::read_dir(&artifact_dir)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        if path.extension().and_then(|e| e.to_str()) == Some("json") {
+            let contract_name = path
+                .file_stem()
+                .and_then(|n| n.to_str())
+                .unwrap_or_default()
+                .to_string();
+
+            let content = std::fs::read_to_string(&path)
+                .with_context(|| format!("Failed to read artifact: {}", path.display()))?;
+
+            let artifact: ForgeArtifact = serde_json::from_str(&content)
+                .with_context(|| format!("Failed to parse artifact: {}", path.display()))?;
+
+            let abi: JsonAbi = serde_json::from_value(artifact.abi)
+                .with_context(|| format!("Failed to parse ABI for {contract_name}"))?;
+
+            return Ok((contract_name, abi));
+        }
+    }
+
+    bail!("No contracts found in {}", sol_path.display())
+}
+
+/// Load ABI from a Rust project's target/abi/ folder (for stored contracts).
+pub fn load_rust_contract_abi(
+    project_path: &Path,
+    sol_path: &Path,
+) -> Result<Vec<(String, JsonAbi)>> {
+    let sol_path = sol_path
+        .canonicalize()
+        .with_context(|| format!("Failed to resolve path: {}", sol_path.display()))?;
+
+    let filename = sol_path
+        .file_stem()
+        .ok_or_else(|| anyhow::anyhow!("Invalid file path"))?
+        .to_string_lossy();
+
+    let artifact_dir = project_path
+        .join("target")
+        .join("abi")
+        .join(format!("{filename}.sol"));
+
+    if !artifact_dir.exists() {
+        let (name, abi) = compile_solidity_abi(project_path, &sol_path)?;
+        return Ok(vec![(name, abi)]);
+    }
+
+    let mut contracts = Vec::new();
+
+    for entry in std::fs::read_dir(&artifact_dir)? {
+        let entry = entry?;
+        let path = entry.path();
+
+        if path.extension().and_then(|e| e.to_str()) == Some("json") {
+            let contract_name = path
+                .file_stem()
+                .and_then(|n| n.to_str())
+                .unwrap_or_default()
+                .to_string();
+
+            let content = std::fs::read_to_string(&path)
+                .with_context(|| format!("Failed to read artifact: {}", path.display()))?;
+
+            let artifact: ForgeArtifact = serde_json::from_str(&content)
+                .with_context(|| format!("Failed to parse artifact: {}", path.display()))?;
+
+            let abi: JsonAbi = serde_json::from_value(artifact.abi)
+                .with_context(|| format!("Failed to parse ABI for {contract_name}"))?;
+
+            contracts.push((contract_name, abi));
+        }
+    }
+
+    if contracts.is_empty() {
+        bail!("No contracts found in {}", artifact_dir.display());
+    }
+
+    Ok(contracts)
 }

@@ -5,6 +5,8 @@ use std::collections::HashMap;
 use std::fs;
 use std::path::PathBuf;
 
+use crate::compile::ContractSource;
+
 const STORE_DIR: &str = ".evm-cli";
 const STORE_FILE: &str = "config.json";
 
@@ -64,7 +66,13 @@ impl Default for Config {
     }
 }
 
-/// A contract identifier consisting of file path and contract name
+#[derive(Debug, Clone, Serialize, Deserialize)]
+pub struct ContractEntry {
+    pub source: ContractSource,
+    #[serde(default)]
+    pub deployments: Vec<String>,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ContractId {
     pub path: PathBuf,
@@ -107,23 +115,27 @@ impl ContractId {
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct DeploymentStore {
-    /// Configuration settings
     #[serde(default)]
     pub config: Config,
-    /// Deployments: map of "path:ContractName" -> list of deployed addresses
-    /// Empty array means contract is saved but not yet deployed
     #[serde(default)]
-    deployments: HashMap<String, Vec<String>>,
-    /// Path to the config file (not serialized)
+    contracts: HashMap<String, ContractEntry>,
     #[serde(skip)]
     config_file_path: PathBuf,
+}
+
+#[derive(Debug, Deserialize)]
+struct LegacyStore {
+    #[serde(default)]
+    config: Config,
+    #[serde(default)]
+    deployments: HashMap<String, Vec<String>>,
 }
 
 impl Default for DeploymentStore {
     fn default() -> Self {
         Self {
             config: Config::default(),
-            deployments: HashMap::new(),
+            contracts: HashMap::new(),
             config_file_path: default_store_path(),
         }
     }
@@ -135,12 +147,10 @@ impl DeploymentStore {
         Self::load_from(None)
     }
 
-    /// Load from a specific path, or the default if None
     pub fn load_from(custom_path: Option<PathBuf>) -> Result<Self> {
         let path = custom_path.unwrap_or_else(default_store_path);
 
         let store = if !path.exists() {
-            // Create directory and default config file
             if let Some(parent) = path.parent() {
                 if !parent.exists() {
                     fs::create_dir_all(parent).with_context(|| {
@@ -150,10 +160,9 @@ impl DeploymentStore {
             }
             let store = Self {
                 config: Config::default(),
-                deployments: HashMap::new(),
+                contracts: HashMap::new(),
                 config_file_path: path.clone(),
             };
-            // Save the default config
             let content = serde_json::to_string_pretty(&store)
                 .context("Failed to serialize default config")?;
             fs::write(&path, content)
@@ -162,10 +171,35 @@ impl DeploymentStore {
         } else {
             let content = fs::read_to_string(&path)
                 .with_context(|| format!("Failed to read {}", path.display()))?;
-            let mut store: Self = serde_json::from_str(&content)
-                .with_context(|| format!("Failed to parse {}", path.display()))?;
-            store.config_file_path = path;
-            store
+
+            if let Ok(mut store) = serde_json::from_str::<Self>(&content) {
+                store.config_file_path = path;
+                store
+            } else if let Ok(old) = serde_json::from_str::<LegacyStore>(&content) {
+                let mut store = Self {
+                    config: old.config,
+                    contracts: HashMap::new(),
+                    config_file_path: path.clone(),
+                };
+                for (key, addresses) in old.deployments {
+                    if let Some(contract_id) = ContractId::from_key(&key) {
+                        let source = ContractSource::Solidity {
+                            sol_path: contract_id.path.clone(),
+                        };
+                        store.contracts.insert(
+                            key,
+                            ContractEntry {
+                                source,
+                                deployments: addresses,
+                            },
+                        );
+                    }
+                }
+                store.save()?;
+                store
+            } else {
+                anyhow::bail!("Failed to parse config file: {}", path.display());
+            }
         };
 
         Ok(store)
@@ -195,62 +229,76 @@ impl DeploymentStore {
 
     pub fn get_deployments(&self, contract_id: &ContractId) -> Vec<Address> {
         let key = contract_id.to_key();
-        self.deployments
+        self.contracts
             .get(&key)
-            .map(|addrs| addrs.iter().filter_map(|s| s.parse().ok()).collect())
+            .map(|entry| {
+                entry
+                    .deployments
+                    .iter()
+                    .filter_map(|s| s.parse().ok())
+                    .collect()
+            })
             .unwrap_or_default()
     }
 
-    pub fn add_deployment(&mut self, contract_id: &ContractId, address: Address) {
+    pub fn get_contract_source(&self, contract_id: &ContractId) -> Option<&ContractSource> {
+        let key = contract_id.to_key();
+        self.contracts.get(&key).map(|entry| &entry.source)
+    }
+
+    pub fn add_deployment(
+        &mut self,
+        contract_id: &ContractId,
+        address: Address,
+        source: ContractSource,
+    ) {
         let key = contract_id.to_key();
         let addr_str = format!("{address:?}");
 
-        let addrs = self.deployments.entry(key).or_default();
-        if !addrs.contains(&addr_str) {
-            addrs.push(addr_str);
+        let entry = self.contracts.entry(key).or_insert_with(|| ContractEntry {
+            source,
+            deployments: Vec::new(),
+        });
+        if !entry.deployments.contains(&addr_str) {
+            entry.deployments.push(addr_str);
         }
     }
 
-    /// Remove a specific deployment address from a contract
-    /// Note: The contract entry is preserved even if all deployments are removed
     pub fn remove_deployment(&mut self, contract_id: &ContractId, address: Address) -> bool {
         let key = contract_id.to_key();
         let addr_str = format!("{address:?}");
 
-        if let Some(addrs) = self.deployments.get_mut(&key) {
-            if let Some(pos) = addrs.iter().position(|a| a == &addr_str) {
-                addrs.remove(pos);
-                // Keep the contract entry even if no deployments left
-                // User must explicitly delete the contract to remove it
+        if let Some(entry) = self.contracts.get_mut(&key) {
+            if let Some(pos) = entry.deployments.iter().position(|a| a == &addr_str) {
+                entry.deployments.remove(pos);
                 return true;
             }
         }
         false
     }
 
-    /// Remove all deployments for a contract
     pub fn remove_contract(&mut self, contract_id: &ContractId) -> bool {
         let key = contract_id.to_key();
-        self.deployments.remove(&key).is_some()
+        self.contracts.remove(&key).is_some()
     }
 
-    /// Returns all contracts as ContractId
-    pub fn all_contracts(&self) -> Vec<ContractId> {
-        self.deployments
-            .keys()
-            .filter_map(|key| ContractId::from_key(key))
+    pub fn all_contracts(&self) -> Vec<(ContractId, &ContractSource)> {
+        self.contracts
+            .iter()
+            .filter_map(|(key, entry)| ContractId::from_key(key).map(|id| (id, &entry.source)))
             .collect()
     }
 
-    /// Ensure a contract exists in the store (with empty deployments if not yet deployed)
-    pub fn ensure_contract(&mut self, contract_id: &ContractId) {
+    pub fn ensure_contract(&mut self, contract_id: &ContractId, source: ContractSource) {
         let key = contract_id.to_key();
-        self.deployments.entry(key).or_default();
+        self.contracts.entry(key).or_insert_with(|| ContractEntry {
+            source,
+            deployments: Vec::new(),
+        });
     }
 
-    /// Clear all deployments
     pub fn clear(&mut self) {
-        self.deployments.clear();
+        self.contracts.clear();
     }
 }
 
@@ -259,12 +307,17 @@ mod tests {
     use super::*;
     use tempfile::TempDir;
 
-    /// Helper to create a test store with a temporary directory
     fn create_test_store() -> (DeploymentStore, TempDir) {
         let temp_dir = TempDir::new().unwrap();
         let config_path = temp_dir.path().join("config.json");
         let store = DeploymentStore::load_from(Some(config_path)).unwrap();
         (store, temp_dir)
+    }
+
+    fn sol_source(path: &str) -> ContractSource {
+        ContractSource::Solidity {
+            sol_path: PathBuf::from(path),
+        }
     }
 
     #[test]
@@ -321,18 +374,16 @@ mod tests {
         let temp_dir = TempDir::new().unwrap();
         let config_path = temp_dir.path().join("config.json");
 
-        // Create and modify store
         {
             let mut store = DeploymentStore::load_from(Some(config_path.clone())).unwrap();
             store.config.rpc_url = "http://custom:8545".to_string();
 
             let contract_id =
                 ContractId::new(PathBuf::from("/test/Contract.sol"), "Test".to_string());
-            store.ensure_contract(&contract_id);
+            store.ensure_contract(&contract_id, sol_source("/test/Contract.sol"));
             store.save().unwrap();
         }
 
-        // Reload and verify
         let store = DeploymentStore::load_from(Some(config_path)).unwrap();
         assert_eq!(store.config.rpc_url, "http://custom:8545");
         assert_eq!(store.all_contracts().len(), 1);
@@ -346,13 +397,10 @@ mod tests {
             .parse()
             .unwrap();
 
-        // Initially empty
         assert!(store.get_deployments(&contract_id).is_empty());
 
-        // Add deployment
-        store.add_deployment(&contract_id, address);
+        store.add_deployment(&contract_id, address, sol_source("/test/Contract.sol"));
 
-        // Verify
         let deployments = store.get_deployments(&contract_id);
         assert_eq!(deployments.len(), 1);
         assert_eq!(deployments[0], address);
@@ -365,9 +413,10 @@ mod tests {
         let address: Address = "0x1234567890123456789012345678901234567890"
             .parse()
             .unwrap();
+        let source = sol_source("/test/Contract.sol");
 
-        store.add_deployment(&contract_id, address);
-        store.add_deployment(&contract_id, address); // Duplicate
+        store.add_deployment(&contract_id, address, source.clone());
+        store.add_deployment(&contract_id, address, source);
 
         let deployments = store.get_deployments(&contract_id);
         assert_eq!(deployments.len(), 1);
@@ -383,12 +432,12 @@ mod tests {
         let address2: Address = "0xabcdefabcdefabcdefabcdefabcdefabcdefabcd"
             .parse()
             .unwrap();
+        let source = sol_source("/test/Contract.sol");
 
-        store.add_deployment(&contract_id, address1);
-        store.add_deployment(&contract_id, address2);
+        store.add_deployment(&contract_id, address1, source.clone());
+        store.add_deployment(&contract_id, address2, source);
         assert_eq!(store.get_deployments(&contract_id).len(), 2);
 
-        // Remove one
         let removed = store.remove_deployment(&contract_id, address1);
         assert!(removed);
 
@@ -396,7 +445,6 @@ mod tests {
         assert_eq!(deployments.len(), 1);
         assert_eq!(deployments[0], address2);
 
-        // Contract entry still exists (even with one deployment)
         assert_eq!(store.all_contracts().len(), 1);
     }
 
@@ -420,7 +468,7 @@ mod tests {
             .parse()
             .unwrap();
 
-        store.add_deployment(&contract_id, address);
+        store.add_deployment(&contract_id, address, sol_source("/test/Contract.sol"));
         assert_eq!(store.all_contracts().len(), 1);
 
         let removed = store.remove_contract(&contract_id);
@@ -433,9 +481,8 @@ mod tests {
         let (mut store, _temp_dir) = create_test_store();
         let contract_id = ContractId::new(PathBuf::from("/test/Contract.sol"), "Test".to_string());
 
-        store.ensure_contract(&contract_id);
+        store.ensure_contract(&contract_id, sol_source("/test/Contract.sol"));
 
-        // Contract exists but has no deployments
         assert_eq!(store.all_contracts().len(), 1);
         assert!(store.get_deployments(&contract_id).is_empty());
     }
@@ -450,8 +497,8 @@ mod tests {
             .parse()
             .unwrap();
 
-        store.add_deployment(&contract1, address);
-        store.add_deployment(&contract2, address);
+        store.add_deployment(&contract1, address, sol_source("/test/A.sol"));
+        store.add_deployment(&contract2, address, sol_source("/test/B.sol"));
         assert_eq!(store.all_contracts().len(), 2);
 
         store.clear();
@@ -465,13 +512,13 @@ mod tests {
         let contract1 = ContractId::new(PathBuf::from("/test/A.sol"), "ContractA".to_string());
         let contract2 = ContractId::new(PathBuf::from("/test/B.sol"), "ContractB".to_string());
 
-        store.ensure_contract(&contract1);
-        store.ensure_contract(&contract2);
+        store.ensure_contract(&contract1, sol_source("/test/A.sol"));
+        store.ensure_contract(&contract2, sol_source("/test/B.sol"));
 
         let contracts = store.all_contracts();
         assert_eq!(contracts.len(), 2);
 
-        let names: Vec<_> = contracts.iter().map(|c| c.name.as_str()).collect();
+        let names: Vec<_> = contracts.iter().map(|(id, _)| id.name.as_str()).collect();
         assert!(names.contains(&"ContractA"));
         assert!(names.contains(&"ContractB"));
     }
@@ -483,5 +530,51 @@ mod tests {
         let store = DeploymentStore::load_from(Some(config_path.clone())).unwrap();
 
         assert_eq!(store.config_path(), &config_path);
+    }
+
+    #[test]
+    fn test_rust_contract_source_storage() {
+        let temp_dir = TempDir::new().unwrap();
+        let config_path = temp_dir.path().join("config.json");
+
+        let contract_id = ContractId::new(PathBuf::from("/tmp/my-token"), "MyToken".to_string());
+        let rust_source = ContractSource::Rust {
+            project_path: PathBuf::from("/tmp/my-token"),
+            sol_path: PathBuf::from("/tmp/my-token/MyToken.sol"),
+            bin_target: "my-token".to_string(),
+            release_mode: true,
+        };
+        let address: Address = "0x1234567890123456789012345678901234567890"
+            .parse()
+            .unwrap();
+
+        {
+            let mut store = DeploymentStore::load_from(Some(config_path.clone())).unwrap();
+            store.add_deployment(&contract_id, address, rust_source.clone());
+            store.save().unwrap();
+        }
+
+        let store = DeploymentStore::load_from(Some(config_path)).unwrap();
+        let contracts = store.all_contracts();
+        assert_eq!(contracts.len(), 1);
+
+        let (id, source) = &contracts[0];
+        assert_eq!(id.name, "MyToken");
+        assert!(source.is_rust());
+
+        if let ContractSource::Rust {
+            project_path,
+            sol_path,
+            bin_target,
+            release_mode,
+        } = source
+        {
+            assert_eq!(project_path, &PathBuf::from("/tmp/my-token"));
+            assert_eq!(sol_path, &PathBuf::from("/tmp/my-token/MyToken.sol"));
+            assert_eq!(bin_target, "my-token");
+            assert!(release_mode);
+        } else {
+            panic!("Expected Rust source");
+        }
     }
 }

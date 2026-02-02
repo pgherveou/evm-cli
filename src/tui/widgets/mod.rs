@@ -7,6 +7,7 @@ pub mod keyboard_hints;
 pub mod output_area;
 pub mod parameter_popup;
 pub mod popup;
+pub mod rust_config_popup;
 pub mod selectable_list;
 pub mod status_bar;
 
@@ -21,5 +22,6 @@ pub use keyboard_hints::KeyboardHints;
 pub use output_area::OutputArea;
 pub use parameter_popup::ParameterPopup;
 pub use popup::Popup;
+pub use rust_config_popup::RustConfigPopup;
 pub use selectable_list::SelectableList;
 pub use status_bar::StatusBarWidget;

@@ -25,12 +25,13 @@ Wait+Screen /0x[0-9a-fA-F]/
 # Step 1: Contract with deployed instance is visible
 Screenshot tests/recordings/user-stories/contract-management/05-contract-01-initial.png
 
-# Step 2: Navigate to select the Demo contract (parent node)
-Type "kkkkk"
-Sleep 0.3s
+# Step 2: Navigate UP to select the Demo contract (3 ups from address at Sel:4 to Demo at Sel:1)
+Type "kkk"
+Sleep 0.5s
 Screenshot tests/recordings/user-stories/contract-management/05-contract-02-selected.png
 
 # Step 3: Press Delete to remove the contract (and all instances)
+Sleep 0.3s
 Delete
 Sleep 0.5s
 Screenshot tests/recordings/user-stories/contract-management/05-contract-03-deleted.png

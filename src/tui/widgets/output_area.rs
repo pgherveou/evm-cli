@@ -141,6 +141,7 @@ impl OutputArea<'_> {
             Card::Call { .. } => "Call",
             Card::Log { .. } => "Log",
             Card::Connection { .. } => "Connection",
+            Card::ContractLoading { .. } => "Contract Loading",
         };
 
         // Create left border and header
@@ -225,11 +226,52 @@ impl OutputArea<'_> {
 
                 content
             }
+            Card::ContractLoading {
+                source_type,
+                path,
+                bin_target,
+                release_mode,
+                status,
+                build_command,
+                contract_name,
+                ..
+            } => {
+                let mut content = vec![
+                    format!("  Type: {source_type}"),
+                    format!("  Path: {}", path.display()),
+                    format!("  Status: {status}"),
+                ];
+                if let Some(name) = contract_name {
+                    content.push(format!("  Contract: {name}"));
+                }
+                if let Some(target) = bin_target {
+                    content.push(format!("  Bin target: {target}"));
+                }
+                if let Some(release) = release_mode {
+                    content.push(format!(
+                        "  Mode: {}",
+                        if *release { "Release" } else { "Debug" }
+                    ));
+                }
+                if let Some(cmd) = build_command {
+                    content.push(format!("  Command: {cmd}"));
+                }
+                content
+            }
         };
 
         for content_line in content {
             let border = Span::styled("┃ ", border_style);
             let text = Span::styled(content_line, text_style);
+            lines.push(Line::from(vec![border, text]));
+        }
+
+        if let Card::ContractLoading {
+            error: Some(err), ..
+        } = card
+        {
+            let border = Span::styled("┃ ", border_style);
+            let text = Span::styled(format!("  Error: {err}"), Style::default().fg(Color::Red));
             lines.push(Line::from(vec![border, text]));
         }
 
@@ -254,6 +296,7 @@ impl OutputArea<'_> {
                         crate::cards::CardAction::ViewReceipt => "View Receipt (r)",
                         crate::cards::CardAction::DebugTrace => "Debug Trace (d)",
                         crate::cards::CardAction::DebugCall => "Debug Call (d)",
+                        crate::cards::CardAction::ViewDetails => "View Details (v)",
                     };
                     action_spans.push(Span::styled(action_text, text_style));
                 }

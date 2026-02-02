@@ -11,19 +11,22 @@ use ratatui::{
 use std::path::PathBuf;
 use std::sync::Arc;
 
-/// Tree node types for the sidebar
-/// Each node is self-contained with all the data it needs to execute
 #[derive(Debug, Clone)]
+#[allow(dead_code)]
 pub enum TreeNode {
-    NewContract,
+    LoadContractMenu,
+    LoadSolidity,
+    LoadRust,
     Contract {
         name: String,
         path: PathBuf,
+        is_rust: bool,
     },
     Constructor {
         contract_name: String,
         contract_path: PathBuf,
         abi: Arc<JsonAbi>,
+        is_rust: bool,
     },
     LoadExistingInstance {
         contract_name: String,
@@ -45,8 +48,16 @@ pub enum TreeNode {
 impl TreeNode {
     pub fn label(&self) -> String {
         match self {
-            TreeNode::NewContract => "Load new contract...".to_string(),
-            TreeNode::Contract { name, .. } => name.clone(),
+            TreeNode::LoadContractMenu => "Load contract...".to_string(),
+            TreeNode::LoadSolidity => "Solidity (.sol)".to_string(),
+            TreeNode::LoadRust => "Rust (Cargo project)".to_string(),
+            TreeNode::Contract { name, is_rust, .. } => {
+                if *is_rust {
+                    format!("{} [Rust/PVM]", name)
+                } else {
+                    name.clone()
+                }
+            }
             TreeNode::Constructor { .. } => "Deploy new instance".to_string(),
             TreeNode::LoadExistingInstance { .. } => "Load existing instance...".to_string(),
             TreeNode::DeployedInstance { address, .. } => {
@@ -71,7 +82,9 @@ impl TreeNode {
 
     pub fn depth(&self) -> usize {
         match self {
-            TreeNode::NewContract => 0,
+            TreeNode::LoadContractMenu => 0,
+            TreeNode::LoadSolidity => 1,
+            TreeNode::LoadRust => 1,
             TreeNode::Contract { .. } => 0,
             TreeNode::Constructor { .. } => 1,
             TreeNode::LoadExistingInstance { .. } => 1,
@@ -155,9 +168,17 @@ impl Widget for ContractTree<'_> {
             let depth = node.depth();
             let indent = "  ".repeat(depth);
 
-            // Determine prefix based on node type
             let prefix = match node {
-                TreeNode::Contract { path, name } => {
+                TreeNode::LoadContractMenu => {
+                    if self.state.load_menu_expanded {
+                        "▾ "
+                    } else {
+                        "▸ "
+                    }
+                }
+                TreeNode::LoadSolidity => "├ ",
+                TreeNode::LoadRust => "└ ",
+                TreeNode::Contract { path, name, .. } => {
                     if self
                         .state
                         .expanded_contracts
@@ -175,7 +196,6 @@ impl Widget for ContractTree<'_> {
                         "▸ "
                     }
                 }
-                TreeNode::NewContract => "+ ",
                 TreeNode::Constructor { .. } => "◇ ",
                 TreeNode::LoadExistingInstance { .. } => "◇ ",
                 TreeNode::Method { .. } => "├ ",
@@ -183,7 +203,6 @@ impl Widget for ContractTree<'_> {
 
             let label = node.label();
 
-            // Style based on selection and node type
             let style = if is_selected {
                 Style::default()
                     .bg(Color::Cyan)
@@ -191,10 +210,20 @@ impl Widget for ContractTree<'_> {
                     .add_modifier(Modifier::BOLD)
             } else {
                 match node {
-                    TreeNode::NewContract => Style::default().fg(Color::Yellow),
-                    TreeNode::Contract { .. } => Style::default()
-                        .fg(Color::Cyan)
-                        .add_modifier(Modifier::BOLD),
+                    TreeNode::LoadContractMenu => Style::default().fg(Color::Yellow),
+                    TreeNode::LoadSolidity => Style::default().fg(Color::Yellow),
+                    TreeNode::LoadRust => Style::default().fg(Color::Yellow),
+                    TreeNode::Contract { is_rust, .. } => {
+                        if *is_rust {
+                            Style::default()
+                                .fg(Color::Magenta)
+                                .add_modifier(Modifier::BOLD)
+                        } else {
+                            Style::default()
+                                .fg(Color::Cyan)
+                                .add_modifier(Modifier::BOLD)
+                        }
+                    }
                     TreeNode::Constructor { .. } => Style::default().fg(Color::Green),
                     TreeNode::LoadExistingInstance { .. } => Style::default().fg(Color::Yellow),
                     TreeNode::DeployedInstance { .. } => Style::default().fg(Color::Green),

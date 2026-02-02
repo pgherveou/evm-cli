@@ -1,8 +1,9 @@
 use alloy::primitives::{Address, TxHash};
 use std::fmt;
+use std::path::PathBuf;
 
-/// Represents a single output card that can be displayed and interacted with
 #[derive(Clone, Debug)]
+#[allow(dead_code)]
 pub enum Card {
     Transaction {
         hash: TxHash,
@@ -29,6 +30,55 @@ pub enum Card {
         chain_id: Option<u64>,
         error: Option<String>,
     },
+    ContractLoading {
+        source_type: ContractSourceType,
+        path: PathBuf,
+        bin_target: Option<String>,
+        release_mode: Option<bool>,
+        status: LoadingStatus,
+        build_command: Option<String>,
+        evm_bytecode_path: Option<PathBuf>,
+        pvm_bytecode_path: Option<PathBuf>,
+        contract_name: Option<String>,
+        error: Option<String>,
+        error_details: Option<String>,
+    },
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum ContractSourceType {
+    #[allow(dead_code)]
+    Solidity,
+    Rust,
+}
+
+impl fmt::Display for ContractSourceType {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ContractSourceType::Solidity => write!(f, "Solidity"),
+            ContractSourceType::Rust => write!(f, "Rust (cargo-pvm-contract)"),
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum LoadingStatus {
+    Building,
+    Success,
+    Failed,
+    #[allow(dead_code)]
+    Cancelled,
+}
+
+impl fmt::Display for LoadingStatus {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            LoadingStatus::Building => write!(f, "Building..."),
+            LoadingStatus::Success => write!(f, "Loaded"),
+            LoadingStatus::Failed => write!(f, "Failed"),
+            LoadingStatus::Cancelled => write!(f, "Cancelled"),
+        }
+    }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -47,19 +97,24 @@ impl fmt::Display for TransactionStatus {
 }
 
 impl Card {
-    /// Determine if this card is interactive (has a menu)
     pub fn is_interactive(&self) -> bool {
-        matches!(self, Card::Transaction { .. } | Card::Call { .. })
+        match self {
+            Card::Transaction { .. } | Card::Call { .. } => true,
+            Card::ContractLoading { status, .. } => {
+                *status == LoadingStatus::Building || *status == LoadingStatus::Failed
+            }
+            _ => false,
+        }
     }
 }
 
-/// Menu options available for cards
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum CardAction {
     ViewReceipt,
     DebugTrace,
     DebugCall,
     Copy,
+    ViewDetails,
 }
 
 impl fmt::Display for CardAction {
@@ -69,11 +124,25 @@ impl fmt::Display for CardAction {
             CardAction::DebugTrace => write!(f, "Debug Trace"),
             CardAction::DebugCall => write!(f, "Debug Call"),
             CardAction::Copy => write!(f, "Copy"),
+            CardAction::ViewDetails => write!(f, "View Details"),
         }
     }
 }
 
-/// Get available actions for a card type
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[allow(dead_code)]
+pub enum ContractLoadingAction {
+    Cancel,
+}
+
+impl fmt::Display for ContractLoadingAction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ContractLoadingAction::Cancel => write!(f, "Cancel"),
+        }
+    }
+}
+
 pub fn get_card_actions(card: &Card) -> Vec<CardAction> {
     match card {
         Card::Transaction { .. } => vec![
@@ -84,6 +153,13 @@ pub fn get_card_actions(card: &Card) -> Vec<CardAction> {
         Card::Call { .. } => vec![CardAction::DebugCall],
         Card::Log { .. } => vec![],
         Card::Connection { .. } => vec![],
+        Card::ContractLoading { status, .. } => {
+            if *status == LoadingStatus::Failed {
+                vec![CardAction::ViewDetails]
+            } else {
+                vec![]
+            }
+        }
     }
 }
 

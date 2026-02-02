@@ -207,6 +207,25 @@
         .modal .nav.prev { left: 10px; }
         .modal .nav.next { right: 10px; }
         .modal .nav:hover { color: #00d9ff; }
+        .modal-title {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #00d9ff;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            max-width: 80%;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+        .modal-title .step {
+            display: block;
+            font-size: 14px;
+            font-weight: normal;
+            color: #aaa;
+            margin-top: 5px;
+        }
         .hidden {
             display: none !important;
         }
@@ -252,10 +271,6 @@
                 <div class="number">22</div>
                 <div class="label">User Stories</div>
             </div>
-            <div class="summary-stat">
-                <div class="number">1</div>
-                <div class="label">Known Bugs</div>
-            </div>
         </div>
     </div>
 
@@ -274,10 +289,7 @@
         <div class="user-story-section" data-category="contract-management">
             <div class="story-header" onclick="toggleSection(this)">
                 <h2>Contract Management</h2>
-                <div class="badge">
-                    <span class="bug-badge">1 Bug</span>
-                    <span class="count">6 Stories</span>
-                </div>
+                <span class="count">6 Stories</span>
             </div>
             
             <div class="user-story">
@@ -358,20 +370,24 @@
                 </div>
                 <div class="screenshots" data-story="03-load-existing">
                     <div class="screenshot-card">
-                        <img src="contract-management/03-existing-01-select.png" alt="Step 1" onclick="openModal(this.src)">
-                        <div class="info"><div class="step">Step 1: Select load existing</div><div class="filename">03-existing-01-select.png</div></div>
+                        <img src="contract-management/03-existing-01-deployed.png" alt="Step 1" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 1: Contract deployed</div><div class="filename">03-existing-01-deployed.png</div></div>
                     </div>
                     <div class="screenshot-card">
-                        <img src="contract-management/03-existing-02-prompt.png" alt="Step 2" onclick="openModal(this.src)">
-                        <div class="info"><div class="step">Step 2: Address prompt</div><div class="filename">03-existing-02-prompt.png</div></div>
+                        <img src="contract-management/03-existing-02-select.png" alt="Step 2" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 2: Select load existing</div><div class="filename">03-existing-02-select.png</div></div>
                     </div>
                     <div class="screenshot-card">
-                        <img src="contract-management/03-existing-03-address.png" alt="Step 3" onclick="openModal(this.src)">
-                        <div class="info"><div class="step">Step 3: Enter address</div><div class="filename">03-existing-03-address.png</div></div>
+                        <img src="contract-management/03-existing-03-prompt.png" alt="Step 3" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 3: Address prompt</div><div class="filename">03-existing-03-prompt.png</div></div>
                     </div>
                     <div class="screenshot-card">
-                        <img src="contract-management/03-existing-04-loaded.png" alt="Step 4" onclick="openModal(this.src)">
-                        <div class="info"><div class="step">Step 4: Instance loaded</div><div class="filename">03-existing-04-loaded.png</div></div>
+                        <img src="contract-management/03-existing-04-address.png" alt="Step 4" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 4: Enter address</div><div class="filename">03-existing-04-address.png</div></div>
+                    </div>
+                    <div class="screenshot-card">
+                        <img src="contract-management/03-existing-05-loaded.png" alt="Step 5" onclick="openModal(this.src)">
+                        <div class="info"><div class="step">Step 5: Instance loaded</div><div class="filename">03-existing-05-loaded.png</div></div>
                     </div>
                 </div>
             </div>
@@ -430,14 +446,14 @@
             </div>
 
             <div class="user-story">
-                <h3 class="bug">06. Delete Second Contract (BUG)</h3>
-                <p class="description"><strong>BUG:</strong> When deleting the second contract, deployed addresses are removed but the contract itself remains in the sidebar.</p>
+                <h3>06. Delete Second Contract</h3>
+                <p class="description">As a developer with multiple contracts loaded, I want to delete any contract and have it fully removed including all its instances.</p>
                 <div class="acceptance-criteria">
-                    <h4>Expected vs Actual</h4>
+                    <h4>Acceptance Criteria</h4>
                     <ul>
-                        <li><strong>Expected:</strong> Deleting second contract removes it entirely</li>
-                        <li><strong>Actual:</strong> Deployed addresses removed, but contract entry remains</li>
-                        <li>Related: AC-CM-21 (Deleting contract removes all its instances)</li>
+                        <li>AC-CM-20: Delete/Backspace removes item immediately (no confirmation)</li>
+                        <li>AC-CM-21: Deleting contract removes all its instances</li>
+                        <li>AC-CM-22: Deletion persists to config.json</li>
                     </ul>
                 </div>
                 <div class="screenshots" data-story="06-delete-second">
@@ -463,11 +479,11 @@
                     </div>
                     <div class="screenshot-card">
                         <img src="contract-management/06-second-06-after-delete.png" alt="Step 6" onclick="openModal(this.src)">
-                        <div class="info"><div class="step">Step 6: After delete (BUG)</div><div class="filename">06-second-06-after-delete.png</div></div>
+                        <div class="info"><div class="step">Step 6: Second contract deleted</div><div class="filename">06-second-06-after-delete.png</div></div>
                     </div>
                     <div class="screenshot-card">
                         <img src="contract-management/06-second-07-final-state.png" alt="Step 7" onclick="openModal(this.src)">
-                        <div class="info"><div class="step">Step 7: Final state</div><div class="filename">06-second-07-final-state.png</div></div>
+                        <div class="info"><div class="step">Step 7: Only first contract remains</div><div class="filename">06-second-07-final-state.png</div></div>
                     </div>
                 </div>
             </div>
@@ -1165,6 +1181,7 @@
 
     <div class="modal" id="modal">
         <span class="close" onclick="closeModal()">&times;</span>
+        <div class="modal-title" id="modal-title"></div>
         <span class="nav prev" onclick="navigateModal(-1)">&#10094;</span>
         <img id="modal-img" src="" alt="">
         <span class="nav next" onclick="navigateModal(1)">&#10095;</span>
@@ -1174,9 +1191,18 @@
         let allImages = [];
         let currentImageIndex = 0;
 
-        // Collect all images
-        document.querySelectorAll('.screenshot-card img').forEach(img => {
-            allImages.push(img.src);
+        // Collect all images with their titles and step info
+        document.querySelectorAll('.screenshot-card').forEach(card => {
+            const img = card.querySelector('img');
+            const stepEl = card.querySelector('.step');
+            const userStory = card.closest('.user-story');
+            const title = userStory ? userStory.querySelector('h3').textContent : '';
+            const step = stepEl ? stepEl.textContent : '';
+            allImages.push({
+                src: img.src,
+                title: title,
+                step: step
+            });
         });
 
         function toggleSection(header) {
@@ -1185,9 +1211,16 @@
             stories.forEach(story => story.classList.toggle('hidden'));
         }
 
+        function updateModalTitle() {
+            const info = allImages[currentImageIndex];
+            const titleEl = document.getElementById('modal-title');
+            titleEl.innerHTML = info.title + '<span class="step">' + info.step + '</span>';
+        }
+
         function openModal(src) {
-            currentImageIndex = allImages.indexOf(src);
+            currentImageIndex = allImages.findIndex(img => img.src === src);
             document.getElementById('modal-img').src = src;
+            updateModalTitle();
             document.getElementById('modal').classList.add('active');
         }
 
@@ -1197,7 +1230,8 @@
 
         function navigateModal(direction) {
             currentImageIndex = (currentImageIndex + direction + allImages.length) % allImages.length;
-            document.getElementById('modal-img').src = allImages[currentImageIndex];
+            document.getElementById('modal-img').src = allImages[currentImageIndex].src;
+            updateModalTitle();
         }
 
         document.addEventListener('keydown', (e) => {

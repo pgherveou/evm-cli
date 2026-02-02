@@ -9,24 +9,33 @@ The Contracts Menu is a persistent sidebar displaying all loaded contracts and t
 ### Hierarchy Levels
 
 ```
-+ Load new contract...     ← Level 0: File picker action
-▾ Counter                  ← Level 1: Loaded contract (without .sol extension)
-  ◇ Deploy new instance    ← Level 2: Deploy action
-  ◇ Load existing instance... ← Level 2: Load existing instance action
-  ▾ 0x12...ab              ← Level 2: Deployed instance (address)
-    ├ increment() [send]   ← Level 3: State-changing method
-    ├ retrieve() [view]    ← Level 3: View method (no params)
-    └ store(_value: uint256) [send] ← Level 3: Method with parameter name and type
-▸ MyToken                  ← Level 1: Collapsed contract
+▸ Load contract...         ← Level 0: Contract loader menu (expandable)
+  ├ Solidity (.sol)        ← Level 1: Solidity file picker
+  └ Rust (Cargo project)   ← Level 1: Rust project picker
+▾ Counter                  ← Level 0: Loaded Solidity contract
+  ◇ Deploy new instance    ← Level 1: Deploy action
+  ◇ Load existing instance... ← Level 1: Load existing instance action
+  ▾ 0x12...ab              ← Level 1: Deployed instance (address)
+    ├ increment() [send]   ← Level 2: State-changing method
+    ├ retrieve() [view]    ← Level 2: View method (no params)
+    └ store(_value: uint256) [send] ← Level 2: Method with parameter name and type
+▸ MyToken                  ← Level 0: Collapsed contract
+▾ my-token [Rust/PVM]      ← Level 0: Loaded Rust contract (tagged)
+  ◇ Deploy new instance    ← Level 1: Deploy action (PVM only)
+  ◇ Load existing instance... ← Level 1: Load existing instance action
 ```
 
 ### Item Types and Visual Indicators
 
 | Item Type | Indicator | Example | Description |
 |-----------|-----------|---------|-------------|
-| Load Action | `+` | `+ Load new contract...` | Opens file picker to load `.sol` file |
+| Load Menu (Collapsed) | `▸` | `▸ Load contract...` | Expandable menu for loading contracts |
+| Load Menu (Expanded) | `▾` | `▾ Load contract...` | Shows Solidity and Rust options |
+| Load Solidity | `├` | `├ Solidity (.sol)` | Opens file picker for .sol files |
+| Load Rust | `└` | `└ Rust (Cargo project)` | Opens folder picker for Cargo.toml projects |
 | Contract (Expanded) | `▾` | `▾ Counter` | Loaded contract, expanded to show instances |
 | Contract (Collapsed) | `▸` | `▸ MyToken` | Loaded contract, collapsed |
+| Rust Contract | `▾` + tag | `▾ my-token [Rust/PVM]` | Loaded Rust contract (PVM-only indicator) |
 | Deploy Action | `◇` | `◇ Deploy new instance` | Deploy new instance with constructor params |
 | Load Existing | `◇` | `◇ Load existing...` | Load already-deployed instance by address |
 | Deployed Instance | Address | `▾ 0x12...ab` | Deployed instance (address truncated) |
@@ -110,26 +119,178 @@ For detailed keyboard controls and navigation behavior, see [UI Navigation & Key
 
 ## Interactions
 
-### Load New Contract
+### Load Contract Menu
 
-**Action:** Press `Enter` on "Load new contract"
+The "Load contract..." item is an expandable menu that provides two options for loading contracts.
+
+**Action:** Press `Enter` or `l` on "Load contract..."
+
+**Behavior:**
+1. Menu expands to show contract type options
+2. Use `j`/`k` to navigate between options
+3. Press `Enter` to select an option
+4. Press `h` or `Escape` to collapse menu
+
+**Visual States:**
+
+Collapsed:
+```
+▸ Load contract...
+▾ Counter
+```
+
+Expanded:
+```
+▾ Load contract...
+  ├ Solidity (.sol)          ← Select to load Solidity contract
+  └ Rust (Cargo project)     ← Select to load Rust contract
+▾ Counter
+```
+
+---
+
+### Load Solidity Contract
+
+**Action:** Press `Enter` on "Solidity (.sol)"
 
 **Behavior:**
 1. Opens file picker dialog
 2. Filters for `.sol` files
-3. Supports autocomplete/search
-4. On selection:
-   - Creates a "Loading contract card" in the output panel (See [output-panel.md](./output-panel.md) for card details)
-   - Contract loaded and compiled
-   - Contract added to sidebar as new node
-   - Contract automatically expanded
-   - Becomes the selected item
-   - Methods displayed under contract
+3. Supports autocomplete/search with Tab
+4. On file selection:
+   - Creates "Contract Loading" card in output panel (status: Compiling)
+   - Runs `forge build` to compile contract
+   - On success: Card updates to "Contract Loaded", contract added to sidebar
+   - On failure: Card updates to "Contract Load Failed" with error details
+5. Contract automatically expanded with "Deploy new instance" visible
+
+**Contract Loading Card shows:**
+- Source type: Solidity
+- File path
+- Build command executed
+- Bytecode locations (EVM and PVM if available)
 
 **Error Handling:**
 - File not found: Show error in output panel
-- Compilation failed: Display error details
+- Compilation failed: Display error details in card
 - Invalid contract file: Reject and prompt user
+
+---
+
+### Load Rust Contract
+
+**Action:** Press `Enter` on "Rust (Cargo project)"
+
+**Behavior:**
+1. Opens folder picker dialog
+2. User enters path to folder containing `Cargo.toml`
+3. System validates `Cargo.toml` exists and parses it
+4. **Rust Contract Configuration popup** appears with:
+   - Binary target selection (from `[[bin]]` entries)
+   - Solidity interface selection (auto-matched by name)
+   - Build mode toggle (Release/Debug)
+5. On confirmation:
+   - Creates "Contract Loading" card in output panel (status: Building)
+   - Runs `cargo build [--release] --bin <target>`
+   - Runs `forge build` on selected `.sol` interface for ABI
+   - On success: Card updates, contract added to sidebar
+   - On failure: Card updates with cargo error output
+
+**Important:** Rust contracts only support PVM deployment. The EVM target option is disabled when deploying Rust contracts.
+
+**Error Handling:**
+- No Cargo.toml found: Show error in output panel
+- No `[[bin]]` targets: Show error "No binary targets found in Cargo.toml"
+- No .sol files: Show error "No Solidity interface files found"
+- Build failed: Display cargo error output in card
+
+---
+
+### Rust Contract Configuration Popup
+
+When loading a Rust contract, a configuration popup appears to select build options.
+
+**Visual:**
+```
+┌─────────────────────────────────────────────────────────┐
+│ Load Rust Contract                                      │
+│                                                         │
+│ Project: /tmp/my-token                                  │
+│                                                         │
+│ Binary Target:                                          │
+│ > ● my-token                                            │
+│   ○ other-bin                                           │
+│                                                         │
+│ Solidity Interface:                                     │
+│   ● MyToken.sol  (matched)                              │
+│   ○ OtherInterface.sol                                  │
+│                                                         │
+│ Build Mode:                                             │
+│   ● Release                                             │
+│   ○ Debug                                               │
+│                                                         │
+│                        [Load]  [Cancel]                 │
+└─────────────────────────────────────────────────────────┘
+```
+
+**Fields:**
+
+| Field | Description | Auto-selection |
+|-------|-------------|----------------|
+| Binary Target | `[[bin]]` entries from Cargo.toml | First if single, else requires selection |
+| Solidity Interface | `.sol` files found in project | Auto-matched by name (see below) |
+| Build Mode | Release or Debug compilation | Default: Release |
+
+**Auto-matching Solidity Interface:**
+
+The system attempts to match the Solidity interface file to the binary target name:
+
+| Binary Name | Matched .sol File |
+|-------------|-------------------|
+| `my-token` | `MyToken.sol` (kebab-case → PascalCase) |
+| `my_token` | `MyToken.sol` (snake_case → PascalCase) |
+| `mytoken` | `Mytoken.sol` or `MyToken.sol` (case-insensitive) |
+
+If no match found, user must manually select.
+
+**Navigation:**
+- `Tab` or `j`/`k`: Move between fields
+- `Space` or `Enter` on radio: Toggle selection
+- `Enter` on [Load]: Confirm and start loading
+- `Escape` or `Enter` on [Cancel]: Cancel and close
+
+**Validation:**
+- Binary target must be selected
+- Solidity interface must be selected
+- If Cargo.toml has no `[[bin]]` entries: Show error, close popup
+
+---
+
+### Deploy Rust Contract Instance
+
+**Action:** Press `Enter` on "Deploy new instance" under a Rust contract
+
+**Behavior:**
+1. Shows Parameter Input Popup for constructor args
+2. **Target selection is locked to PVM** (EVM greyed out)
+3. Bytecode loaded from `target/<name>.polkavm` (or debug variant based on build mode)
+4. Deployment proceeds as normal PVM transaction
+
+**Visual (Parameter Popup for Rust contract):**
+```
+┌─────────────────────────────────────────────────────────┐
+│ Deploy my-token                                         │
+│                                                         │
+│ Target:                                                 │
+│   ○ EVM  (not available for Rust contracts)             │
+│   ● PVM                                                 │
+│                                                         │
+│ Constructor Parameters:                                 │
+│   initialSupply: [1000000_______________]               │
+│                                                         │
+│                       [Deploy]  [Cancel]                │
+└─────────────────────────────────────────────────────────┘
+```
 
 ### Deploy New Instance
 
@@ -306,7 +467,7 @@ If contract compilation succeeds but ABI parsing fails:
 ## Acceptance Criteria
 
 ### Tree Structure
-- **AC-CM-1**: "Load new contract" appears at top of sidebar
+- **AC-CM-1**: "Load contract..." appears at top of sidebar as expandable menu
 - **AC-CM-2**: Contracts display with ▾/▸ expansion indicators
 - **AC-CM-3**: Methods show type tags [view] or [send]
 - **AC-CM-4**: Methods display parameter names and types inline
@@ -322,21 +483,37 @@ If contract compilation succeeds but ABI parsing fails:
 - **AC-CM-10**: Instance auto-expands when deployed
 - **AC-CM-11**: Instance auto-expands when loaded by address
 
-### Load Contract
-- **AC-CM-12**: Enter on "Load new contract" opens file picker
-- **AC-CM-13**: File picker filters for .sol files
-- **AC-CM-14**: Tab autocompletes path in file picker
+### Load Contract Menu
+- **AC-CM-12**: "Load contract..." expands with Enter or l
+- **AC-CM-13**: Menu shows "Solidity (.sol)" and "Rust (Cargo project)" options
+- **AC-CM-14**: Menu collapses with h or Escape
+
+### Load Solidity Contract
+- **AC-CM-15**: "Solidity (.sol)" opens file picker filtered for .sol files
+- **AC-CM-16**: Tab autocompletes path in file picker
+- **AC-CM-17**: Contract Loading card created immediately on file selection
+- **AC-CM-18**: Card updates to success/failure state after compilation
+
+### Load Rust Contract
+- **AC-CM-19**: "Rust (Cargo project)" opens folder picker
+- **AC-CM-20**: Configuration popup appears after folder selection
+- **AC-CM-21**: Binary targets parsed from Cargo.toml [[bin]] entries
+- **AC-CM-22**: Solidity interface auto-matched by name when possible
+- **AC-CM-23**: Build mode defaults to Release
+- **AC-CM-24**: Contract Loading card shows cargo build progress
+- **AC-CM-25**: Rust contracts tagged with [Rust/PVM] in sidebar
 
 ### Deploy Instance
-- **AC-CM-15**: Enter on "Deploy new instance" shows parameter popup
-- **AC-CM-16**: Parameter popup includes EVM/PVM target selection
-- **AC-CM-17**: Deployed instance address appears in tree after deployment
+- **AC-CM-26**: Enter on "Deploy new instance" shows parameter popup
+- **AC-CM-27**: Solidity contracts: Parameter popup includes EVM/PVM target selection
+- **AC-CM-28**: Rust contracts: EVM target disabled, PVM auto-selected
+- **AC-CM-29**: Deployed instance address appears in tree after deployment
 
 ### Load Existing
-- **AC-CM-18**: Enter on "Load existing..." prompts for address
-- **AC-CM-19**: Valid address adds instance to tree
+- **AC-CM-30**: Enter on "Load existing..." prompts for address
+- **AC-CM-31**: Valid address adds instance to tree
 
 ### Delete
-- **AC-CM-20**: Delete/Backspace removes item immediately (no confirmation)
-- **AC-CM-21**: Deleting contract removes all its instances
-- **AC-CM-22**: Deletion persists to config.json
+- **AC-CM-32**: Delete/Backspace removes item immediately (no confirmation)
+- **AC-CM-33**: Deleting contract removes all its instances
+- **AC-CM-34**: Deletion persists to config.json

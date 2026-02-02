@@ -24,8 +24,7 @@ Wait+Screen /0x[0-9a-fA-F]/
 # Step 1: Instance is deployed and visible
 Screenshot tests/recordings/user-stories/contract-management/04-delete-01-deployed.png
 
-# Step 2: Navigate to select the deployed instance (the address line)
-Type "jjjj"
+# Step 2: Cursor is already on the deployed address (Sel:4) after deploy - take screenshot
 Sleep 0.3s
 Screenshot tests/recordings/user-stories/contract-management/04-delete-02-selected.png
 

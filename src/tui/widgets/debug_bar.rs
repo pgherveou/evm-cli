@@ -35,6 +35,7 @@ impl<'a> DebugBarWidget<'a> {
             PopupState::TracerMenu { .. } => "TracerMenu",
             PopupState::TracerConfig { .. } => "TracerConfig",
             PopupState::CopyMenu { .. } => "CopyMenu",
+            PopupState::RustContractConfig { .. } => "RustContractConfig",
         }
     }
 }
