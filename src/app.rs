@@ -430,49 +430,11 @@ impl<P: Provider + Clone> App<P> {
                 continue;
             }
 
-            // Check if we need to open the config editor
             if self.edit_config_requested {
                 self.edit_config_requested = false;
-
-                // Restore terminal before launching editor
                 crate::tui::restore(&mut terminal)?;
-
-                // Open editor
                 self.open_config_in_editor()?;
-
-                // Reload store to pick up changes
-                match DeploymentStore::load() {
-                    Ok(store) => {
-                        self.store = store;
-                        // Reset sidebar selection to ensure it's valid after reload
-                        self.state.sidebar.selected = 0;
-                        self.state.sidebar.scroll_offset = 0;
-                        
-                        // Update signer address from new config (if private key changed)
-                        if let Ok(new_signer) = self.store.config.private_key
-                            .strip_prefix("0x")
-                            .unwrap_or(&self.store.config.private_key)
-                            .parse::<alloy::signers::local::PrivateKeySigner>()
-                        {
-                            let new_address = new_signer.address();
-                            if new_address != self.signer_address {
-                                self.signer_address = new_address;
-                                self.state.account = Some(new_address);
-                                self.state.output.push_info("Account updated from config");
-                            }
-                        }
-                        
-                        self.state.output.push_success("Config reloaded");
-                        self.state.output.push_info("Note: RPC URL changes require restart");
-                    }
-                    Err(e) => {
-                        self.state.output.push_error(format!("Failed to reload config: {e}"));
-                    }
-                }
-                
-                // Refresh connection status and balance with new account
-                self.try_connect().await;
-
+                self.reload_config().await;
                 terminal = crate::tui::setup()?;
                 continue;
             }
@@ -534,12 +496,10 @@ impl<P: Provider + Clone> App<P> {
 
         let config_path = self.store.config_path();
 
-        // Ensure config file exists
         if !config_path.exists() {
             self.store.save()?;
         }
 
-        // Get editor from environment, fallback to common editors
         let editor = std::env::var("EDITOR")
             .or_else(|_| std::env::var("VISUAL"))
             .unwrap_or_else(|_| "vi".to_string());
@@ -550,6 +510,37 @@ impl<P: Provider + Clone> App<P> {
             .with_context(|| format!("Failed to open {} with {editor}", config_path.display()))?;
 
         Ok(())
+    }
+
+    async fn reload_config(&mut self) {
+        match DeploymentStore::load() {
+            Ok(store) => {
+                self.store = store;
+                self.state.sidebar.selected = 0;
+                self.state.sidebar.scroll_offset = 0;
+                
+                if let Ok(new_signer) = self.store.config.private_key
+                    .strip_prefix("0x")
+                    .unwrap_or(&self.store.config.private_key)
+                    .parse::<alloy::signers::local::PrivateKeySigner>()
+                {
+                    let new_address = new_signer.address();
+                    if new_address != self.signer_address {
+                        self.signer_address = new_address;
+                        self.state.account = Some(new_address);
+                        self.state.output.push_info("Account updated from config");
+                    }
+                }
+                
+                self.state.output.push_success("Config reloaded");
+                self.state.output.push_info("Note: RPC URL changes require restart");
+            }
+            Err(e) => {
+                self.state.output.push_error(format!("Failed to reload config: {e}"));
+            }
+        }
+        
+        self.try_connect().await;
     }
 
     fn render(&self, frame: &mut Frame) {
@@ -1984,7 +1975,7 @@ impl<P: Provider + Clone> App<P> {
         address: Address,
         args: Vec<DynSolValue>,
     ) {
-        let contract_name = self.contract.as_ref().map(|c| c.name.as_str()).unwrap_or("Unknown");
+        let contract_name = self.contract.as_ref().map(|c| c.name.clone()).unwrap_or_else(|| "Unknown".to_string());
         log::info!(
             "[CALL] do_call_function: {}.{}({:?}) at {:?}",
             contract_name,
@@ -1998,7 +1989,6 @@ impl<P: Provider + Clone> App<P> {
             alloy::json_abi::StateMutability::View | alloy::json_abi::StateMutability::Pure
         );
 
-        // Check connection status for state-changing functions
         if !is_view && matches!(self.state.connection, ConnectionStatus::Disconnected) {
             self.add_log_card(format!("Cannot call {}: not connected to RPC", func.name));
             return;
@@ -2013,131 +2003,147 @@ impl<P: Provider + Clone> App<P> {
         };
 
         if is_view {
-            let tx = TransactionRequest::default()
-                .to(address)
-                .input(calldata.into());
-
-            let result = match self.provider.call(tx).await {
-                Ok(r) => r,
-                Err(e) => {
-                    self.push_error_and_scroll(format!("Call to {contract_name} {address:?} failed: {e}"));
-                    return;
-                }
-            };
-
-            let decoded = match func.abi_decode_output(&result) {
-                Ok(d) => d,
-                Err(e) => {
-                    self.push_error_and_scroll(format!("Failed to decode return value: {e}"));
-                    return;
-                }
-            };
-
-            let result_str = match decoded.as_slice() {
-                [] => "(no return value)".to_string(),
-                [single] => prompts::format_return_value(single),
-                multiple => {
-                    let formatted: Vec<_> =
-                        multiple.iter().map(prompts::format_return_value).collect();
-                    format!("({})", formatted.join(", "))
-                }
-            };
-
-            let call_str = prompts::format_method_call(&func.name, &func.inputs, &args);
-            self.state.output.push(format!("{call_str} @ {address:?}"), OutputStyle::Highlight);
-            self.state.output.push_success(format!("Result: {result_str}"));
-
-            // Add a call card for view/pure calls
-            if let Some(from_addr) = self.address {
-                self.add_call_card(from_addr, address, call_str.clone(), result_str.clone());
-            } else {
-                // Fallback to log card if no account is available
-                self.add_log_card(format!("{} completed successfully", func.name));
-            }
+            self.execute_view_call(func, address, calldata, &args, &contract_name).await;
         } else {
-            let mut tx = TransactionRequest::default()
-                .to(address)
-                .input(calldata.into());
-            if let Some(chain_id) = self.state.chain_id {
-                tx = tx.with_chain_id(chain_id);
-            }
-
-            self.state.output.push(
-                format!("Sending transaction to {contract_name} {address:?}..."),
-                OutputStyle::Waiting
-            );
-
-            let pending = match self.provider.send_transaction(tx.clone()).await {
-                Ok(p) => p,
-                Err(e) => {
-                    let error_msg = format!("Transaction failed: {e}");
-                    self.push_error_and_scroll(&error_msg);
-                    self.add_log_card(format!("Failed: {} @ {address:?}\n\n{error_msg}", func.name));
-                    return;
-                }
-            };
-
-            let tx_hash = *pending.tx_hash();
-            self.state.output.push_success(format!("Transaction: {tx_hash:?}"));
-
-            let call_str = prompts::format_method_call(&func.name, &func.inputs, &args);
-            self.state.output.push(format!("{call_str} @ {address:?}"), OutputStyle::Highlight);
-
-            self.state.output.push("Waiting for confirmation...", OutputStyle::Waiting);
-
-            let receipt = match pending.get_receipt().await {
-                Ok(r) => r,
-                Err(e) => {
-                    let error_msg = format!("Failed to get receipt: {e}");
-                    self.push_error_and_scroll(&error_msg);
-                    self.add_log_card(format!("Failed: {} @ {address:?} (tx: {tx_hash:?})\n\n{error_msg}", func.name));
-                    return;
-                }
-            };
-
-            // Create a transaction card with actual status and gas from receipt
-            let (status, error_message) = if receipt.status() {
-                (crate::cards::TransactionStatus::Success, None)
-            } else {
-                // Transaction reverted - try to get the revert reason by simulating the call
-                let error_msg = self.get_revert_reason(&tx, receipt.block_number).await;
-                (crate::cards::TransactionStatus::Failed, Some(error_msg))
-            };
-            let gas_used = receipt.gas_used.separated_string();
-            self.add_transaction_card(
-                tx_hash,
-                status,
-                call_str.clone(),
-                Some(gas_used.clone()),
-                contract_name.to_string(),
-                Some(address),
-                error_message.clone(),
-            );
-
-            if receipt.status() {
-                self.state.output.push_success("Status: Success");
-            } else {
-                let error_display = error_message.as_deref().unwrap_or("Unknown reason");
-                self.state.output.push_error(format!("Transaction reverted: {error_display}"));
-            }
-
-            self.state.output.push_info(format!("Gas used: {gas_used}"));
-
-            // Display logs if any
-            let logs = receipt.inner.logs();
-            if !logs.is_empty() {
-                self.state.output.push_info(format!("Logs ({})", logs.len()));
-                for (i, log) in logs.iter().enumerate() {
-                    self.display_log(i, log);
-                }
-            }
-
-            // Refresh balance after transaction
-            self.refresh_balance().await;
+            self.execute_state_changing_call(func, address, calldata, &args, &contract_name).await;
         }
 
         self.state.output.push_separator();
         self.state.output.scroll_to_bottom();
+    }
+
+    async fn execute_view_call(
+        &mut self,
+        func: &Function,
+        address: Address,
+        calldata: Vec<u8>,
+        args: &[DynSolValue],
+        contract_name: &str,
+    ) {
+        let tx = TransactionRequest::default()
+            .to(address)
+            .input(calldata.into());
+
+        let result = match self.provider.call(tx).await {
+            Ok(r) => r,
+            Err(e) => {
+                self.push_error_and_scroll(format!("Call to {contract_name} {address:?} failed: {e}"));
+                return;
+            }
+        };
+
+        let decoded = match func.abi_decode_output(&result) {
+            Ok(d) => d,
+            Err(e) => {
+                self.push_error_and_scroll(format!("Failed to decode return value: {e}"));
+                return;
+            }
+        };
+
+        let result_str = match decoded.as_slice() {
+            [] => "(no return value)".to_string(),
+            [single] => prompts::format_return_value(single),
+            multiple => {
+                let formatted: Vec<_> =
+                    multiple.iter().map(prompts::format_return_value).collect();
+                format!("({})", formatted.join(", "))
+            }
+        };
+
+        let call_str = prompts::format_method_call(&func.name, &func.inputs, args);
+        self.state.output.push(format!("{call_str} @ {address:?}"), OutputStyle::Highlight);
+        self.state.output.push_success(format!("Result: {result_str}"));
+
+        if let Some(from_addr) = self.address {
+            self.add_call_card(from_addr, address, call_str.clone(), result_str.clone());
+        } else {
+            self.add_log_card(format!("{} completed successfully", func.name));
+        }
+    }
+
+    async fn execute_state_changing_call(
+        &mut self,
+        func: &Function,
+        address: Address,
+        calldata: Vec<u8>,
+        args: &[DynSolValue],
+        contract_name: &str,
+    ) {
+        let mut tx = TransactionRequest::default()
+            .to(address)
+            .input(calldata.into());
+        if let Some(chain_id) = self.state.chain_id {
+            tx = tx.with_chain_id(chain_id);
+        }
+
+        self.state.output.push(
+            format!("Sending transaction to {contract_name} {address:?}..."),
+            OutputStyle::Waiting
+        );
+
+        let pending = match self.provider.send_transaction(tx.clone()).await {
+            Ok(p) => p,
+            Err(e) => {
+                let error_msg = format!("Transaction failed: {e}");
+                self.push_error_and_scroll(&error_msg);
+                self.add_log_card(format!("Failed: {} @ {address:?}\n\n{error_msg}", func.name));
+                return;
+            }
+        };
+
+        let tx_hash = *pending.tx_hash();
+        self.state.output.push_success(format!("Transaction: {tx_hash:?}"));
+
+        let call_str = prompts::format_method_call(&func.name, &func.inputs, args);
+        self.state.output.push(format!("{call_str} @ {address:?}"), OutputStyle::Highlight);
+
+        self.state.output.push("Waiting for confirmation...", OutputStyle::Waiting);
+
+        let receipt = match pending.get_receipt().await {
+            Ok(r) => r,
+            Err(e) => {
+                let error_msg = format!("Failed to get receipt: {e}");
+                self.push_error_and_scroll(&error_msg);
+                self.add_log_card(format!("Failed: {} @ {address:?} (tx: {tx_hash:?})\n\n{error_msg}", func.name));
+                return;
+            }
+        };
+
+        let (status, error_message) = if receipt.status() {
+            (crate::cards::TransactionStatus::Success, None)
+        } else {
+            let error_msg = self.get_revert_reason(&tx, receipt.block_number).await;
+            (crate::cards::TransactionStatus::Failed, Some(error_msg))
+        };
+        let gas_used = receipt.gas_used.separated_string();
+        self.add_transaction_card(
+            tx_hash,
+            status,
+            call_str.clone(),
+            Some(gas_used.clone()),
+            contract_name.to_string(),
+            Some(address),
+            error_message.clone(),
+        );
+
+        if receipt.status() {
+            self.state.output.push_success("Status: Success");
+        } else {
+            let error_display = error_message.as_deref().unwrap_or("Unknown reason");
+            self.state.output.push_error(format!("Transaction reverted: {error_display}"));
+        }
+
+        self.state.output.push_info(format!("Gas used: {gas_used}"));
+
+        let logs = receipt.inner.logs();
+        if !logs.is_empty() {
+            self.state.output.push_info(format!("Logs ({})", logs.len()));
+            for (i, log) in logs.iter().enumerate() {
+                self.display_log(i, log);
+            }
+        }
+
+        self.refresh_balance().await;
     }
 
     /// Display a log entry, attempting to decode it with known ABIs
